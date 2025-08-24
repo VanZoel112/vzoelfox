@@ -588,4 +588,177 @@ async def show_stats(event):
         
         if top_commands:
             for i, (cmd, data) in enumerate(top_commands, 1):
- 
+                stats_text += f"\n├── {i}. `{cmd}`: {data['count']} times"
+        else:
+            stats_text += "\n└── No commands used yet"
+        
+        stats_text += f"""
+{system_stats}
+
+💎 **Vzoel Assistant v2.1** - Performance Dashboard
+🔥 **All systems operational and monitoring active**
+        """.strip()
+        
+        await event.edit(stats_text)
+        
+    except Exception as e:
+        await event.edit(f"❌ **Error getting stats:** `{str(e)}`")
+        logger.error(f"Stats error: {e}")
+
+# ============= CLIENT INITIALIZATION =============
+async def initialize_client():
+    """Initialize Telegram client with enhanced features"""
+    global client, plugin_manager
+    
+    try:
+        logger.info("🚀 Initializing Enhanced Vzoel Assistant...")
+        
+        # Create client
+        client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
+        
+        # Connect to Telegram
+        await client.start()
+        logger.info("✅ Connected to Telegram successfully!")
+        
+        # Get user info
+        me = await client.get_me()
+        logger.info(f"👤 Logged in as: {me.first_name} (@{me.username})")
+        logger.info(f"🆔 User ID: {me.id}")
+        
+        # Initialize plugin manager
+        plugin_manager = get_plugin_manager()
+        
+        # Register built-in handlers
+        client.add_event_handler(enhanced_alive)
+        client.add_event_handler(advanced_gcast)
+        client.add_event_handler(join_voice_chat)
+        client.add_event_handler(leave_voice_chat)
+        client.add_event_handler(info_founder)
+        client.add_event_handler(list_plugins)
+        client.add_event_handler(plugin_detailed_info)
+        client.add_event_handler(show_stats)
+        
+        logger.info("🔧 Built-in handlers registered")
+        
+        # Load plugins
+        logger.info("🔌 Loading plugins...")
+        plugin_results = plugin_manager.load_all_plugins()
+        
+        logger.info(f"✅ Plugin loading complete:")
+        logger.info(f"  📦 Loaded: {len(plugin_results['loaded'])} plugins")
+        logger.info(f"  🎯 Handlers: {plugin_results['total_handlers']} total")
+        logger.info(f"  📁 Locations: {len([k for k, v in plugin_results['by_location'].items() if v])}")
+        
+        if plugin_results['failed']:
+            logger.warning(f"  ❌ Failed: {len(plugin_results['failed'])} plugins")
+            for failed in plugin_results['failed']:
+                logger.warning(f"    - {failed}")
+        
+        # Register plugin event handlers
+        for plugin_name, plugin_data in plugin_manager.loaded_plugins.items():
+            module = plugin_data['module']
+            for attr_name in dir(module):
+                attr = getattr(module, attr_name)
+                if hasattr(attr, '_telethon_event'):
+                    client.add_event_handler(attr)
+        
+        logger.info("🎯 Plugin event handlers registered")
+        
+        # Success message
+        print(f"""
+🔥 ═══════════════════════════════════════════════════ 🔥
+    VZOEL ASSISTANT v2.1 - SUCCESSFULLY INITIALIZED    
+🔥 ═══════════════════════════════════════════════════ 🔥
+
+👤 User: {me.first_name} (@{me.username or 'Not Set'})
+🆔 ID: {me.id}
+⚡ Prefix: {COMMAND_PREFIX}
+🔌 Plugins: {len(plugin_results['loaded'])} loaded
+🎯 Handlers: {plugin_results['total_handlers'] + 8} total
+
+🚀 STATUS: ONLINE AND READY TO SERVE!
+💎 Type {COMMAND_PREFIX}alive to check system status
+        """)
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Initialization failed: {e}")
+        return False
+
+# ============= SIGNAL HANDLERS =============
+def signal_handler(signum, frame):
+    """Handle shutdown signals gracefully"""
+    print(f"\n🛑 Received signal {signum}, shutting down gracefully...")
+    logger.info(f"Shutdown signal received: {signum}")
+    
+    if client:
+        client.disconnect()
+    
+    print("👋 Vzoel Assistant stopped successfully!")
+    sys.exit(0)
+
+# ============= MAIN EXECUTION =============
+async def main():
+    """Main execution function"""
+    try:
+        # Setup signal handlers
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+        
+        # Initialize client
+        if not await initialize_client():
+            logger.error("❌ Failed to initialize client")
+            sys.exit(1)
+        
+        # Keep running
+        logger.info("🔄 Starting main event loop...")
+        await client.run_until_disconnected()
+        
+    except KeyboardInterrupt:
+        logger.info("👋 Keyboard interrupt received, shutting down...")
+        print("\n👋 Vzoel Assistant stopped by user")
+        
+    except Exception as e:
+        logger.error(f"❌ Fatal error in main loop: {e}")
+        print(f"❌ Fatal error: {e}")
+        sys.exit(1)
+        
+    finally:
+        if client and client.is_connected():
+            await client.disconnect()
+            logger.info("🔌 Client disconnected")
+
+if __name__ == "__main__":
+    try:
+        # Check Python version
+        if sys.version_info < (3, 7):
+            print("❌ Python 3.7 or higher is required!")
+            sys.exit(1)
+        
+        # Check required environment variables
+        if not API_ID or not API_HASH:
+            print("❌ Please set API_ID and API_HASH in your .env file!")
+            sys.exit(1)
+        
+        if not OWNER_ID:
+            print("❌ Please set OWNER_ID in your .env file!")
+            sys.exit(1)
+        
+        print("🚀 Starting Enhanced Vzoel Assistant...")
+        print(f"⚙️ Python: {sys.version}")
+        print(f"📁 Working Directory: {os.getcwd()}")
+        print(f"⚡ Command Prefix: {COMMAND_PREFIX}")
+        print(f"👤 Owner ID: {OWNER_ID}")
+        print("━" * 60)
+        
+        # Run the main function
+        asyncio.run(main())
+        
+    except KeyboardInterrupt:
+        print("\n👋 Startup cancelled by user")
+        sys.exit(0)
+    except Exception as e:
+        print(f"❌ Startup error: {e}")
+        logger.error(f"Startup error: {e}")
+        sys.exit(1)
