@@ -517,4 +517,136 @@ async def alive_handler(event):
         uptime = datetime.now() - start_time if start_time else "Unknown"
         plugin_count = len(plugin_stats.get('loaded', []))
         handler_count = plugin_stats.get('total_handlers', 0)
-        uptime_str = str(uptime).split('.')[0] if uptim
+        uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
+        
+        alive_text = f"""
+✅ **Vzoel Assistant is alive! (FIXED)**
+🚀 Uptime: `{uptime_str}`
+⚡ Prefix: `{COMMAND_PREFIX}`
+🔌 Plugins: `{plugin_count}` active ({handler_count} handlers)
+🎯 Plugin System: Enhanced & Working
+        """.strip()
+        
+        await event.edit(alive_text)
+    except Exception as e:
+        await event.edit(f"❌ Error: {str(e)}")
+        logger.error(f"Error in alive handler: {e}")
+
+# ============= STARTUP FUNCTIONS (FIXED) =============
+
+async def startup():
+    """Enhanced startup function with FIXED plugin loading"""
+    global start_time
+    start_time = datetime.now()
+    
+    logger.info("🚀 Starting enhanced Vzoel Assistant (FIXED VERSION)...")
+    
+    try:
+        await client.start()
+        me = await client.get_me()
+        
+        # FIXED: Load plugins AFTER client is fully started
+        logger.info("🔌 Loading plugins with fixed system...")
+        results = load_plugins()
+        
+        logger.info(f"✅ Vzoel Assistant started successfully!")
+        logger.info(f"👤 Logged in as: {me.first_name} (@{me.username or 'No username'})")
+        logger.info(f"🆔 User ID: {me.id}")
+        logger.info(f"🔌 Loaded {len(results['loaded'])} plugins with {results['total_handlers']} handlers")
+        
+        # Log plugin locations
+        if results['by_location']['root']:
+            logger.info(f"📁 Root directory: {len(results['by_location']['root'])} plugins")
+        if results['by_location']['plugins']:
+            logger.info(f"📂 Plugins directory: {len(results['by_location']['plugins'])} plugins")
+        if results['by_location']['subdirs']:
+            logger.info(f"📁 Subdirectories: {len(results['by_location']['subdirs'])} plugins")
+        
+        # Enhanced startup message
+        plugin_text = ""
+        if results['loaded']:
+            location_details = []
+            if results['by_location']['root']:
+                location_details.append(f"📁 Root: {len(results['by_location']['root'])}")
+            if results['by_location']['plugins']:
+                location_details.append(f"📂 Plugins: {len(results['by_location']['plugins'])}")
+            if results['by_location']['subdirs']:
+                location_details.append(f"📁 Subdirs: {len(results['by_location']['subdirs'])}")
+            
+            plugin_text = f"""
+**🔌 Plugins ({len(results['loaded'])}):**
+{' | '.join(location_details)}
+**Total Handlers:** `{results['total_handlers']}`
+"""
+        
+        startup_message = f"""
+🚀 **Enhanced Vzoel Assistant Started! (FIXED)**
+
+✅ All systems operational
+👤 **User:** {me.first_name}
+🆔 **ID:** `{me.id}`
+⚡ **Prefix:** `{COMMAND_PREFIX}`
+⏰ **Started:** `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
+🔌 **Built-in Commands:** Ready
+{plugin_text}
+**💡 Quick Start:**
+• `{COMMAND_PREFIX}help` - Show all commands
+• `{COMMAND_PREFIX}info` - System information
+• `{COMMAND_PREFIX}plugins` - List loaded plugins
+
+**🎯 FIXED: Plugin system now working correctly!**
+        """.strip()
+        
+        try:
+            await client.send_message('me', startup_message)
+        except Exception as e:
+            logger.warning(f"Could not send startup message: {e}")
+            
+    except SessionPasswordNeededError:
+        logger.error("❌ Two-factor authentication enabled. Please login manually first.")
+        return False
+    except Exception as e:
+        logger.error(f"❌ Error starting Vzoel Assistant: {e}")
+        return False
+    
+    return True
+
+async def main():
+    """Enhanced main function"""
+    logger.info("🔄 Initializing enhanced Vzoel Assistant (FIXED VERSION)...")
+    
+    # Validate configuration
+    logger.info("🔍 Validating configuration...")
+    logger.info(f"📱 API ID: {API_ID}")
+    logger.info(f"📁 Session: {SESSION_NAME}")
+    logger.info(f"⚡ Prefix: {COMMAND_PREFIX}")
+    logger.info(f"🆔 Owner ID: {OWNER_ID or 'Auto-detect'}")
+    logger.info(f"📂 Plugin discovery: Enhanced mode")
+    
+    # Start Vzoel Assistant
+    if await startup():
+        logger.info("🔄 Enhanced Vzoel Assistant is now running (FIXED)...")
+        logger.info("📝 Press Ctrl+C to stop")
+        
+        try:
+            await client.run_until_disconnected()
+        except KeyboardInterrupt:
+            logger.info("👋 Vzoel Assistant stopped by user")
+        except Exception as e:
+            logger.error(f"❌ Unexpected error: {e}")
+        finally:
+            logger.info("🔄 Disconnecting...")
+            try:
+                await client.disconnect()
+            except Exception as e:
+                logger.error(f"Error during disconnect: {e}")
+            logger.info("✅ Enhanced Vzoel Assistant stopped successfully!")
+    else:
+        logger.error("❌ Failed to start enhanced Vzoel Assistant!")
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logger.error(f"❌ Fatal error: {e}")
+        sys.exit(1)
