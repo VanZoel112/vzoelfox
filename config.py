@@ -1,3 +1,0 @@
-API_ID = 29919905
-API_HASH = "717957f0e3ae20a7db004d08b66bfd30"
-SESSION = "VzoelAssistant"
