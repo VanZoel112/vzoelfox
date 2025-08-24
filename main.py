@@ -2,7 +2,7 @@
 """
 Telegram Vzoel Assistant dengan Telethon
 Enhanced version dengan plugin loader yang lebih baik untuk folder plugins
-Dibuat untuk AWS Ubuntu
+Dibuat untuk AWS Ubuntu - Fixed Version
 """
 
 import asyncio
@@ -10,6 +10,7 @@ import logging
 import os
 import time
 import re
+import sys
 from datetime import datetime
 from telethon import TelegramClient, events
 from telethon.errors import SessionPasswordNeededError
@@ -19,38 +20,66 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Import enhanced plugin manager
-from __init__ import get_plugin_manager, list_plugins_structure
+try:
+    from __init__ import get_plugin_manager, list_plugins_structure
+except ImportError as e:
+    print(f"❌ Import error: {e}")
+    print("Make sure __init__.py is in the same directory")
+    sys.exit(1)
 
 # ============= KONFIGURASI =============
-API_ID = int(os.getenv("API_ID", "29919905"))
-API_HASH = os.getenv("API_HASH", "717957f0e3ae20a7db004d08b66bfd30")
-SESSION_NAME = os.getenv("SESSION_NAME", "vzoel_session")
-OWNER_ID = int(os.getenv("OWNER_ID", "0")) if os.getenv("OWNER_ID") else None
-COMMAND_PREFIX = os.getenv("COMMAND_PREFIX", ".")
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-ENABLE_LOGGING = os.getenv("ENABLE_LOGGING", "true").lower() == "true"
-MAX_SPAM_COUNT = int(os.getenv("MAX_SPAM_COUNT", "10"))
-NOTIFICATION_CHAT = os.getenv("NOTIFICATION_CHAT", "me")
+try:
+    API_ID = int(os.getenv("API_ID", "0"))
+    API_HASH = os.getenv("API_HASH", "")
+    SESSION_NAME = os.getenv("SESSION_NAME", "vzoel_session")
+    OWNER_ID = int(os.getenv("OWNER_ID", "0")) if os.getenv("OWNER_ID") else None
+    COMMAND_PREFIX = os.getenv("COMMAND_PREFIX", ".")
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+    ENABLE_LOGGING = os.getenv("ENABLE_LOGGING", "true").lower() == "true"
+    MAX_SPAM_COUNT = int(os.getenv("MAX_SPAM_COUNT", "10"))
+    NOTIFICATION_CHAT = os.getenv("NOTIFICATION_CHAT", "me")
+except ValueError as e:
+    print(f"❌ Configuration error: {e}")
+    print("Please check your .env file")
+    sys.exit(1)
 
 # Validation
 if not API_ID or not API_HASH:
     print("❌ ERROR: API_ID and API_HASH must be set in .env file!")
-    exit(1)
+    print("Please create a .env file with your Telegram API credentials")
+    sys.exit(1)
 
 # Setup logging
+log_handlers = []
 if ENABLE_LOGGING:
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    handlers = [
-        logging.FileHandler('vzoel_assistant.log'),
-        logging.StreamHandler()
-    ]
+    
+    # File handler
+    try:
+        file_handler = logging.FileHandler('vzoel_assistant.log')
+        file_handler.setFormatter(logging.Formatter(log_format))
+        log_handlers.append(file_handler)
+    except Exception as e:
+        print(f"Warning: Could not create log file: {e}")
+    
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(logging.Formatter(log_format))
+    log_handlers.append(console_handler)
+    
+    # Debug handler if debug mode
     if LOG_LEVEL.upper() == "DEBUG":
-        handlers.append(logging.FileHandler('debug.log'))
+        try:
+            debug_handler = logging.FileHandler('debug.log')
+            debug_handler.setFormatter(logging.Formatter(log_format))
+            log_handlers.append(debug_handler)
+        except Exception as e:
+            print(f"Warning: Could not create debug log file: {e}")
     
     logging.basicConfig(
-        level=getattr(logging, LOG_LEVEL.upper()),
+        level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
         format=log_format,
-        handlers=handlers
+        handlers=log_handlers
     )
 else:
     logging.basicConfig(level=logging.WARNING)
@@ -58,7 +87,12 @@ else:
 logger = logging.getLogger(__name__)
 
 # Initialize client
-client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
+try:
+    client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
+    logger.info("✅ Telegram client initialized")
+except Exception as e:
+    logger.error(f"❌ Failed to initialize client: {e}")
+    sys.exit(1)
 
 # Global variables
 start_time = None
@@ -71,33 +105,46 @@ def load_plugins():
     """Load all plugin files using enhanced plugin manager"""
     global plugin_manager, plugin_stats
     
-    plugin_manager = get_plugin_manager()
-    results = plugin_manager.load_all_plugins()
-    
-    # Register event handlers with client
-    for plugin_name, plugin_info in plugin_manager.loaded_plugins.items():
-        module = plugin_info['module']
+    try:
+        plugin_manager = get_plugin_manager()
+        results = plugin_manager.load_all_plugins()
         
-        # Find and register event handlers
-        for attr_name in dir(module):
-            attr = getattr(module, attr_name)
-            if hasattr(attr, '_telethon_event'):
-                try:
-                    client.add_event_handler(attr)
-                    logger.debug(f"Registered handler {attr_name} from {plugin_name}")
-                except Exception as e:
-                    logger.error(f"Failed to register handler {attr_name} from {plugin_name}: {e}")
-    
-    plugin_stats = results
-    return results
+        # Register event handlers with client
+        handlers_registered = 0
+        for plugin_name, plugin_info in plugin_manager.loaded_plugins.items():
+            module = plugin_info['module']
+            
+            # Find and register event handlers
+            for attr_name in dir(module):
+                attr = getattr(module, attr_name)
+                if hasattr(attr, '_telethon_event'):
+                    try:
+                        client.add_event_handler(attr)
+                        handlers_registered += 1
+                        logger.debug(f"Registered handler {attr_name} from {plugin_name}")
+                    except Exception as e:
+                        logger.error(f"Failed to register handler {attr_name} from {plugin_name}: {e}")
+        
+        logger.info(f"✅ Registered {handlers_registered} event handlers")
+        plugin_stats = results
+        return results
+        
+    except Exception as e:
+        logger.error(f"❌ Error loading plugins: {e}")
+        return {'loaded': [], 'failed': [], 'total_handlers': 0, 'by_location': {'root': [], 'plugins': [], 'subdirs': []}}
 
 # ============= UTILITY FUNCTIONS =============
 
 async def is_owner(user_id):
     """Check if user is owner"""
-    if OWNER_ID:
-        return user_id == OWNER_ID
-    return user_id == (await client.get_me()).id
+    try:
+        if OWNER_ID:
+            return user_id == OWNER_ID
+        me = await client.get_me()
+        return user_id == me.id
+    except Exception as e:
+        logger.error(f"Error checking owner: {e}")
+        return False
 
 async def log_command(event, command):
     """Log command usage"""
@@ -131,34 +178,40 @@ async def info_handler(event):
         return
         
     await log_command(event, "info")
-    me = await client.get_me()
-    uptime = datetime.now() - start_time
-    
-    # Get plugin information
-    plugin_info = plugin_manager.get_plugin_info() if plugin_manager else {'count': 0, 'total_handlers': 0}
-    by_location = plugin_info.get('by_location', {})
-    
-    location_text = ""
-    if by_location.get('root'):
-        location_text += f"\n  📁 Root: `{len(by_location['root'])}` plugins"
-    if by_location.get('plugins'):
-        location_text += f"\n  📂 Plugins dir: `{len(by_location['plugins'])}` plugins"
-    if by_location.get('subdirs'):
-        location_text += f"\n  📁 Subdirs: `{len(by_location['subdirs'])}` plugins"
-    
-    info_text = f"""
+    try:
+        me = await client.get_me()
+        uptime = datetime.now() - start_time if start_time else "Unknown"
+        
+        # Get plugin information
+        plugin_info = plugin_manager.get_plugin_info() if plugin_manager else {'count': 0, 'total_handlers': 0}
+        by_location = plugin_info.get('by_location', {})
+        
+        location_text = ""
+        if by_location.get('root'):
+            location_text += f"\n  📁 Root: `{len(by_location['root'])}` plugins"
+        if by_location.get('plugins'):
+            location_text += f"\n  📂 Plugins dir: `{len(by_location['plugins'])}` plugins"
+        if by_location.get('subdirs'):
+            location_text += f"\n  📁 Subdirs: `{len(by_location['subdirs'])}` plugins"
+        
+        uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
+        
+        info_text = f"""
 🤖 **Vzoel Assistant Info**
 👤 Name: {me.first_name or 'N/A'}
 🆔 ID: `{me.id}`
 📱 Phone: `{me.phone or 'Hidden'}`
 ⚡ Prefix: `{COMMAND_PREFIX}`
-⏰ Uptime: `{str(uptime).split('.')[0]}`
+⏰ Uptime: `{uptime_str}`
 🖥️ Server: AWS Ubuntu
 📊 Log Level: `{LOG_LEVEL}`
 🔌 Plugins: `{plugin_info['count']}` loaded (`{plugin_info['total_handlers']}` handlers){location_text}
-    """.strip()
-    
-    await event.edit(info_text)
+        """.strip()
+        
+        await event.edit(info_text)
+    except Exception as e:
+        await event.edit(f"❌ Error getting info: {str(e)}")
+        logger.error(f"Error in info handler: {e}")
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}alive'))
 async def alive_handler(event):
@@ -167,17 +220,22 @@ async def alive_handler(event):
         return
         
     await log_command(event, "alive")
-    uptime = datetime.now() - start_time
-    plugin_count = plugin_manager.get_plugin_info()['count'] if plugin_manager else 0
-    
-    alive_text = f"""
+    try:
+        uptime = datetime.now() - start_time if start_time else "Unknown"
+        plugin_count = plugin_manager.get_plugin_info()['count'] if plugin_manager else 0
+        uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
+        
+        alive_text = f"""
 ✅ **Vzoel Assistant is alive!**
-🚀 Uptime: `{str(uptime).split('.')[0]}`
+🚀 Uptime: `{uptime_str}`
 ⚡ Prefix: `{COMMAND_PREFIX}`
 🔌 Plugins: `{plugin_count}` active
-    """.strip()
-    
-    await event.edit(alive_text)
+        """.strip()
+        
+        await event.edit(alive_text)
+    except Exception as e:
+        await event.edit(f"❌ Error: {str(e)}")
+        logger.error(f"Error in alive handler: {e}")
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}help'))
 async def help_handler(event):
@@ -238,30 +296,34 @@ async def plugins_handler(event):
         await event.edit("❌ No external plugins loaded")
         return
     
-    plugin_info = plugin_manager.get_plugin_info()
-    by_location = plugin_info.get('by_location', {})
-    
-    plugin_text = f"🔌 **Loaded Plugins ({plugin_info['count']}):**\n\n"
-    
-    if by_location.get('root'):
-        plugin_text += f"**📁 Root Directory ({len(by_location['root'])}):**\n"
-        plugin_text += "\n".join([f"• `{plugin}`" for plugin in by_location['root']]) + "\n\n"
-    
-    if by_location.get('plugins'):
-        plugin_text += f"**📂 Plugins Directory ({len(by_location['plugins'])}):**\n"
-        plugin_text += "\n".join([f"• `{plugin}`" for plugin in by_location['plugins']]) + "\n\n"
-    
-    if by_location.get('subdirs'):
-        plugin_text += f"**📁 Subdirectories ({len(by_location['subdirs'])}):**\n"
-        plugin_text += "\n".join([f"• `{plugin}`" for plugin in by_location['subdirs']]) + "\n\n"
-    
-    plugin_text += f"""💡 **Tips:**
+    try:
+        plugin_info = plugin_manager.get_plugin_info()
+        by_location = plugin_info.get('by_location', {})
+        
+        plugin_text = f"🔌 **Loaded Plugins ({plugin_info['count']}):**\n\n"
+        
+        if by_location.get('root'):
+            plugin_text += f"**📁 Root Directory ({len(by_location['root'])}):**\n"
+            plugin_text += "\n".join([f"• `{plugin}`" for plugin in by_location['root']]) + "\n\n"
+        
+        if by_location.get('plugins'):
+            plugin_text += f"**📂 Plugins Directory ({len(by_location['plugins'])}):**\n"
+            plugin_text += "\n".join([f"• `{plugin}`" for plugin in by_location['plugins']]) + "\n\n"
+        
+        if by_location.get('subdirs'):
+            plugin_text += f"**📁 Subdirectories ({len(by_location['subdirs'])}):**\n"
+            plugin_text += "\n".join([f"• `{plugin}`" for plugin in by_location['subdirs']]) + "\n\n"
+        
+        plugin_text += f"""💡 **Tips:**
 - Add .py files to root or plugins/ directory
 - Use `{COMMAND_PREFIX}plugininfo` for detailed information
 - Use `{COMMAND_PREFIX}structure` to see directory layout
 - Use `{COMMAND_PREFIX}reload` to reload plugins"""
-    
-    await event.edit(plugin_text)
+        
+        await event.edit(plugin_text)
+    except Exception as e:
+        await event.edit(f"❌ Error getting plugins: {str(e)}")
+        logger.error(f"Error in plugins handler: {e}")
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}plugininfo'))
 async def plugininfo_handler(event):
@@ -275,26 +337,36 @@ async def plugininfo_handler(event):
         await event.edit("❌ No plugins loaded")
         return
     
-    info_text = f"🔌 **Detailed Plugin Information:**\n\n"
-    
-    for name, info in plugin_manager.loaded_plugins.items():
-        handlers = info['handlers']
-        location = info['location']
-        commands = info.get('commands', [])
+    try:
+        info_text = f"🔌 **Detailed Plugin Information:**\n\n"
         
-        info_text += f"**📦 {name}**\n"
-        info_text += f"• Location: `{location}`\n"
-        info_text += f"• Handlers: `{handlers}`\n"
+        for name, info in plugin_manager.loaded_plugins.items():
+            handlers = info['handlers']
+            location = info['location']
+            commands = info.get('commands', [])
+            
+            info_text += f"**📦 {name}**\n"
+            info_text += f"• Location: `{location}`\n"
+            info_text += f"• Handlers: `{handlers}`\n"
+            
+            if commands:
+                cmd_list = ', '.join([f"`{cmd}`" for cmd in commands[:3]])
+                if len(commands) > 3:
+                    cmd_list += f" and {len(commands)-3} more"
+                info_text += f"• Commands: {cmd_list}\n"
+            else:
+                info_text += f"• Commands: None\n"
+            
+            info_text += "\n"
         
-        if commands:
-            cmd_list = ', '.join([f"`{cmd}`" for cmd in commands[:3]])
-            if len(commands) > 3:
-                cmd_list += f" and {len(commands)-3} more"
-            info_text += f"• Commands: {cmd_list}\n"
+        # Limit message length for Telegram
+        if len(info_text) > 4000:
+            info_text = info_text[:4000] + "\n... (truncated)"
         
-        info_text += "\n"
-    
-    await event.edit(info_text)
+        await event.edit(info_text)
+    except Exception as e:
+        await event.edit(f"❌ Error getting plugin info: {str(e)}")
+        logger.error(f"Error in plugininfo handler: {e}")
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}structure'))
 async def structure_handler(event):
@@ -303,8 +375,12 @@ async def structure_handler(event):
         return
         
     await log_command(event, "structure")
-    structure_text = list_plugins_structure()
-    await event.edit(f"```\n{structure_text}\n```")
+    try:
+        structure_text = list_plugins_structure()
+        await event.edit(f"```\n{structure_text}\n```")
+    except Exception as e:
+        await event.edit(f"❌ Error showing structure: {str(e)}")
+        logger.error(f"Error in structure handler: {e}")
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}reload'))
 async def reload_handler(event):
@@ -316,9 +392,6 @@ async def reload_handler(event):
     msg = await event.reply("🔄 Reloading plugins...")
     
     try:
-        # Clear existing handlers (we'll need to restart for full clean reload)
-        global plugin_manager
-        
         # Load plugins again
         results = load_plugins()
         
@@ -337,11 +410,15 @@ async def reload_handler(event):
             
     except Exception as e:
         await msg.edit(f"❌ Error reloading plugins: {str(e)}")
+        logger.error(f"Error reloading plugins: {e}")
 
-@client.on(events.NewMessage(pattern=r'\.typing (\d+)'))
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}typing (\d+)'))
 async def typing_handler(event):
     """Show typing indicator"""
-    if event.sender_id == (await client.get_me()).id:
+    if not await is_owner(event.sender_id):
+        return
+        
+    try:
         duration = int(event.pattern_match.group(1))
         if duration > 60:  # Max 60 seconds
             duration = 60
@@ -349,30 +426,38 @@ async def typing_handler(event):
         await event.delete()
         async with client.action(event.chat_id, 'typing'):
             await asyncio.sleep(duration)
+    except Exception as e:
+        logger.error(f"Error in typing handler: {e}")
 
-@client.on(events.NewMessage(pattern=r'\.del'))
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}del'))
 async def delete_handler(event):
     """Delete replied message"""
-    if event.sender_id == (await client.get_me()).id:
+    if not await is_owner(event.sender_id):
+        return
+        
+    try:
         if event.reply_to_msg_id:
-            try:
-                await client.delete_messages(event.chat_id, event.reply_to_msg_id)
-                await event.delete()
-            except Exception as e:
-                await event.edit(f"❌ Error: {str(e)}")
+            await client.delete_messages(event.chat_id, event.reply_to_msg_id)
+            await event.delete()
         else:
             await event.edit("❌ Reply to a message to delete it!")
+    except Exception as e:
+        await event.edit(f"❌ Error: {str(e)}")
+        logger.error(f"Error in delete handler: {e}")
 
-@client.on(events.NewMessage(pattern=r'\.edit (.+)'))
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}edit (.+)'))
 async def edit_handler(event):
     """Edit your last message"""
-    if event.sender_id == (await client.get_me()).id:
+    if not await is_owner(event.sender_id):
+        return
+        
+    try:
         new_text = event.pattern_match.group(1)
         
         # Get last message from user
         messages = await client.get_messages(event.chat_id, limit=10, from_user='me')
         for msg in messages:
-            if msg.id != event.id and not msg.text.startswith('.edit'):
+            if msg.id != event.id and not msg.text.startswith(f'{COMMAND_PREFIX}edit'):
                 try:
                     await msg.edit(new_text)
                     await event.delete()
@@ -382,6 +467,9 @@ async def edit_handler(event):
                     return
         
         await event.edit("❌ No recent message found to edit!")
+    except Exception as e:
+        await event.edit(f"❌ Error: {str(e)}")
+        logger.error(f"Error in edit handler: {e}")
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}spam (\d+) (.+)'))
 async def spam_handler(event):
@@ -390,19 +478,24 @@ async def spam_handler(event):
         return
         
     await log_command(event, "spam")
-    count = int(event.pattern_match.group(1))
-    text = event.pattern_match.group(2)
     
-    # Limit spam count
-    if count > MAX_SPAM_COUNT:
-        await event.edit(f"❌ Spam limit: max {MAX_SPAM_COUNT} messages!")
-        return
+    try:
+        count = int(event.pattern_match.group(1))
+        text = event.pattern_match.group(2)
         
-    await event.delete()
-    
-    for i in range(count):
-        await client.send_message(event.chat_id, f"{text}")
-        await asyncio.sleep(0.5)  # Delay to avoid flood
+        # Limit spam count
+        if count > MAX_SPAM_COUNT:
+            await event.edit(f"❌ Spam limit: max {MAX_SPAM_COUNT} messages!")
+            return
+            
+        await event.delete()
+        
+        for i in range(count):
+            await client.send_message(event.chat_id, f"{text}")
+            await asyncio.sleep(0.5)  # Delay to avoid flood
+    except Exception as e:
+        await event.edit(f"❌ Error: {str(e)}")
+        logger.error(f"Error in spam handler: {e}")
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}restart'))
 async def restart_handler(event):
@@ -417,10 +510,14 @@ async def restart_handler(event):
     # Send notification
     try:
         await client.send_message(NOTIFICATION_CHAT, "🔄 **Vzoel Assistant is restarting...**")
-    except:
-        pass
+    except Exception as e:
+        logger.error(f"Error sending restart notification: {e}")
     
-    await client.disconnect()
+    try:
+        await client.disconnect()
+    except Exception as e:
+        logger.error(f"Error disconnecting: {e}")
+    
     os._exit(0)
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}logs'))
@@ -432,18 +529,20 @@ async def logs_handler(event):
     await log_command(event, "logs")
     
     try:
-        with open('vzoel_assistant.log', 'r') as f:
-            logs = f.readlines()
-            recent_logs = ''.join(logs[-20:])  # Last 20 lines
-            
-        if len(recent_logs) > 4000:
-            recent_logs = recent_logs[-4000:]
-            
-        await event.edit(f"📋 **Recent Logs:**\n```\n{recent_logs}\n```")
-    except FileNotFoundError:
-        await event.edit("❌ Log file not found!")
+        if os.path.exists('vzoel_assistant.log'):
+            with open('vzoel_assistant.log', 'r', encoding='utf-8') as f:
+                logs = f.readlines()
+                recent_logs = ''.join(logs[-20:])  # Last 20 lines
+                
+            if len(recent_logs) > 4000:
+                recent_logs = recent_logs[-4000:]
+                
+            await event.edit(f"📋 **Recent Logs:**\n```\n{recent_logs}\n```")
+        else:
+            await event.edit("❌ Log file not found!")
     except Exception as e:
         await event.edit(f"❌ Error reading logs: {str(e)}")
+        logger.error(f"Error in logs handler: {e}")
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}env'))
 async def env_handler(event):
@@ -453,9 +552,10 @@ async def env_handler(event):
         
     await log_command(event, "env")
     
-    plugin_info = plugin_manager.get_plugin_info() if plugin_manager else {'count': 0}
-    
-    env_info = f"""
+    try:
+        plugin_info = plugin_manager.get_plugin_info() if plugin_manager else {'count': 0}
+        
+        env_info = f"""
 🔧 **Environment Info:**
 📁 Session: `{SESSION_NAME}`
 ⚡ Prefix: `{COMMAND_PREFIX}`
@@ -466,9 +566,12 @@ async def env_handler(event):
 🆔 Owner ID: `{OWNER_ID or 'Auto-detect'}`
 🔌 Plugins: `{plugin_info['count']}` loaded
 📂 Plugins Dir: `{'Available' if os.path.exists('plugins') else 'Not found'}`
-    """.strip()
-    
-    await event.edit(env_info)
+        """.strip()
+        
+        await event.edit(env_info)
+    except Exception as e:
+        await event.edit(f"❌ Error: {str(e)}")
+        logger.error(f"Error in env handler: {e}")
 
 # ============= STARTUP FUNCTIONS =============
 
@@ -556,4 +659,36 @@ async def main():
     
     # Validate configuration
     logger.info("🔍 Validating configuration...")
-    logger.info(f"
+    logger.info(f"📱 API ID: {API_ID}")
+    logger.info(f"📁 Session: {SESSION_NAME}")
+    logger.info(f"⚡ Prefix: {COMMAND_PREFIX}")
+    logger.info(f"🆔 Owner ID: {OWNER_ID or 'Auto-detect'}")
+    logger.info(f"📂 Plugins directory: {'Exists' if os.path.exists('plugins') else 'Will be created'}")
+    
+    # Start Vzoel Assistant
+    if await startup():
+        logger.info("🔄 Enhanced Vzoel Assistant is now running...")
+        logger.info("📝 Press Ctrl+C to stop")
+        
+        try:
+            await client.run_until_disconnected()
+        except KeyboardInterrupt:
+            logger.info("👋 Vzoel Assistant stopped by user")
+        except Exception as e:
+            logger.error(f"❌ Unexpected error: {e}")
+        finally:
+            logger.info("🔄 Disconnecting...")
+            try:
+                await client.disconnect()
+            except Exception as e:
+                logger.error(f"Error during disconnect: {e}")
+            logger.info("✅ Enhanced Vzoel Assistant stopped successfully!")
+    else:
+        logger.error("❌ Failed to start enhanced Vzoel Assistant!")
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logger.error(f"❌ Fatal error: {e}")
+        sys.exit(1)
