@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Telegram Userbot dengan Telethon
+Telegram Vzoel Assistant dengan Telethon
 Enhanced version dengan plugin loader
 Dibuat untuk AWS Ubuntu
 """
@@ -23,7 +23,7 @@ load_dotenv()
 # ============= KONFIGURASI =============
 API_ID = int(os.getenv("API_ID", "29919905"))
 API_HASH = os.getenv("API_HASH", "717957f0e3ae20a7db004d08b66bfd30")
-SESSION_NAME = os.getenv("SESSION_NAME", "userbot_session")
+SESSION_NAME = os.getenv("SESSION_NAME", "vzoel_session")
 OWNER_ID = int(os.getenv("OWNER_ID", "0")) if os.getenv("OWNER_ID") else None
 COMMAND_PREFIX = os.getenv("COMMAND_PREFIX", ".")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
@@ -40,7 +40,7 @@ if not API_ID or not API_HASH:
 if ENABLE_LOGGING:
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     handlers = [
-        logging.FileHandler('userbot.log'),
+        logging.FileHandler('vzoel_assistant.log'),
         logging.StreamHandler()
     ]
     if LOG_LEVEL.upper() == "DEBUG":
@@ -129,7 +129,7 @@ async def log_command(event, command):
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}ping'))
 async def ping_handler(event):
-    """Perintah ping untuk test userbot"""
+    """Perintah ping untuk test Vzoel Assistant"""
     if not await is_owner(event.sender_id):
         return
         
@@ -141,7 +141,7 @@ async def ping_handler(event):
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}info'))
 async def info_handler(event):
-    """Informasi userbot"""
+    """Informasi Vzoel Assistant"""
     if not await is_owner(event.sender_id):
         return
         
@@ -154,7 +154,7 @@ async def info_handler(event):
         plugin_text = f"\n🔌 Plugins: `{len(loaded_plugins)}` loaded"
     
     info_text = f"""
-🤖 **Userbot Info**
+🤖 **Vzoel Assistant Info**
 👤 Name: {me.first_name or 'N/A'}
 🆔 ID: `{me.id}`
 📱 Phone: `{me.phone or 'Hidden'}`
@@ -168,7 +168,7 @@ async def info_handler(event):
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}alive'))
 async def alive_handler(event):
-    """Status userbot"""
+    """Status Vzoel Assistant"""
     if not await is_owner(event.sender_id):
         return
         
@@ -177,7 +177,7 @@ async def alive_handler(event):
     plugin_count = len(loaded_plugins)
     
     alive_text = f"""
-✅ **Userbot is alive!**
+✅ **Vzoel Assistant is alive!**
 🚀 Uptime: `{str(uptime).split('.')[0]}`
 ⚡ Prefix: `{COMMAND_PREFIX}`
 🔌 Plugins: `{plugin_count}` active
@@ -196,8 +196,8 @@ async def help_handler(event):
     # Built-in commands
     builtin_commands = [
         f"`{COMMAND_PREFIX}ping` - Test response time",
-        f"`{COMMAND_PREFIX}info` - Userbot information",
-        f"`{COMMAND_PREFIX}alive` - Check if userbot is running",
+        f"`{COMMAND_PREFIX}info` - Vzoel Assistant information",
+        f"`{COMMAND_PREFIX}alive` - Check if Vzoel Assistant is running",
         f"`{COMMAND_PREFIX}help` - Show this help message",
         f"`{COMMAND_PREFIX}plugins` - List loaded plugins",
         f"`{COMMAND_PREFIX}reload` - Reload all plugins",
@@ -205,7 +205,7 @@ async def help_handler(event):
         f"`{COMMAND_PREFIX}del` - Delete replied message",
         f"`{COMMAND_PREFIX}edit [text]` - Edit your last message",
         f"`{COMMAND_PREFIX}spam [count] [text]` - Send message X times (max: {MAX_SPAM_COUNT})",
-        f"`{COMMAND_PREFIX}restart` - Restart userbot",
+        f"`{COMMAND_PREFIX}restart` - Restart Vzoel Assistant",
         f"`{COMMAND_PREFIX}logs` - Show recent logs",
         f"`{COMMAND_PREFIX}env` - Show environment info"
     ]
@@ -343,17 +343,17 @@ async def spam_handler(event):
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}restart'))
 async def restart_handler(event):
-    """Restart userbot"""
+    """Restart Vzoel Assistant"""
     if not await is_owner(event.sender_id):
         return
         
     await log_command(event, "restart")
-    await event.edit("🔄 **Restarting userbot...**")
-    logger.info("Userbot restart requested by user")
+    await event.edit("🔄 **Restarting Vzoel Assistant...**")
+    logger.info("Vzoel Assistant restart requested by user")
     
     # Send notification
     try:
-        await client.send_message(NOTIFICATION_CHAT, "🔄 **Userbot is restarting...**")
+        await client.send_message(NOTIFICATION_CHAT, "🔄 **Vzoel Assistant is restarting...**")
     except:
         pass
     
@@ -369,7 +369,7 @@ async def logs_handler(event):
     await log_command(event, "logs")
     
     try:
-        with open('userbot.log', 'r') as f:
+        with open('vzoel_assistant.log', 'r') as f:
             logs = f.readlines()
             recent_logs = ''.join(logs[-20:])  # Last 20 lines
             
@@ -411,7 +411,7 @@ async def startup():
     global start_time
     start_time = datetime.now()
     
-    logger.info("🚀 Starting enhanced userbot...")
+    logger.info("🚀 Starting enhanced Vzoel Assistant...")
     
     try:
         await client.start()
@@ -421,7 +421,7 @@ async def startup():
         logger.info("🔌 Loading plugins...")
         loaded = load_plugins()
         
-        logger.info(f"✅ Userbot started successfully!")
+        logger.info(f"✅ Vzoel Assistant started successfully!")
         logger.info(f"👤 Logged in as: {me.first_name} (@{me.username or 'No username'})")
         logger.info(f"🆔 User ID: {me.id}")
         logger.info(f"🔌 Loaded {len(loaded)} external plugins")
@@ -438,7 +438,7 @@ async def startup():
 """
         
         startup_message = f"""
-🚀 **Enhanced Userbot Started!**
+🚀 **Enhanced Vzoel Assistant Started!**
 
 ✅ All systems operational
 👤 **User:** {me.first_name}
@@ -449,7 +449,7 @@ async def startup():
 {plugin_text}
 **💡 Quick Start:**
 • `{COMMAND_PREFIX}help` - Show all commands
-• `{COMMAND_PREFIX}info` - Userbot information
+• `{COMMAND_PREFIX}info` - Vzoel Assistant information
 • `{COMMAND_PREFIX}plugins` - List plugins
 
 **🎯 Ready to receive commands!**
@@ -464,14 +464,14 @@ async def startup():
         logger.error("❌ Two-factor authentication enabled. Please login manually first.")
         return False
     except Exception as e:
-        logger.error(f"❌ Error starting userbot: {e}")
+        logger.error(f"❌ Error starting Vzoel Assistant: {e}")
         return False
     
     return True
 
 async def main():
     """Enhanced main function"""
-    logger.info("🔄 Initializing enhanced userbot...")
+    logger.info("🔄 Initializing enhanced Vzoel Assistant...")
     
     # Validate configuration
     logger.info("🔍 Validating configuration...")
@@ -480,23 +480,23 @@ async def main():
     logger.info(f"⚡ Prefix: {COMMAND_PREFIX}")
     logger.info(f"🆔 Owner ID: {OWNER_ID or 'Auto-detect'}")
     
-    # Start userbot
+    # Start Vzoel Assistant
     if await startup():
-        logger.info("🔄 Enhanced userbot is now running...")
+        logger.info("🔄 Enhanced Vzoel Assistant is now running...")
         logger.info("📝 Press Ctrl+C to stop")
         
         try:
             await client.run_until_disconnected()
         except KeyboardInterrupt:
-            logger.info("👋 Userbot stopped by user")
+            logger.info("👋 Vzoel Assistant stopped by user")
         except Exception as e:
             logger.error(f"❌ Unexpected error: {e}")
         finally:
             logger.info("🔄 Disconnecting...")
             await client.disconnect()
-            logger.info("✅ Enhanced userbot stopped successfully!")
+            logger.info("✅ Enhanced Vzoel Assistant stopped successfully!")
     else:
-        logger.error("❌ Failed to start enhanced userbot!")
+        logger.error("❌ Failed to start enhanced Vzoel Assistant!")
 
 if __name__ == "__main__":
     try:
