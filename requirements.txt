@@ -1,0 +1,36 @@
+# Core dependencies
+telethon>=1.35.0
+python-dotenv>=1.0.0
+
+# Performance improvements
+cryptg>=0.4.0
+hachoir>=3.2.0
+
+# File handling
+aiofiles>=23.0.0
+pillow>=10.0.0
+
+# Database (for advanced features)
+sqlalchemy>=2.0.0
+aiosqlite>=0.19.0
+
+# HTTP requests
+aiohttp>=3.9.0
+requests>=2.31.0
+
+# Utilities
+python-dateutil>=2.8.0
+pytz>=2023.3
+colorama>=0.4.6
+
+# Media processing
+yt-dlp>=2023.12.30
+ffmpeg-python>=0.2.0
+
+# Optional: For web interface
+flask>=2.3.0
+gunicorn>=21.2.0
+
+# Development tools (optional)
+black>=23.0.0
+flake8>=6.0.0
