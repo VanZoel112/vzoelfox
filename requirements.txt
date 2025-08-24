@@ -34,3 +34,6 @@ gunicorn>=21.2.0
 # Development tools (optional)
 black>=23.0.0
 flake8>=6.0.0
+
+# System monitoring (for enhanced alive command)
+psutil>=5.9.0
