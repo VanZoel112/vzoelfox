@@ -1,279 +1,324 @@
 #!/usr/bin/env python3
 """
-Enhanced Vzoel Asistant Plugin System Core
-Handles plugin loading, management, and utilities for plugins folder
+Enhanced Vzoel Assistant Plugin System Core
+Handles plugin loading, management, and utilities with improved folder support
 """
 
 import os
 import sys
-import json
-import random
+import glob
+import importlib
+import importlib.util
 import logging
 from pathlib import Path
-from typing import Dict, List, Any, Optional
+from typing import List, Dict, Any
 
-# Add parent directory to path for importing main modules
+# Add current directory to Python path
 current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
+sys.path.insert(0, current_dir)
 
-try:
-    from config import COMMAND_PREFIX, OWNER_ID
-except ImportError:
-    # Fallback values
-    COMMAND_PREFIX = "."
-    OWNER_ID = None
+# Add plugins directory to Python path
+plugins_dir = os.path.join(current_dir, "plugins")
+if os.path.exists(plugins_dir):
+    sys.path.insert(0, plugins_dir)
+
+from config import *
 
 logger = logging.getLogger(__name__)
 
-# ============= CUSTOM WORD REPLACER SYSTEM =============
-
-class CustomWordReplacer:
-    """Advanced word replacement system for plugins"""
+# ============= PLUGIN MANAGER =============
+class PluginManager:
+    """Advanced plugin management system with enhanced folder support"""
     
     def __init__(self):
-        self.words_file = os.path.join(parent_dir, "data", "custom_words.json")
-        self.custom_words = self.load_words()
-        self.replacement_history = []
-        
-    def load_words(self) -> Dict[str, Any]:
-        """Load custom words from JSON file"""
-        # Default words untuk gcast dan commands lain
-        default_words = {
-            # Greeting variations
-            "hello": ["hai bos", "halo gan", "selamat datang", "apa kabar"],
-            "hi": ["hai", "halo", "hey", "woy"],
-            "good morning": ["selamat pagi", "pagi bos", "morning gan"],
-            "good night": ["selamat malam", "malam bos", "oyasumi"],
-            
-            # Common responses
-            "thanks": ["makasih", "terima kasih", "thx gan", "thanks bro"],
-            "sorry": ["maaf", "sorry gan", "my bad", "sori"],
-            "yes": ["iya", "yep", "betul", "bener"],
-            "no": ["tidak", "nope", "engga", "ga"],
-            
-            # Gcast specific
-            "info": ["informasi", "kabar", "update", "berita"],
-            "update": ["kabar terbaru", "info terkini", "update-an", "berita baru"],
-            "group": ["grup", "gc", "grub", "komunitas"],
-            "admin": ["admin", "mimin", "pengelola", "moderator"],
-            
-            # Casual words
-            "cool": ["keren", "mantap", "bagus", "oke"],
-            "nice": ["bagus", "keren", "mantap", "oke banget"],
-            "awesome": ["keren banget", "mantap jiwa", "luar biasa", "incredible"],
-            "please": ["tolong", "mohon", "please", "minta"],
-            
-            # Time expressions
-            "now": ["sekarang", "saat ini", "skrg", "now"],
-            "today": ["hari ini", "today", "skrg", "saat ini"],
-            "tomorrow": ["besok", "tomorrow", "esok hari"],
-            
-            # Action words
-            "join": ["gabung", "ikut", "masuk", "join"],
-            "leave": ["keluar", "pergi", "cabut", "leave"],
-            "help": ["bantuan", "tolong", "help", "bantu"],
-            "check": ["cek", "lihat", "periksa", "check"]
-        }
-        
-        if os.path.exists(self.words_file):
-            try:
-                with open(self.words_file, 'r', encoding='utf-8') as f:
-                    loaded = json.load(f)
-                    # Merge with defaults
-                    default_words.update(loaded)
-                    return default_words
-            except Exception as e:
-                logger.error(f"Error loading custom words: {e}")
-        
-        # Create data directory if not exists
-        os.makedirs(os.path.dirname(self.words_file), exist_ok=True)
-        self.save_words(default_words)
-        return default_words
+        self.loaded_plugins = {}
+        self.plugin_commands = {}
+        self.plugin_info = {}
+        self.plugins_dir = os.path.join(os.path.dirname(__file__), "plugins")
     
-    def save_words(self, words: Dict[str, Any] = None):
-        """Save custom words to JSON file"""
-        try:
-            words_to_save = words or self.custom_words
-            os.makedirs(os.path.dirname(self.words_file), exist_ok=True)
-            with open(self.words_file, 'w', encoding='utf-8') as f:
-                json.dump(words_to_save, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            logger.error(f"Error saving custom words: {e}")
+    def ensure_plugins_directory(self):
+        """Create plugins directory if it doesn't exist"""
+        if not os.path.exists(self.plugins_dir):
+            os.makedirs(self.plugins_dir, exist_ok=True)
+            logger.info(f"Created plugins directory: {self.plugins_dir}")
+            
+            # Create __init__.py in plugins directory
+            init_file = os.path.join(self.plugins_dir, "__init__.py")
+            if not os.path.exists(init_file):
+                with open(init_file, 'w', encoding='utf-8') as f:
+                    f.write('"""Vzoel Assistant Plugins Directory"""\n')
+                logger.info(f"Created __init__.py in plugins directory")
     
-    def process_text(self, text: str, context: str = "general", intensity: float = 0.7) -> str:
-        """
-        Process text dengan word replacement
-        intensity: 0.0-1.0, seberapa sering replace (0.7 = 70% chance)
-        """
-        if not text or not isinstance(text, str):
-            return text
+    def discover_plugins(self, directory: str = ".") -> List[Dict[str, str]]:
+        """Discover all Python plugin files with enhanced folder support"""
+        plugin_files = []
         
-        result = text
-        replacements_made = []
+        # Files to skip
+        skip_files = ['main.py', 'config.py', '__init__.py']
         
-        # Process each word in custom_words
-        for original, replacements in self.custom_words.items():
-            # Check if word exists in text (case insensitive)
-            if original.lower() in result.lower():
-                # Apply intensity filter
-                if random.random() <= intensity:
-                    if isinstance(replacements, list):
-                        replacement = random.choice(replacements)
-                    else:
-                        replacement = replacements
+        # Check current directory for plugins
+        current_dir_files = glob.glob(os.path.join(directory, "*.py"))
+        for file in current_dir_files:
+            filename = os.path.basename(file)
+            if filename not in skip_files:
+                plugin_files.append({
+                    'path': file,
+                    'name': Path(file).stem,
+                    'location': 'root',
+                    'relative_path': filename
+                })
+        
+        # Check plugins directory
+        self.ensure_plugins_directory()
+        
+        if os.path.exists(self.plugins_dir):
+            plugins_dir_files = glob.glob(os.path.join(self.plugins_dir, "*.py"))
+            for file in plugins_dir_files:
+                filename = os.path.basename(file)
+                if filename != '__init__.py':
+                    plugin_files.append({
+                        'path': file,
+                        'name': Path(file).stem,
+                        'location': 'plugins',
+                        'relative_path': os.path.join('plugins', filename)
+                    })
+            
+            # Also check for subdirectories in plugins folder
+            for subdir in glob.glob(os.path.join(self.plugins_dir, "*/")):
+                if os.path.isdir(subdir):
+                    subdir_name = os.path.basename(subdir.rstrip('/'))
+                    subdir_files = glob.glob(os.path.join(subdir, "*.py"))
                     
-                    # Replace with case preservation attempt
-                    pattern = original
-                    if original.lower() in result.lower():
-                        # Find actual case in text
-                        import re
-                        match = re.search(re.escape(original), result, re.IGNORECASE)
-                        if match:
-                            original_word = match.group()
-                            result = result.replace(original_word, replacement, 1)
-                            replacements_made.append(f"{original_word} → {replacement}")
+                    for file in subdir_files:
+                        filename = os.path.basename(file)
+                        if filename != '__init__.py':
+                            plugin_files.append({
+                                'path': file,
+                                'name': f"{subdir_name}_{Path(file).stem}",
+                                'location': f'plugins/{subdir_name}',
+                                'relative_path': os.path.join('plugins', subdir_name, filename)
+                            })
         
-        # Log replacements for debugging
-        if replacements_made and logger.isEnabledFor(logging.DEBUG):
-            logger.debug(f"Word replacements in {context}: {replacements_made}")
+        logger.info(f"Discovered {len(plugin_files)} plugin files")
+        for plugin in plugin_files:
+            logger.debug(f"Found plugin: {plugin['name']} at {plugin['location']}")
         
-        return result
+        return plugin_files
     
-    def add_word(self, original: str, replacement: str) -> bool:
-        """Add or update custom word"""
+    def load_plugin(self, plugin_info: Dict[str, str]) -> bool:
+        """Load single plugin file with enhanced error handling"""
+        file_path = plugin_info['path']
+        plugin_name = plugin_info['name']
+        location = plugin_info['location']
+        
         try:
-            original = original.lower().strip()
-            replacement = replacement.strip()
-            
-            if original in self.custom_words:
-                if isinstance(self.custom_words[original], list):
-                    if replacement not in self.custom_words[original]:
-                        self.custom_words[original].append(replacement)
-                else:
-                    # Convert single value to list
-                    existing = self.custom_words[original]
-                    self.custom_words[original] = [existing, replacement]
+            # Add plugin directory to sys.path temporarily if needed
+            plugin_dir = os.path.dirname(file_path)
+            if plugin_dir not in sys.path:
+                sys.path.insert(0, plugin_dir)
+                temp_path_added = True
             else:
-                self.custom_words[original] = [replacement]
+                temp_path_added = False
             
-            self.save_words()
+            # Create module spec
+            spec = importlib.util.spec_from_file_location(plugin_name, file_path)
+            if not spec or not spec.loader:
+                logger.error(f"Cannot create spec for {plugin_name}")
+                return False
+            
+            # Load module
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            
+            # Store plugin info
+            self.loaded_plugins[plugin_name] = {
+                'module': module,
+                'file_path': file_path,
+                'location': location,
+                'relative_path': plugin_info['relative_path'],
+                'handlers': 0,
+                'commands': []
+            }
+            
+            # Count event handlers and extract commands
+            handlers_count = 0
+            commands = []
+            
+            for attr_name in dir(module):
+                attr = getattr(module, attr_name)
+                if hasattr(attr, '_telethon_event'):
+                    handlers_count += 1
+                    
+                    # Try to extract command from pattern
+                    if hasattr(attr, '_telethon_event') and hasattr(attr._telethon_event, 'pattern'):
+                        pattern = attr._telethon_event.pattern
+                        if pattern:
+                            command_str = pattern.pattern if hasattr(pattern, 'pattern') else str(pattern)
+                            commands.append(command_str)
+                
+                # Also check for _plugin_command attribute
+                if hasattr(attr, '_plugin_command'):
+                    commands.append(attr._plugin_command)
+            
+            self.loaded_plugins[plugin_name]['handlers'] = handlers_count
+            self.loaded_plugins[plugin_name]['commands'] = list(set(commands))  # Remove duplicates
+            
+            logger.info(f"✅ Plugin loaded: {plugin_name} from {location} ({handlers_count} handlers)")
+            
+            # Clean up temporary path
+            if temp_path_added:
+                sys.path.remove(plugin_dir)
+            
             return True
+            
         except Exception as e:
-            logger.error(f"Error adding word: {e}")
+            logger.error(f"❌ Failed to load plugin {plugin_name} from {location}: {e}")
+            # Clean up on error
+            if plugin_name in self.loaded_plugins:
+                del self.loaded_plugins[plugin_name]
             return False
     
-    def remove_word(self, original: str) -> bool:
-        """Remove custom word completely"""
-        try:
-            original = original.lower().strip()
-            if original in self.custom_words:
-                del self.custom_words[original]
-                self.save_words()
-                return True
-            return False
-        except Exception as e:
-            logger.error(f"Error removing word: {e}")
-            return False
-    
-    def remove_replacement(self, original: str, replacement: str) -> bool:
-        """Remove specific replacement for a word"""
-        try:
-            original = original.lower().strip()
-            if original in self.custom_words:
-                replacements = self.custom_words[original]
-                if isinstance(replacements, list):
-                    if replacement in replacements:
-                        replacements.remove(replacement)
-                        if len(replacements) == 1:
-                            self.custom_words[original] = replacements[0]
-                        elif len(replacements) == 0:
-                            del self.custom_words[original]
-                        self.save_words()
-                        return True
-                elif replacements == replacement:
-                    del self.custom_words[original]
-                    self.save_words()
-                    return True
-            return False
-        except Exception as e:
-            logger.error(f"Error removing replacement: {e}")
-            return False
-    
-    def get_stats(self) -> Dict[str, Any]:
-        """Get word replacer statistics"""
-        total_words = len(self.custom_words)
-        total_replacements = sum(
-            len(v) if isinstance(v, list) else 1 
-            for v in self.custom_words.values()
-        )
-        
-        return {
-            "total_words": total_words,
-            "total_replacements": total_replacements,
-            "categories": {
-                "greetings": len([k for k in self.custom_words.keys() 
-                               if k in ["hello", "hi", "good morning", "good night"]]),
-                "responses": len([k for k in self.custom_words.keys() 
-                               if k in ["thanks", "sorry", "yes", "no"]]),
-                "actions": len([k for k in self.custom_words.keys() 
-                              if k in ["join", "leave", "help", "check"]])
+    def load_all_plugins(self, directory: str = ".") -> Dict[str, Any]:
+        """Load all discovered plugins with enhanced reporting"""
+        plugin_files = self.discover_plugins(directory)
+        results = {
+            'loaded': [],
+            'failed': [],
+            'total_handlers': 0,
+            'by_location': {
+                'root': [],
+                'plugins': [],
+                'subdirs': []
             }
         }
-
-# ============= PLUGIN DECORATORS & UTILITIES =============
-
-# Global word replacer instance
-word_replacer = CustomWordReplacer()
-
-def auto_replace(context: str = "general", intensity: float = 0.7):
-    """
-    Decorator untuk auto-replace text dalam response
+        
+        logger.info(f"🔍 Discovered {len(plugin_files)} plugin files")
+        
+        for plugin_info in plugin_files:
+            plugin_name = plugin_info['name']
+            location = plugin_info['location']
+            
+            if self.load_plugin(plugin_info):
+                results['loaded'].append(plugin_name)
+                results['total_handlers'] += self.loaded_plugins[plugin_name]['handlers']
+                
+                # Categorize by location
+                if location == 'root':
+                    results['by_location']['root'].append(plugin_name)
+                elif location == 'plugins':
+                    results['by_location']['plugins'].append(plugin_name)
+                else:
+                    results['by_location']['subdirs'].append(f"{plugin_name} ({location})")
+            else:
+                results['failed'].append(f"{plugin_name} ({location})")
+        
+        logger.info(f"✅ Loaded {len(results['loaded'])} plugins with {results['total_handlers']} handlers")
+        
+        # Log location statistics
+        if results['by_location']['root']:
+            logger.info(f"📁 Root directory: {len(results['by_location']['root'])} plugins")
+        if results['by_location']['plugins']:
+            logger.info(f"📂 Plugins directory: {len(results['by_location']['plugins'])} plugins")
+        if results['by_location']['subdirs']:
+            logger.info(f"📁 Subdirectories: {len(results['by_location']['subdirs'])} plugins")
+            
+        if results['failed']:
+            logger.warning(f"❌ Failed to load {len(results['failed'])} plugins: {results['failed']}")
+        
+        return results
     
-    Args:
-        context: Context untuk replacement (gcast, alive, etc)
-        intensity: Seberapa sering replace (0.0-1.0)
-    """
+    def get_plugin_info(self) -> Dict[str, Any]:
+        """Get detailed information about loaded plugins"""
+        return {
+            'count': len(self.loaded_plugins),
+            'plugins': self.loaded_plugins,
+            'total_handlers': sum(p['handlers'] for p in self.loaded_plugins.values()),
+            'by_location': self._group_plugins_by_location()
+        }
+    
+    def _group_plugins_by_location(self) -> Dict[str, List[str]]:
+        """Group plugins by their location"""
+        grouped = {'root': [], 'plugins': [], 'subdirs': []}
+        
+        for name, info in self.loaded_plugins.items():
+            location = info['location']
+            if location == 'root':
+                grouped['root'].append(name)
+            elif location == 'plugins':
+                grouped['plugins'].append(name)
+            else:
+                grouped['subdirs'].append(f"{name} ({location})")
+        
+        return grouped
+    
+    def reload_plugin(self, plugin_name: str) -> bool:
+        """Reload specific plugin"""
+        if plugin_name not in self.loaded_plugins:
+            logger.error(f"Plugin {plugin_name} not found")
+            return False
+        
+        plugin_info_dict = self.loaded_plugins[plugin_name]
+        file_path = plugin_info_dict['file_path']
+        location = plugin_info_dict['location']
+        relative_path = plugin_info_dict['relative_path']
+        
+        # Create plugin info dict for reload
+        plugin_info = {
+            'path': file_path,
+            'name': plugin_name,
+            'location': location,
+            'relative_path': relative_path
+        }
+        
+        # Remove old plugin
+        del self.loaded_plugins[plugin_name]
+        
+        # Reload plugin
+        return self.load_plugin(plugin_info)
+    
+    def get_plugin_by_location(self, location: str) -> List[str]:
+        """Get plugins by location (root, plugins, or subdir name)"""
+        result = []
+        for name, info in self.loaded_plugins.items():
+            if info['location'] == location:
+                result.append(name)
+        return result
+
+# ============= UTILITY FUNCTIONS =============
+def get_plugin_manager():
+    """Get global plugin manager instance"""
+    if not hasattr(get_plugin_manager, 'instance'):
+        get_plugin_manager.instance = PluginManager()
+    return get_plugin_manager.instance
+
+def cmd(pattern: str):
+    """Decorator untuk membuat command dengan prefix otomatis"""
+    if not pattern.startswith(COMMAND_PREFIX):
+        pattern = COMMAND_PREFIX + pattern
+    
     def decorator(func):
-        async def wrapper(*args, **kwargs):
-            result = await func(*args, **kwargs)
-            
-            if isinstance(result, str):
-                processed = word_replacer.process_text(result, context, intensity)
-                logger.debug(f"Auto-replace {context}: {result[:50]}... → {processed[:50]}...")
-                return processed
-            
-            return result
-        
-        # Preserve function attributes
-        wrapper.__name__ = func.__name__
-        wrapper.__doc__ = func.__doc__
-        if hasattr(func, '_telethon_event'):
-            wrapper._telethon_event = func._telethon_event
-        
-        return wrapper
+        # Store command info untuk help system
+        if not hasattr(func, '_plugin_command'):
+            func._plugin_command = pattern
+        return func
     return decorator
 
 def owner_only(func):
     """Decorator untuk command yang hanya bisa digunakan owner"""
     async def wrapper(event):
-        try:
-            # Import client from main
-            from main import client, is_owner
-            
-            if not await is_owner(event.sender_id):
-                return
-            
-            return await func(event)
-        except Exception as e:
-            logger.error(f"Error in owner_only decorator: {e}")
-            await event.reply(f"❌ Error: {str(e)}")
+        # Import here to avoid circular import
+        from main import is_owner
+        if not await is_owner(event.sender_id):
+            return
+        return await func(event)
     
-    # Preserve function attributes
+    # Copy function attributes
     wrapper.__name__ = func.__name__
     wrapper.__doc__ = func.__doc__
     if hasattr(func, '_telethon_event'):
         wrapper._telethon_event = func._telethon_event
+    if hasattr(func, '_plugin_command'):
+        wrapper._plugin_command = func._plugin_command
     
     return wrapper
 
@@ -281,92 +326,117 @@ def log_command_usage(func):
     """Decorator untuk log penggunaan command"""
     async def wrapper(event):
         try:
-            # Import from main
+            # Import here to avoid circular import  
             from main import log_command
-            
-            command_name = getattr(func, '__name__', 'unknown')
+            command_name = getattr(func, '_plugin_command', func.__name__)
             await log_command(event, command_name)
-        except Exception as e:
-            logger.debug(f"Logging error (non-critical): {e}")
+        except:
+            pass  # Ignore logging errors
         
         return await func(event)
     
-    # Preserve function attributes
+    # Copy function attributes
     wrapper.__name__ = func.__name__
     wrapper.__doc__ = func.__doc__
     if hasattr(func, '_telethon_event'):
         wrapper._telethon_event = func._telethon_event
-    
-    return wrapper
-
-def error_handler(func):
-    """Decorator untuk handle errors dalam plugin"""
-    async def wrapper(event):
-        try:
-            return await func(event)
-        except Exception as e:
-            logger.error(f"Error in {func.__name__}: {e}")
-            try:
-                await event.reply(f"❌ Error in {func.__name__}: {str(e)}")
-            except:
-                pass  # Ignore if can't send error message
-    
-    # Preserve function attributes
-    wrapper.__name__ = func.__name__
-    wrapper.__doc__ = func.__doc__
-    if hasattr(func, '_telethon_event'):
-        wrapper._telethon_event = func._telethon_event
+    if hasattr(func, '_plugin_command'):
+        wrapper._plugin_command = func._plugin_command
     
     return wrapper
 
 # ============= HELPER FUNCTIONS =============
-
-def get_word_replacer() -> CustomWordReplacer:
-    """Get global word replacer instance"""
-    return word_replacer
-
-def create_plugin_template(plugin_name: str) -> str:
-    """Create a plugin template"""
+def create_plugin_template(plugin_name: str, save_to: str = None, in_plugins_dir: bool = True) -> str:
+    """Create a plugin template file with option to save in plugins directory"""
     template = f'''#!/usr/bin/env python3
 """
-{plugin_name.title()} Plugin for Enhanced Userbot
-Created with plugin template generator
+{plugin_name.title()} Plugin for Enhanced Vzoel Assistant
+Auto-generated template
 """
 
-import asyncio
 from telethon import events
-from plugins import COMMAND_PREFIX, owner_only, log_command_usage, error_handler, auto_replace
+from config import COMMAND_PREFIX
+from __init__ import owner_only, log_command_usage
 
 @events.register(events.NewMessage(pattern=rf'{{COMMAND_PREFIX}}{plugin_name}'))
 @owner_only
 @log_command_usage
-@error_handler
-@auto_replace(context="{plugin_name}", intensity=0.7)
 async def {plugin_name}_handler(event):
     """{plugin_name.title()} command"""
-    
-    # Your plugin logic here
-    response = f"🎉 {plugin_name.title()} plugin is working!"
-    
-    await event.edit(response)
+    await event.reply(f"🎉 {plugin_name.title()} plugin is working!")
 
-# Additional functions can be added here
+# Optional: Add more functions here
 '''
+    
+    if save_to:
+        # Default to plugins directory if in_plugins_dir is True
+        if in_plugins_dir:
+            pm = get_plugin_manager()
+            pm.ensure_plugins_directory()
+            file_path = os.path.join(pm.plugins_dir, f"{plugin_name}.py")
+        else:
+            file_path = os.path.join(save_to, f"{plugin_name}.py")
+        
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(template)
+        logger.info(f"✅ Plugin template created: {file_path}")
+    
     return template
 
-# ============= EXPORTS =============
+def list_plugins_structure():
+    """Show the structure of plugins directory"""
+    pm = get_plugin_manager()
+    pm.ensure_plugins_directory()
+    
+    structure = []
+    structure.append("📁 Vzoel Assistant Plugin Structure:")
+    structure.append("├── main.py")
+    structure.append("├── config.py")
+    structure.append("├── __init__.py")
+    structure.append("├── *.py (root level plugins)")
+    structure.append("└── plugins/")
+    structure.append("    ├── __init__.py")
+    structure.append("    ├── *.py (plugin files)")
+    structure.append("    └── subdirectories/")
+    structure.append("        └── *.py (organized plugins)")
+    
+    return "\n".join(structure)
 
+# ============= VERSION INFO =============
+__version__ = "2.1.0"
+__author__ = "Enhanced Vzoel Assistant"
+__description__ = "Advanced plugin system with enhanced folder support for Telegram Vzoel Assistant"
+
+# ============= EXPORTS =============
 __all__ = [
-    'CustomWordReplacer',
-    'word_replacer',
-    'auto_replace',
-    'owner_only', 
+    'PluginManager',
+    'get_plugin_manager', 
+    'cmd',
+    'owner_only',
     'log_command_usage',
-    'error_handler',
-    'get_word_replacer',
     'create_plugin_template',
+    'list_plugins_structure',
     'COMMAND_PREFIX',
-    'OWNER_ID'
+    'OWNER_ID',
+    'SESSION_NAME'
 ]
 
-logger.info("🔌 Plugin system core loaded successfully")
+# ============= AUTO-INITIALIZATION =============
+if __name__ == "__main__":
+    print("🔌 Enhanced Vzoel Assistant Plugin System")
+    print(f"📋 Version: {__version__}")
+    print("🔧 Initializing plugin manager...")
+    
+    pm = get_plugin_manager()
+    results = pm.load_all_plugins()
+    
+    print(f"✅ Plugin system ready!")
+    print(f"📊 Loaded: {len(results['loaded'])} plugins")
+    print(f"🎯 Total handlers: {results['total_handlers']}")
+    
+    if results['by_location']['root']:
+        print(f"📁 Root: {len(results['by_location']['root'])} plugins")
+    if results['by_location']['plugins']:
+        print(f"📂 Plugins dir: {len(results['by_location']['plugins'])} plugins")
+    if results['by_location']['subdirs']:
+        print(f"📁 Subdirs: {len(results['by_location']['subdirs'])} plugins")
