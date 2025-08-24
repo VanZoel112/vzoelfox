@@ -414,4 +414,190 @@ async def chatlist_handler(event):
     # Import client
     from main import client
     
-    msg = await event
+    msg = await event.edit("🔄 Getting chat list...")
+    
+    try:
+        dialogs = await get_dialogs_for_gcast(client)
+        
+        if not dialogs:
+            await msg.edit("❌ No chats available for gcast!")
+            return
+        
+        # Group by type
+        groups = [d for d in dialogs if d['type'] == 'group']
+        channels = [d for d in dialogs if d['type'] == 'channel']
+        
+        # Create list (show first 20 to avoid message limit)
+        chat_text = f"📋 **Available Chats ({len(dialogs)} total):**\n\n"
+        
+        if groups:
+            chat_text += f"**👥 Groups ({len(groups)}):**\n"
+            for i, group in enumerate(groups[:10], 1):
+                status = "🚫" if group['id'] in gcast_config.blacklisted_chats else "✅"
+                chat_text += f"{i}. {status} `{group['id']}` - {group['title'][:30]}...\n"
+            
+            if len(groups) > 10:
+                chat_text += f"... and {len(groups)-10} more groups\n"
+        
+        if channels:
+            chat_text += f"\n**📢 Channels ({len(channels)}):**\n"
+            for i, channel in enumerate(channels[:10], 1):
+                status = "🚫" if channel['id'] in gcast_config.blacklisted_chats else "✅"
+                chat_text += f"{i}. {status} `{channel['id']}` - {channel['title'][:30]}...\n"
+            
+            if len(channels) > 10:
+                chat_text += f"... and {len(channels)-10} more channels\n"
+        
+        chat_text += f"\n**Legend:**\n✅ = Available for gcast\n🚫 = Blacklisted"
+        
+        if len(dialogs) > 20:
+            chat_text += f"\n\n💡 Showing first 20 chats only. Total: {len(dialogs)}"
+        
+        await msg.edit(chat_text)
+        
+    except Exception as e:
+        await msg.edit(f"❌ Error getting chat list: {str(e)}")
+
+# ============= WORD MANAGEMENT COMMANDS =============
+
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}addword (.+?)\\|(.+)'))
+@owner_only
+@log_command_usage
+@error_handler
+async def addword_handler(event):
+    """Add custom word replacement"""
+    
+    original = event.pattern_match.group(1).strip()
+    replacement = event.pattern_match.group(2).strip()
+    
+    if not original or not replacement:
+        await event.edit(f"❌ Format: `{COMMAND_PREFIX}addword original|replacement`")
+        return
+    
+    if word_replacer.add_word(original, replacement):
+        await event.edit(f"✅ **Word added:**\n`{original}` → `{replacement}`")
+    else:
+        await event.edit("❌ Failed to add word!")
+
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}removeword (.+)'))
+@owner_only
+@log_command_usage
+@error_handler
+async def removeword_handler(event):
+    """Remove custom word completely"""
+    
+    word = event.pattern_match.group(1).strip()
+    
+    if word_replacer.remove_word(word):
+        await event.edit(f"✅ **Word removed:** `{word}`")
+    else:
+        await event.edit(f"❌ Word `{word}` not found!")
+
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}listwords'))
+@owner_only
+@log_command_usage
+@error_handler
+async def listwords_handler(event):
+    """List all custom words"""
+    
+    words = word_replacer.custom_words
+    
+    if not words:
+        await event.edit("❌ No custom words found!")
+        return
+    
+    # Get stats
+    stats = word_replacer.get_stats()
+    
+    # Create word list (first 20 to avoid message limit)
+    word_items = list(words.items())
+    word_text = f"📝 **Custom Words ({stats['total_words']} total):**\n\n"
+    
+    for i, (original, replacements) in enumerate(word_items[:20], 1):
+        if isinstance(replacements, list):
+            replacement_text = ", ".join([f"`{r}`" for r in replacements[:3]])
+            if len(replacements) > 3:
+                replacement_text += f" +{len(replacements)-3} more"
+        else:
+            replacement_text = f"`{replacements}`"
+        
+        word_text += f"{i}. **{original}** → {replacement_text}\n"
+    
+    if len(word_items) > 20:
+        word_text += f"\n... and {len(word_items)-20} more words"
+    
+    word_text += f"""
+    
+📊 **Statistics:**
+• Total words: `{stats['total_words']}`
+• Total replacements: `{stats['total_replacements']}`
+• Categories: {stats['categories']}
+
+💡 **Commands:**
+• `{COMMAND_PREFIX}addword word|replacement` - Add word
+• `{COMMAND_PREFIX}removeword word` - Remove word
+• `{COMMAND_PREFIX}gtest message` - Test replacement
+    """.strip()
+    
+    await event.edit(word_text)
+
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}wordstats'))
+@owner_only
+@log_command_usage
+@error_handler
+async def wordstats_handler(event):
+    """Show detailed word replacement statistics"""
+    
+    stats = word_replacer.get_stats()
+    
+    # Calculate additional stats
+    words = word_replacer.custom_words
+    multi_replacement_words = sum(1 for v in words.values() if isinstance(v, list) and len(v) > 1)
+    avg_replacements = stats['total_replacements'] / stats['total_words'] if stats['total_words'] > 0 else 0
+    
+    stats_text = f"""
+📊 **Word Replacement Statistics:**
+
+**📈 Overview:**
+• Total words: `{stats['total_words']}`
+• Total replacements: `{stats['total_replacements']}`
+• Words with multiple options: `{multi_replacement_words}`
+• Average replacements per word: `{avg_replacements:.1f}`
+
+**🎯 Categories:**
+• Greetings: `{stats['categories']['greetings']}`
+• Responses: `{stats['categories']['responses']}`  
+• Actions: `{stats['categories']['actions']}`
+• Others: `{stats['total_words'] - sum(stats['categories'].values())}`
+
+**⚡ Current Settings:**
+• Gcast intensity: `{int(gcast_config.replacement_intensity*100)}%`
+• Storage: `{len(str(words))} bytes`
+
+**💡 Performance:**
+• Words loaded: `{stats['total_words'] > 0 and "✅" or "❌"}`
+• Ready for gcast: `{"✅" if stats['total_words'] > 0 else "❌"}`
+    """.strip()
+    
+    await event.edit(stats_text)
+
+# ============= ADVANCED GCAST FEATURES =============
+
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}gcastto (.+?) (.+)'))
+@owner_only
+@log_command_usage
+@error_handler
+async def gcastto_handler(event):
+    """Send gcast to specific chat types"""
+    
+    target_type = event.pattern_match.group(1).strip().lower()
+    message = event.pattern_match.group(2).strip()
+    
+    if target_type not in ['groups', 'channels', 'all']:
+        await event.edit(f"❌ Invalid type! Use: `groups`, `channels`, or `all`")
+        return
+    
+    # Import client
+    from main import client
+    
+    msg = a
