@@ -1,0 +1,87 @@
+# ============= CREDENTIALS & SENSITIVE DATA =============
+# JANGAN PERNAH COMMIT FILE INI!
+.env
+*.session
+*.session-journal
+config.py
+secrets.py
+credentials.json
+*.key
+*.pem
+
+# ============= USERBOT SPECIFIC =============
+userbot_session.session*
+userbot.log*
+*.db
+*.sqlite
+*.sqlite3
+downloads/
+temp/
+logs/
+
+# ============= PYTHON =============
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ============= VIRTUAL ENVIRONMENTS =============
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+telethon_env/
+
+# ============= IDE SETTINGS =============
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============= OS GENERATED =============
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ============= CLOUD DEPLOYMENT =============
+.heroku/
+.vercel/
+.netlify/
+
+# ============= BACKUP FILES =============
+*.bak
+*.backup
+*.old
+*.orig
+
+# ============= MEDIA CACHE =============
+media/
+cache/
+thumbnails/
+profile_photos/
