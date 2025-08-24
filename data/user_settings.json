@@ -1,0 +1,241 @@
+{
+  "gcast": {
+    "enabled": true,
+    "delay_min": 2,
+    "delay_max": 5,
+    "batch_size": 10,
+    "batch_delay": 30,
+    "replacement_intensity": 0.8,
+    "max_retries": 3,
+    "flood_protection": true,
+    "skip_private_chats": true,
+    "skip_channels": false,
+    "auto_blacklist_on_error": true,
+    "error_threshold": 5,
+    "cooldown_period": 300,
+    "allowed_chat_types": ["groups", "channels"],
+    "max_message_length": 4096,
+    "preserve_formatting": true,
+    "add_timestamp": false,
+    "default_target": "all"
+  },
+  "word_replacer": {
+    "enabled": true,
+    "case_sensitive": false,
+    "preserve_formatting": true,
+    "whole_words_only": false,
+    "max_replacements_per_message": 10,
+    "replacement_contexts": {
+      "gcast": {
+        "enabled": true,
+        "intensity": 0.8
+      },
+      "alive": {
+        "enabled": true,
+        "intensity": 0.6
+      },
+      "auto_reply": {
+        "enabled": false,
+        "intensity": 0.5
+      },
+      "general": {
+        "enabled": true,
+        "intensity": 0.7
+      }
+    },
+    "smart_replacement": {
+      "avoid_repetition": true,
+      "context_awareness": true,
+      "learning_mode": false
+    },
+    "backup_original": true,
+    "log_replacements": false
+  },
+  "notifications": {
+    "gcast_start": true,
+    "gcast_complete": true,
+    "gcast_errors": true,
+    "word_replacement_stats": false,
+    "daily_summary": false,
+    "error_alerts": true,
+    "success_milestones": true,
+    "blacklist_updates": true,
+    "notification_chat": "me",
+    "notification_format": "detailed",
+    "quiet_hours": {
+      "enabled": false,
+      "start_time": "23:00",
+      "end_time": "07:00"
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "max_file_size": "10MB",
+    "backup_count": 5,
+    "log_gcast_details": true,
+    "log_word_replacements": false,
+    "log_errors": true,
+    "log_commands": true,
+    "compress_old_logs": true,
+    "auto_cleanup_days": 30,
+    "separate_error_log": true,
+    "debug_mode": false
+  },
+  "security": {
+    "owner_only_commands": true,
+    "command_cooldown": 1,
+    "max_command_rate": 30,
+    "flood_protection": true,
+    "auto_ban_threshold": 10,
+    "session_protection": true,
+    "secure_file_permissions": true,
+    "encrypt_sensitive_data": false,
+    "allowed_user_ids": [],
+    "blocked_user_ids": []
+  },
+  "performance": {
+    "async_processing": true,
+    "concurrent_limit": 5,
+    "memory_optimization": true,
+    "cache_word_replacements": true,
+    "cache_size_limit": 1000,
+    "auto_restart": false,
+    "restart_interval_hours": 24,
+    "cleanup_interval_minutes": 60,
+    "optimize_database": true,
+    "preload_common_words": true
+  },
+  "backup": {
+    "auto_backup": true,
+    "backup_interval_hours": 6,
+    "max_backups": 10,
+    "backup_custom_words": true,
+    "backup_settings": true,
+    "backup_stats": true,
+    "backup_blacklist": true,
+    "compress_backups": true,
+    "cloud_backup": false,
+    "cloud_provider": "",
+    "cloud_credentials": {}
+  },
+  "features": {
+    "gcast": {
+      "enabled": true,
+      "advanced_targeting": true,
+      "smart_scheduling": false,
+      "template_system": false,
+      "analytics": true
+    },
+    "word_replacer": {
+      "enabled": true,
+      "smart_learning": false,
+      "context_detection": true,
+      "custom_rules": false
+    },
+    "auto_reply": {
+      "enabled": false,
+      "keywords": [],
+      "responses": [],
+      "delay_range": [1, 3]
+    },
+    "spam_protection": {
+      "enabled": true,
+      "max_messages_per_minute": 20,
+      "auto_detection": true
+    },
+    "analytics": {
+      "enabled": true,
+      "track_usage": true,
+      "track_performance": true,
+      "export_data": false
+    }
+  },
+  "customization": {
+    "command_prefix": ".",
+    "response_language": "mixed",
+    "timezone": "Asia/Jakarta",
+    "date_format": "%Y-%m-%d %H:%M:%S",
+    "number_format": "id_ID",
+    "custom_themes": {
+      "success_emoji": "✅",
+      "error_emoji": "❌", 
+      "info_emoji": "ℹ️",
+      "warning_emoji": "⚠️",
+      "loading_emoji": "🔄"
+    },
+    "message_templates": {
+      "gcast_start": "🚀 **Starting gcast...**\n📊 Target chats: `{chat_count}`",
+      "gcast_complete": "🎯 **Gcast completed!**\n✅ Sent: `{sent}`\n❌ Failed: `{failed}`",
+      "word_replacement": "🔤 Replaced `{count}` words in message"
+    }
+  },
+  "advanced": {
+    "debug_mode": false,
+    "experimental_features": false,
+    "beta_testing": false,
+    "telemetry": false,
+    "crash_reporting": true,
+    "performance_monitoring": true,
+    "memory_profiling": false,
+    "api_rate_limiting": true,
+    "smart_error_recovery": true,
+    "adaptive_delays": true
+  },
+  "metadata": {
+    "version": "2.0.0",
+    "created": "2025-01-24T12:00:00Z",
+    "last_updated": "2025-01-24T12:00:00Z",
+    "updated_by": "system",
+    "config_format": "json",
+    "schema_version": "2.0",
+    "migration_needed": false,
+    "backup_before_update": true,
+    "settings_hash": "",
+    "total_customizations": 0,
+    "last_backup": null,
+    "next_cleanup": null
+  },
+  "profiles": {
+    "active_profile": "default",
+    "available_profiles": {
+      "default": {
+        "name": "Default Profile",
+        "description": "Standard userbot configuration",
+        "gcast_intensity": 0.8,
+        "word_replacement": true,
+        "notifications": true
+      },
+      "stealth": {
+        "name": "Stealth Mode",
+        "description": "Low-key operation with minimal traces",
+        "gcast_intensity": 0.3,
+        "word_replacement": false,
+        "notifications": false,
+        "delays": [5, 10]
+      },
+      "aggressive": {
+        "name": "Aggressive Mode", 
+        "description": "Fast operation with maximum features",
+        "gcast_intensity": 1.0,
+        "word_replacement": true,
+        "notifications": true,
+        "delays": [1, 2]
+      }
+    },
+    "profile_switching": {
+      "enabled": false,
+      "auto_switch": false,
+      "schedule": {}
+    }
+  },
+  "integration": {
+    "webhook_url": "",
+    "api_endpoints": {},
+    "external_services": {},
+    "database_connection": "",
+    "redis_connection": "",
+    "monitoring_services": [],
+    "third_party_plugins": [],
+    "custom_modules": []
+  }
+  }
