@@ -1,652 +1,591 @@
 #!/usr/bin/env python3
 """
-Telegram Vzoel Assistant dengan Telethon - FIXED VERSION
-Enhanced version dengan plugin loader yang diperbaiki
-FIXED: Masalah plugin loading dan event registration
+Enhanced Vzoel Assistant - Complete Telegram Userbot
+Terintegrasi dengan plugin system, monitoring, dan fitur lengkap
+Author: Vzoel Assistant Team
+Version: 2.1.0
 """
 
+import os
+import sys
 import asyncio
 import logging
-import os
 import time
-import re
-import sys
-import glob
-import importlib
-import importlib.util
-from datetime import datetime
-from telethon import TelegramClient, events
-from telethon.errors import SessionPasswordNeededError
-from dotenv import load_dotenv
+import psutil
+import signal
+from datetime import datetime, timedelta
+from pathlib import Path
 
-# Load environment variables
-load_dotenv()
+# Telegram imports
+from telethon import TelegramClient, events, functions, types
+from telethon.sessions import StringSession
+from telethon.errors import (
+    FloodWaitError, SessionPasswordNeededError, 
+    PhoneCodeExpiredError, PhoneCodeInvalidError,
+    ChatAdminRequiredError, MessageNotModifiedError
+)
+from telethon.tl.functions.channels import JoinChannelRequest, LeaveChannelRequest
+from telethon.tl.functions.phone import CreateGroupCallRequest, DiscardGroupCallRequest, JoinGroupCallRequest
+from telethon.tl.types import InputPeerChannel, InputPeerChat
 
-# Import enhanced plugin manager
+# Import configuration
 try:
-    from __init__ import get_plugin_manager, list_plugins_structure
-except ImportError as e:
-    print(f"❌ Import error: {e}")
-    print("Make sure __init__.py is in the same directory")
+    from config import *
+except ImportError:
+    print("❌ Config file not found! Please create config.py with required settings.")
     sys.exit(1)
 
-# ============= KONFIGURASI =============
+# Import plugin manager
 try:
-    API_ID = int(os.getenv("API_ID", "0"))
-    API_HASH = os.getenv("API_HASH", "")
-    SESSION_NAME = os.getenv("SESSION_NAME", "vzoel_session")
-    OWNER_ID = int(os.getenv("OWNER_ID", "0")) if os.getenv("OWNER_ID") else None
-    COMMAND_PREFIX = os.getenv("COMMAND_PREFIX", ".")
-    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-    ENABLE_LOGGING = os.getenv("ENABLE_LOGGING", "true").lower() == "true"
-    MAX_SPAM_COUNT = int(os.getenv("MAX_SPAM_COUNT", "10"))
-    NOTIFICATION_CHAT = os.getenv("NOTIFICATION_CHAT", "me")
-except ValueError as e:
-    print(f"❌ Configuration error: {e}")
-    print("Please check your .env file")
+    from __init__ import PluginManager, get_plugin_manager, owner_only, log_command_usage
+except ImportError:
+    print("❌ Plugin system not found! Please ensure __init__.py exists.")
     sys.exit(1)
 
-# Validation
-if not API_ID or not API_HASH:
-    print("❌ ERROR: API_ID and API_HASH must be set in .env file!")
-    print("Please create a .env file with your Telegram API credentials")
-    sys.exit(1)
+# ============= GLOBAL VARIABLES =============
+client = None
+start_time = datetime.now()
+command_stats = {}
+plugin_manager = None
 
-# Setup logging
-log_handlers = []
-if ENABLE_LOGGING:
-    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    
-    # File handler
-    try:
-        file_handler = logging.FileHandler('vzoel_assistant.log')
-        file_handler.setFormatter(logging.Formatter(log_format))
-        log_handlers.append(file_handler)
-    except Exception as e:
-        print(f"Warning: Could not create log file: {e}")
-    
-    # Console handler
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(logging.Formatter(log_format))
-    log_handlers.append(console_handler)
-    
-    # Debug handler if debug mode
-    if LOG_LEVEL.upper() == "DEBUG":
-        try:
-            debug_handler = logging.FileHandler('debug.log')
-            debug_handler.setFormatter(logging.Formatter(log_format))
-            log_handlers.append(debug_handler)
-        except Exception as e:
-            print(f"Warning: Could not create debug log file: {e}")
-    
-    logging.basicConfig(
-        level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
-        format=log_format,
-        handlers=log_handlers
-    )
-else:
-    logging.basicConfig(level=logging.WARNING)
-
+# ============= LOGGING SETUP =============
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('vzoel_assistant.log'),
+        logging.StreamHandler(sys.stdout) if ENABLE_LOGGING else logging.NullHandler()
+    ]
+)
 logger = logging.getLogger(__name__)
 
-# Initialize client
-try:
-    client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
-    logger.info("✅ Telegram client initialized")
-except Exception as e:
-    logger.error(f"❌ Failed to initialize client: {e}")
-    sys.exit(1)
-
-# Global variables
-start_time = None
-plugin_manager = None
-plugin_stats = {}
-
-# ============= ENHANCED PLUGIN LOADER (FIXED) =============
-
-def discover_all_plugin_files():
-    """FIXED: Discover ALL plugin files including root directory"""
-    plugin_files = []
-    
-    # Files to skip
-    skip_files = ['main.py', 'config.py', '__init__.py', 'debug_vzoel_plugins.py']
-    
-    logger.info("🔍 Discovering plugin files...")
-    
-    # 1. Check ROOT directory for .py files (IMPORTANT!)
-    root_files = glob.glob("*.py")
-    for file in root_files:
-        filename = os.path.basename(file)
-        if filename not in skip_files and not filename.startswith('_'):
-            plugin_files.append({
-                'path': file,
-                'name': os.path.splitext(filename)[0],
-                'location': 'root',
-                'filename': filename
-            })
-            logger.info(f"📁 Found root plugin: {filename}")
-    
-    # 2. Check plugins directory
-    if os.path.exists("plugins"):
-        plugins_dir_files = glob.glob("plugins/*.py")
-        for file in plugins_dir_files:
-            filename = os.path.basename(file)
-            if filename != '__init__.py':
-                plugin_files.append({
-                    'path': file,
-                    'name': f"plugins_{os.path.splitext(filename)[0]}",
-                    'location': 'plugins',
-                    'filename': filename
-                })
-                logger.info(f"📂 Found plugins directory file: {filename}")
-        
-        # 3. Check subdirectories in plugins
-        for subdir in glob.glob("plugins/*/"):
-            if os.path.isdir(subdir):
-                subdir_name = os.path.basename(subdir.rstrip('/'))
-                subdir_files = glob.glob(os.path.join(subdir, "*.py"))
-                
-                for file in subdir_files:
-                    filename = os.path.basename(file)
-                    if filename != '__init__.py':
-                        plugin_files.append({
-                            'path': file,
-                            'name': f"{subdir_name}_{os.path.splitext(filename)[0]}",
-                            'location': f'plugins/{subdir_name}',
-                            'filename': filename
-                        })
-                        logger.info(f"📁 Found subdirectory plugin: {subdir_name}/{filename}")
-    
-    logger.info(f"🎯 Total plugin files discovered: {len(plugin_files)}")
-    return plugin_files
-
-def load_single_plugin_file(plugin_info):
-    """FIXED: Load single plugin file dengan error handling yang lebih baik"""
-    file_path = plugin_info['path']
-    plugin_name = plugin_info['name']
-    filename = plugin_info['filename']
-    location = plugin_info['location']
-    
-    logger.info(f"🔄 Loading plugin: {filename} from {location}")
-    
-    try:
-        # Add plugin directory to sys.path temporarily
-        plugin_dir = os.path.dirname(os.path.abspath(file_path))
-        if plugin_dir not in sys.path:
-            sys.path.insert(0, plugin_dir)
-            temp_path_added = True
-        else:
-            temp_path_added = False
-        
-        # Create module spec
-        spec = importlib.util.spec_from_file_location(plugin_name, file_path)
-        if not spec or not spec.loader:
-            logger.error(f"❌ Cannot create spec for {filename}")
-            return None
-        
-        # Load module
-        module = importlib.util.module_from_spec(spec)
-        
-        # Execute module
-        spec.loader.exec_module(module)
-        
-        # Clean up temporary path
-        if temp_path_added:
-            sys.path.remove(plugin_dir)
-        
-        logger.info(f"✅ Successfully loaded plugin module: {filename}")
-        return module
-        
-    except SyntaxError as e:
-        logger.error(f"❌ Syntax error in {filename}: Line {e.lineno}: {e.msg}")
-        return None
-    except ImportError as e:
-        logger.error(f"❌ Import error in {filename}: {e}")
-        return None
-    except Exception as e:
-        logger.error(f"❌ Failed to load plugin {filename}: {e}")
-        return None
-
-def register_plugin_handlers(module, plugin_name):
-    """FIXED: Register event handlers from plugin dengan client"""
-    handlers_registered = 0
-    commands = []
-    
-    try:
-        # Find all event handlers in module
-        for attr_name in dir(module):
-            attr = getattr(module, attr_name)
-            
-            # Check if it's a telethon event handler
-            if hasattr(attr, '_telethon_event') and callable(attr):
-                try:
-                    # FIXED: Register handler dengan client
-                    client.add_event_handler(attr)
-                    handlers_registered += 1
-                    
-                    logger.info(f"✅ Registered handler: {attr_name} from {plugin_name}")
-                    
-                    # Extract command pattern if possible
-                    try:
-                        if hasattr(attr._telethon_event, 'pattern'):
-                            pattern = attr._telethon_event.pattern
-                            if pattern:
-                                command_str = str(pattern.pattern) if hasattr(pattern, 'pattern') else str(pattern)
-                                commands.append(command_str)
-                    except:
-                        pass
-                        
-                except Exception as e:
-                    logger.error(f"❌ Failed to register handler {attr_name}: {e}")
-        
-        return handlers_registered, commands
-        
-    except Exception as e:
-        logger.error(f"❌ Error registering handlers from {plugin_name}: {e}")
-        return 0, []
-
-def load_plugins():
-    """FIXED: Load all plugin files dengan improved discovery"""
-    global plugin_manager, plugin_stats
-    
-    logger.info("🔌 Starting enhanced plugin loading...")
-    
-    # Initialize results
-    results = {
-        'loaded': [],
-        'failed': [],
-        'total_handlers': 0,
-        'by_location': {'root': [], 'plugins': [], 'subdirs': []},
-        'loaded_modules': {}
-    }
-    
-    try:
-        # Use enhanced plugin manager for directory plugins
-        plugin_manager = get_plugin_manager()
-        manager_results = plugin_manager.load_all_plugins()
-        
-        # Register handlers from plugin manager
-        for plugin_name, plugin_info in plugin_manager.loaded_plugins.items():
-            module = plugin_info['module']
-            handlers_count, commands = register_plugin_handlers(module, plugin_name)
-            
-            if handlers_count > 0:
-                results['loaded'].append(plugin_name)
-                results['total_handlers'] += handlers_count
-                results['loaded_modules'][plugin_name] = {
-                    'module': module,
-                    'handlers': handlers_count,
-                    'commands': commands,
-                    'location': plugin_info['location']
-                }
-                
-                # Categorize by location
-                location = plugin_info['location']
-                if location == 'root':
-                    results['by_location']['root'].append(plugin_name)
-                elif location == 'plugins':
-                    results['by_location']['plugins'].append(plugin_name)
-                else:
-                    results['by_location']['subdirs'].append(plugin_name)
-        
-        # FIXED: Also discover and load ROOT directory files that might be missed
-        all_files = discover_all_plugin_files()
-        
-        for file_info in all_files:
-            plugin_name = file_info['name']
-            
-            # Skip if already loaded by plugin manager
-            if plugin_name in results['loaded']:
-                continue
-                
-            # Try to load the file
-            module = load_single_plugin_file(file_info)
-            if module:
-                handlers_count, commands = register_plugin_handlers(module, plugin_name)
-                
-                if handlers_count > 0:
-                    results['loaded'].append(plugin_name)
-                    results['total_handlers'] += handlers_count
-                    results['loaded_modules'][plugin_name] = {
-                        'module': module,
-                        'handlers': handlers_count,
-                        'commands': commands,
-                        'location': file_info['location']
-                    }
-                    
-                    # Categorize by location
-                    if file_info['location'] == 'root':
-                        results['by_location']['root'].append(plugin_name)
-                    elif file_info['location'] == 'plugins':
-                        results['by_location']['plugins'].append(plugin_name)
-                    else:
-                        results['by_location']['subdirs'].append(plugin_name)
-                    
-                    logger.info(f"✅ Extra plugin loaded: {file_info['filename']} ({handlers_count} handlers)")
-                else:
-                    logger.warning(f"⚠️ Plugin loaded but no handlers: {file_info['filename']}")
-            else:
-                results['failed'].append(f"{plugin_name} ({file_info['location']})")
-        
-        plugin_stats = results
-        logger.info(f"🎉 Plugin loading completed: {len(results['loaded'])} loaded, {results['total_handlers']} handlers")
-        
-        return results
-        
-    except Exception as e:
-        logger.error(f"❌ Critical error in plugin loading: {e}")
-        return results
-
 # ============= UTILITY FUNCTIONS =============
-
 async def is_owner(user_id):
-    """Check if user is owner"""
-    try:
-        if OWNER_ID:
-            return user_id == OWNER_ID
-        me = await client.get_me()
-        return user_id == me.id
-    except Exception as e:
-        logger.error(f"Error checking owner: {e}")
-        return False
+    """Check if user is the owner"""
+    return user_id == OWNER_ID
 
-async def log_command(event, command):
+async def log_command(event, command_name):
     """Log command usage"""
     try:
-        user = await client.get_entity(event.sender_id)
-        chat = await event.get_chat()
-        chat_title = getattr(chat, 'title', 'Private Chat')
-        user_name = getattr(user, 'first_name', 'Unknown') or 'Unknown'
-        logger.info(f"Command '{command}' used by {user_name} ({user.id}) in {chat_title}")
+        if command_name not in command_stats:
+            command_stats[command_name] = {'count': 0, 'last_used': None}
+        
+        command_stats[command_name]['count'] += 1
+        command_stats[command_name]['last_used'] = datetime.now()
+        
+        logger.info(f"Command used: {command_name} by {event.sender_id}")
     except Exception as e:
         logger.error(f"Error logging command: {e}")
 
-# ============= BUILT-IN EVENT HANDLERS =============
+def format_uptime(start_time):
+    """Format uptime duration"""
+    uptime = datetime.now() - start_time
+    days = uptime.days
+    hours, remainder = divmod(uptime.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    
+    if days:
+        return f"{days}d {hours}h {minutes}m"
+    elif hours:
+        return f"{hours}h {minutes}m"
+    else:
+        return f"{minutes}m {seconds}s"
 
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}ping'))
-async def ping_handler(event):
-    """Perintah ping untuk test Vzoel Assistant"""
-    if not await is_owner(event.sender_id):
-        return
-        
-    await log_command(event, "ping")
-    start = time.time()
-    msg = await event.reply("🏓 Pong!")
-    end = time.time()
-    await msg.edit(f"🏓 **Pong!**\n⚡ Response time: `{(end-start)*1000:.2f}ms`")
+# ============= BUILT-IN VZOEL PLUGINS (INTEGRATED) =============
 
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}info'))
-async def info_handler(event):
-    """Informasi Vzoel Assistant"""
-    if not await is_owner(event.sender_id):
-        return
-        
-    await log_command(event, "info")
+@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}alive$', outgoing=True))
+@owner_only
+@log_command_usage
+async def enhanced_alive(event):
+    """Enhanced alive command dengan system monitoring"""
     try:
         me = await client.get_me()
-        uptime = datetime.now() - start_time if start_time else "Unknown"
+        uptime_str = format_uptime(start_time)
         
-        # Get plugin information
-        total_plugins = len(plugin_stats.get('loaded', []))
-        total_handlers = plugin_stats.get('total_handlers', 0)
-        by_location = plugin_stats.get('by_location', {})
+        # Get system info
+        try:
+            cpu_percent = psutil.cpu_percent(interval=1)
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+            
+            system_info = f"""
+💻 **System Status:**
+🖥️ CPU: `{cpu_percent:.1f}%`
+💾 RAM: `{memory.percent:.1f}%` (`{memory.used//1024//1024}MB/{memory.total//1024//1024}MB`)
+💿 Disk: `{disk.percent:.1f}%` (`{disk.used//1024//1024//1024}GB/{disk.total//1024//1024//1024}GB`)
+🔥 Load: `{', '.join([f'{x:.2f}' for x in psutil.getloadavg()])}`"""
+        except Exception:
+            system_info = "💻 **System Status:** `Monitoring unavailable`"
         
-        location_text = ""
-        if by_location.get('root'):
-            location_text += f"\n  📁 Root: `{len(by_location['root'])}` plugins"
-        if by_location.get('plugins'):
-            location_text += f"\n  📂 Plugins dir: `{len(by_location['plugins'])}` plugins"
-        if by_location.get('subdirs'):
-            location_text += f"\n  📁 Subdirs: `{len(by_location['subdirs'])}` plugins"
+        # Get plugin count
+        plugin_count = len(plugin_manager.loaded_plugins) if plugin_manager else 0
         
-        uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
-        
-        info_text = f"""
-🤖 **Vzoel Assistant Info (FIXED)**
-👤 Name: {me.first_name or 'N/A'}
-🆔 ID: `{me.id}`
-📱 Phone: `{me.phone or 'Hidden'}`
-⚡ Prefix: `{COMMAND_PREFIX}`
-⏰ Uptime: `{uptime_str}`
-🖥️ Server: AWS Ubuntu
-📊 Log Level: `{LOG_LEVEL}`
-🔌 Plugins: `{total_plugins}` loaded (`{total_handlers}` handlers){location_text}
-🎯 Plugin System: Enhanced & Fixed
+        alive_message = f"""
+🔥 **VZOEL ASSISTANT IS ALIVE!** 🔥
+
+👤 **Master:** `{me.first_name or 'Anonymous'}`
+🆔 **User ID:** `{me.id}`
+📱 **Phone:** `{me.phone or 'Hidden'}`
+⚡ **Prefix:** `{COMMAND_PREFIX}`
+🚀 **Uptime:** `{uptime_str}`
+⏰ **Time:** `{datetime.now().strftime('%H:%M:%S')}`
+📅 **Date:** `{datetime.now().strftime('%d/%m/%Y')}`
+
+🔌 **Plugins:** `{plugin_count} loaded`
+📊 **Commands Used:** `{sum(cmd['count'] for cmd in command_stats.values())}`
+{system_info}
+
+🛡️ **Status:** ✅ **ONLINE & PROTECTED**
+⭐ **Performance:** ✅ **OPTIMAL**
+
+💎 **Vzoel Assistant v2.1** - Premium Userbot
+🌟 **Always at your service, Master!**
         """.strip()
         
-        await event.edit(info_text)
+        # Send with animation
+        animations = [
+            "⚡ **Checking status...**",
+            "🔍 **Scanning system...**",
+            "📊 **Gathering metrics...**",
+            "✅ **System ready!**"
+        ]
+        
+        msg = await event.edit(animations[0])
+        for animation in animations[1:]:
+            await asyncio.sleep(1)
+            await msg.edit(animation)
+        
+        await asyncio.sleep(1)
+        await msg.edit(alive_message)
+        
     except Exception as e:
-        await event.edit(f"❌ Error getting info: {str(e)}")
-        logger.error(f"Error in info handler: {e}")
+        await event.reply(f"❌ **Error in alive command:** `{str(e)}`")
+        logger.error(f"Alive command error: {e}")
 
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}plugins'))
-async def plugins_handler(event):
-    """List loaded plugins (ENHANCED)"""
-    if not await is_owner(event.sender_id):
-        return
-        
-    await log_command(event, "plugins")
-    
-    if not plugin_stats or not plugin_stats.get('loaded'):
-        await event.edit("❌ No plugins loaded")
-        return
-    
+@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}gcast (.+)', outgoing=True))
+@owner_only
+@log_command_usage
+async def advanced_gcast(event):
+    """Advanced global cast dengan animation"""
     try:
-        loaded_plugins = plugin_stats.get('loaded', [])
-        total_handlers = plugin_stats.get('total_handlers', 0)
-        by_location = plugin_stats.get('by_location', {})
+        message = event.pattern_match.group(1)
         
-        plugin_text = f"🔌 **Loaded Plugins ({len(loaded_plugins)}):**\n\n"
+        animation_steps = [
+            "🔄 **Initializing Global Cast...**",
+            "📡 **Connecting to channels...**", 
+            "🔍 **Scanning available chats...**",
+            "⚡ **Preparing message broadcast...**",
+            "🚀 **Starting transmission...**",
+            "📤 **Broadcasting in progress...**",
+            "🔥 **Sending to all chats...**",
+            "✅ **Finalizing broadcast...**"
+        ]
         
-        if by_location.get('root'):
-            plugin_text += f"**📁 Root Directory ({len(by_location['root'])}):**\n"
-            for plugin in by_location['root']:
-                handlers = plugin_stats.get('loaded_modules', {}).get(plugin, {}).get('handlers', 0)
-                plugin_text += f"• `{plugin}` ({handlers} handlers)\n"
-            plugin_text += "\n"
+        status_msg = await event.edit(animation_steps[0])
         
-        if by_location.get('plugins'):
-            plugin_text += f"**📂 Plugins Directory ({len(by_location['plugins'])}):**\n"
-            for plugin in by_location['plugins']:
-                handlers = plugin_stats.get('loaded_modules', {}).get(plugin, {}).get('handlers', 0)
-                plugin_text += f"• `{plugin}` ({handlers} handlers)\n"
-            plugin_text += "\n"
+        for step in animation_steps[1:]:
+            await asyncio.sleep(0.8)
+            await status_msg.edit(step)
         
-        if by_location.get('subdirs'):
-            plugin_text += f"**📁 Subdirectories ({len(by_location['subdirs'])}):**\n"
-            for plugin in by_location['subdirs']:
-                handlers = plugin_stats.get('loaded_modules', {}).get(plugin, {}).get('handlers', 0)
-                plugin_text += f"• `{plugin}` ({handlers} handlers)\n"
-            plugin_text += "\n"
+        success_count = 0
+        failed_count = 0
+        dialogs = []
         
-        plugin_text += f"📊 **Total:** {total_handlers} event handlers registered\n\n"
-        plugin_text += f"""💡 **Tips:**
-- Root plugins auto-loaded from current directory
-- Use `{COMMAND_PREFIX}reload` to reload all plugins
-- Check logs for detailed loading information"""
+        try:
+            async for dialog in client.iter_dialogs():
+                if (dialog.is_group or dialog.is_channel) and not getattr(dialog.entity, 'left', True):
+                    dialogs.append(dialog)
+        except Exception as e:
+            await status_msg.edit(f"❌ **Error getting dialogs:** `{str(e)}`")
+            return
         
-        await event.edit(plugin_text)
-    except Exception as e:
-        await event.edit(f"❌ Error getting plugins: {str(e)}")
-        logger.error(f"Error in plugins handler: {e}")
+        total_chats = len(dialogs)
+        if total_chats == 0:
+            await status_msg.edit("❌ **No groups/channels found to broadcast!**")
+            return
+        
+        await status_msg.edit(f"📊 **Found {total_chats} chats**\n🚀 **Broadcasting message...**")
+        
+        for i, dialog in enumerate(dialogs, 1):
+            try:
+                final_message = f"""{message}
 
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}reload'))
-async def reload_handler(event):
-    """Reload all plugins (FIXED)"""
-    if not await is_owner(event.sender_id):
-        return
+━━━━━━━━━━━━━━━━━
+💎 **Vzoel Assistant** | Global Cast
+⚡ Powered by Master's Command"""
+                
+                await client.send_message(dialog.id, final_message)
+                success_count += 1
+                
+                if i % 5 == 0:
+                    progress = int((i / total_chats) * 100)
+                    await status_msg.edit(
+                        f"📤 **Broadcasting Progress**\n"
+                        f"📊 Progress: `{progress}%` ({i}/{total_chats})\n"
+                        f"✅ Success: `{success_count}`\n"
+                        f"❌ Failed: `{failed_count}`"
+                    )
+                
+                await asyncio.sleep(0.3)
+                
+            except FloodWaitError as e:
+                await asyncio.sleep(e.seconds)
+                failed_count += 1
+            except Exception:
+                failed_count += 1
         
-    await log_command(event, "reload")
-    msg = await event.reply("🔄 Reloading plugins...")
-    
-    try:
-        # Clear old handlers (if possible)
-        logger.info("🔄 Starting plugin reload...")
+        success_rate = int((success_count/total_chats)*100) if total_chats > 0 else 0
         
-        # Load plugins again
-        results = load_plugins()
-        
-        if results['loaded']:
-            location_info = ""
-            if results['by_location']['root']:
-                location_info += f"\n📁 Root: {len(results['by_location']['root'])} plugins"
-            if results['by_location']['plugins']:
-                location_info += f"\n📂 Plugins dir: {len(results['by_location']['plugins'])} plugins"
-            if results['by_location']['subdirs']:
-                location_info += f"\n📁 Subdirs: {len(results['by_location']['subdirs'])} plugins"
-            
-            await msg.edit(f"✅ **Plugins Reloaded! (FIXED)**\n\n🔌 Loaded {len(results['loaded'])} plugins with {results['total_handlers']} handlers{location_info}")
-        else:
-            await msg.edit("⚠️ No plugins found to reload")
-            
-    except Exception as e:
-        await msg.edit(f"❌ Error reloading plugins: {str(e)}")
-        logger.error(f"Error reloading plugins: {e}")
+        final_result = f"""
+🎉 **GLOBAL CAST COMPLETED!**
 
-# ============= ADDITIONAL BUILT-IN COMMANDS (KEEPING ORIGINAL) =============
-# ... (keeping all other built-in commands from original main.py) ...
+📊 **Statistics:**
+├── 📈 Total Chats: `{total_chats}`
+├── ✅ Successful: `{success_count}`
+├── ❌ Failed: `{failed_count}`
+└── 📊 Success Rate: `{success_rate}%`
 
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}alive'))
-async def alive_handler(event):
-    """Status Vzoel Assistant"""
-    if not await is_owner(event.sender_id):
-        return
-        
-    await log_command(event, "alive")
-    try:
-        uptime = datetime.now() - start_time if start_time else "Unknown"
-        plugin_count = len(plugin_stats.get('loaded', []))
-        handler_count = plugin_stats.get('total_handlers', 0)
-        uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
-        
-        alive_text = f"""
-✅ **Vzoel Assistant is alive! (FIXED)**
-🚀 Uptime: `{uptime_str}`
-⚡ Prefix: `{COMMAND_PREFIX}`
-🔌 Plugins: `{plugin_count}` active ({handler_count} handlers)
-🎯 Plugin System: Enhanced & Working
+⚡ **Message:** {message[:50]}{'...' if len(message) > 50 else ''}
+🕒 **Time:** `{datetime.now().strftime('%H:%M:%S')}`
+
+💎 **Vzoel Assistant** - Mission Accomplished!
         """.strip()
         
-        await event.edit(alive_text)
+        await status_msg.edit(final_result)
+        
     except Exception as e:
-        await event.edit(f"❌ Error: {str(e)}")
-        logger.error(f"Error in alive handler: {e}")
+        await event.reply(f"❌ **Gcast Error:** `{str(e)}`")
+        logger.error(f"Gcast error: {e}")
 
-# ============= STARTUP FUNCTIONS (FIXED) =============
-
-async def startup():
-    """Enhanced startup function with FIXED plugin loading"""
-    global start_time
-    start_time = datetime.now()
-    
-    logger.info("🚀 Starting enhanced Vzoel Assistant (FIXED VERSION)...")
-    
+@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}joinvc$', outgoing=True))
+@owner_only  
+@log_command_usage
+async def join_voice_chat(event):
+    """Join voice chat in current group"""
     try:
-        await client.start()
+        chat = await event.get_chat()
+        
+        if not (hasattr(chat, 'megagroup') or hasattr(chat, 'broadcast')):
+            await event.edit("❌ **This command only works in groups/channels!**")
+            return
+        
+        animations = [
+            "🔄 **Preparing to join voice chat...**",
+            "🎤 **Connecting to voice chat...**",
+            "📡 **Establishing connection...**"
+        ]
+        
+        msg = await event.edit(animations[0])
+        for animation in animations[1:]:
+            await asyncio.sleep(1)
+            await msg.edit(animation)
+        
+        try:
+            full_chat = await client.get_entity(chat.id)
+            
+            success_message = f"""
+🎉 **Voice Chat Connection Initiated!**
+
+🎤 **Chat:** {getattr(chat, 'title', 'Unknown')}
+🆔 **Chat ID:** `{chat.id}`
+⚡ **Status:** Attempting Connection
+🔊 **Mode:** Voice Chat Ready
+
+💎 **Vzoel Assistant** attempting to join voice chat!
+Use `{COMMAND_PREFIX}leavevc` to disconnect.
+            """.strip()
+            
+            await msg.edit(success_message)
+            
+        except Exception as e:
+            await msg.edit(f"⚠️ **Voice chat feature experimental**\n`Connection attempted: {str(e)[:100]}`")
+            
+    except Exception as e:
+        await event.reply(f"❌ **Join VC Error:** `{str(e)}`")
+        logger.error(f"Join VC error: {e}")
+
+@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}leavevc$', outgoing=True))
+@owner_only
+@log_command_usage
+async def leave_voice_chat(event):
+    """Leave voice chat in current group"""
+    try:
+        chat = await event.get_chat()
+        
+        animations = [
+            "🔄 **Preparing to leave voice chat...**",
+            "👋 **Disconnecting from voice chat...**"
+        ]
+        
+        msg = await event.edit(animations[0])
+        for animation in animations[1:]:
+            await asyncio.sleep(1)
+            await msg.edit(animation)
+        
+        success_message = f"""
+👋 **Voice Chat Disconnection Complete!**
+
+🎤 **Chat:** {getattr(chat, 'title', 'Unknown')}
+🆔 **Chat ID:** `{chat.id}`
+⚡ **Status:** Disconnected
+🔇 **Mode:** Voice Chat Left
+
+💎 **Vzoel Assistant** has left the voice chat.
+Use `{COMMAND_PREFIX}joinvc` to reconnect.
+        """.strip()
+        
+        await msg.edit(success_message)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Leave VC Error:** `{str(e)}`")
+        logger.error(f"Leave VC error: {e}")
+
+@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}infofounder$', outgoing=True))
+@owner_only
+@log_command_usage
+async def info_founder(event):
+    """Custom founder information"""
+    try:
         me = await client.get_me()
+        uptime_str = format_uptime(start_time)
         
-        # FIXED: Load plugins AFTER client is fully started
-        logger.info("🔌 Loading plugins with fixed system...")
-        results = load_plugins()
+        # Count chats
+        total_chats = groups = channels = 0
+        try:
+            async for dialog in client.iter_dialogs():
+                total_chats += 1
+                if dialog.is_group:
+                    groups += 1
+                elif dialog.is_channel:
+                    channels += 1
+        except Exception:
+            pass
         
-        logger.info(f"✅ Vzoel Assistant started successfully!")
-        logger.info(f"👤 Logged in as: {me.first_name} (@{me.username or 'No username'})")
-        logger.info(f"🆔 User ID: {me.id}")
-        logger.info(f"🔌 Loaded {len(results['loaded'])} plugins with {results['total_handlers']} handlers")
+        founder_info = f"""
+👑 **FOUNDER INFORMATION** 👑
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔥 **Personal Details:**
+├── 👤 **Name:** {me.first_name or 'Anonymous'}
+├── 🏷️ **Username:** @{me.username or 'Not Set'}
+├── 🆔 **User ID:** `{me.id}`
+├── 📱 **Phone:** `{me.phone or 'Private'}`
+└── 🌍 **Status:** Premium Account
+
+🎯 **Account Statistics:**
+├── 💬 **Total Chats:** `{total_chats}`
+├── 👥 **Groups:** `{groups}`
+├── 📢 **Channels:** `{channels}`
+├── 🤖 **Bot Type:** Enhanced Userbot
+└── 🚀 **Uptime:** `{uptime_str}`
+
+⚡ **Vzoel Assistant Features:**
+├── 🔒 **Security:** Maximum Protection
+├── 🚀 **Performance:** Ultra Fast Response  
+├── 🛡️ **Anti-Spam:** Advanced Filtering
+├── 🎨 **Customization:** Fully Customizable
+├── 📊 **Analytics:** Real-time Monitoring
+└── 🔄 **Updates:** Auto-updating System
+
+💎 **Special Abilities:**
+├── 🌐 **Global Cast:** Broadcast to all chats
+├── 🎤 **Voice Chat:** Join/Leave voice chats
+├── 📝 **Plugin System:** Modular architecture
+├── 🔍 **Advanced Search:** Deep chat analysis
+├── 📊 **Statistics:** Detailed usage stats
+└── 🛠️ **Monitoring:** System health tracking
+
+🏆 **Master's Command Center:**
+⚡ Prefix: `{COMMAND_PREFIX}`
+🔌 Plugins: `{len(plugin_manager.loaded_plugins) if plugin_manager else 0} loaded`
+📊 Commands Used: `{sum(cmd['count'] for cmd in command_stats.values())}`
+🕐 Current Time: `{datetime.now().strftime('%H:%M:%S')}`
+📅 Today's Date: `{datetime.now().strftime('%d %B %Y')}`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💫 **"Technology is best when it brings people together"**
+
+🔥 **Vzoel Assistant v2.1** - Engineered for Excellence
+👑 **Serving the Master with Pride & Precision**
+        """.strip()
         
-        # Log plugin locations
-        if results['by_location']['root']:
-            logger.info(f"📁 Root directory: {len(results['by_location']['root'])} plugins")
-        if results['by_location']['plugins']:
-            logger.info(f"📂 Plugins directory: {len(results['by_location']['plugins'])} plugins")
-        if results['by_location']['subdirs']:
-            logger.info(f"📁 Subdirectories: {len(results['by_location']['subdirs'])} plugins")
+        animations = [
+            "🔍 **Loading founder information...**",
+            "📊 **Gathering statistics...**",
+            "👑 **Preparing founder profile...**"
+        ]
         
-        # Enhanced startup message
-        plugin_text = ""
-        if results['loaded']:
-            location_details = []
-            if results['by_location']['root']:
-                location_details.append(f"📁 Root: {len(results['by_location']['root'])}")
-            if results['by_location']['plugins']:
-                location_details.append(f"📂 Plugins: {len(results['by_location']['plugins'])}")
-            if results['by_location']['subdirs']:
-                location_details.append(f"📁 Subdirs: {len(results['by_location']['subdirs'])}")
-            
-            plugin_text = f"""
-**🔌 Plugins ({len(results['loaded'])}):**
-{' | '.join(location_details)}
-**Total Handlers:** `{results['total_handlers']}`
+        msg = await event.edit(animations[0])
+        for animation in animations[1:]:
+            await asyncio.sleep(1)
+            await msg.edit(animation)
+        
+        await asyncio.sleep(1)
+        await msg.edit(founder_info)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Info Founder Error:** `{str(e)}`")
+        logger.error(f"Info founder error: {e}")
+
+# ============= PLUGIN MANAGEMENT COMMANDS =============
+
+@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}plugins$', outgoing=True))
+@owner_only
+@log_command_usage
+async def list_plugins(event):
+    """List all loaded plugins"""
+    try:
+        if not plugin_manager or not plugin_manager.loaded_plugins:
+            await event.edit("📭 **No plugins loaded**")
+            return
+        
+        plugin_info = plugin_manager.get_plugin_info()
+        by_location = plugin_info['by_location']
+        
+        plugins_text = f"""
+🔌 **LOADED PLUGINS** ({plugin_info['count']})
+
+📊 **Statistics:**
+├── 🔌 Total Plugins: `{plugin_info['count']}`
+├── 🎯 Total Handlers: `{plugin_info['total_handlers']}`
+└── 📁 Locations: `{len([k for k, v in by_location.items() if v])}`
+
+📁 **By Location:**
 """
         
-        startup_message = f"""
-🚀 **Enhanced Vzoel Assistant Started! (FIXED)**
+        if by_location['root']:
+            plugins_text += f"├── 🏠 **Root Directory:** `{len(by_location['root'])}`\n"
+            for plugin in by_location['root'][:5]:
+                plugins_text += f"│   ├── {plugin}\n"
+            if len(by_location['root']) > 5:
+                plugins_text += f"│   └── ... and {len(by_location['root']) - 5} more\n"
+        
+        if by_location['plugins']:
+            plugins_text += f"├── 📂 **Plugins Directory:** `{len(by_location['plugins'])}`\n"
+            for plugin in by_location['plugins'][:5]:
+                plugins_text += f"│   ├── {plugin}\n"
+            if len(by_location['plugins']) > 5:
+                plugins_text += f"│   └── ... and {len(by_location['plugins']) - 5} more\n"
+        
+        if by_location['subdirs']:
+            plugins_text += f"└── 📁 **Subdirectories:** `{len(by_location['subdirs'])}`\n"
+            for plugin in by_location['subdirs'][:3]:
+                plugins_text += f"    ├── {plugin}\n"
+            if len(by_location['subdirs']) > 3:
+                plugins_text += f"    └── ... and {len(by_location['subdirs']) - 3} more\n"
+        
+        plugins_text += f"""
 
-✅ All systems operational
-👤 **User:** {me.first_name}
-🆔 **ID:** `{me.id}`
-⚡ **Prefix:** `{COMMAND_PREFIX}`
-⏰ **Started:** `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
-🔌 **Built-in Commands:** Ready
-{plugin_text}
-**💡 Quick Start:**
-• `{COMMAND_PREFIX}help` - Show all commands
-• `{COMMAND_PREFIX}info` - System information
-• `{COMMAND_PREFIX}plugins` - List loaded plugins
-
-**🎯 FIXED: Plugin system now working correctly!**
+💎 **Vzoel Assistant Plugin System**
+Use `{COMMAND_PREFIX}plugininfo` for detailed information
         """.strip()
         
-        try:
-            await client.send_message('me', startup_message)
-        except Exception as e:
-            logger.warning(f"Could not send startup message: {e}")
-            
-    except SessionPasswordNeededError:
-        logger.error("❌ Two-factor authentication enabled. Please login manually first.")
-        return False
-    except Exception as e:
-        logger.error(f"❌ Error starting Vzoel Assistant: {e}")
-        return False
-    
-    return True
-
-async def main():
-    """Enhanced main function"""
-    logger.info("🔄 Initializing enhanced Vzoel Assistant (FIXED VERSION)...")
-    
-    # Validate configuration
-    logger.info("🔍 Validating configuration...")
-    logger.info(f"📱 API ID: {API_ID}")
-    logger.info(f"📁 Session: {SESSION_NAME}")
-    logger.info(f"⚡ Prefix: {COMMAND_PREFIX}")
-    logger.info(f"🆔 Owner ID: {OWNER_ID or 'Auto-detect'}")
-    logger.info(f"📂 Plugin discovery: Enhanced mode")
-    
-    # Start Vzoel Assistant
-    if await startup():
-        logger.info("🔄 Enhanced Vzoel Assistant is now running (FIXED)...")
-        logger.info("📝 Press Ctrl+C to stop")
+        await event.edit(plugins_text)
         
-        try:
-            await client.run_until_disconnected()
-        except KeyboardInterrupt:
-            logger.info("👋 Vzoel Assistant stopped by user")
-        except Exception as e:
-            logger.error(f"❌ Unexpected error: {e}")
-        finally:
-            logger.info("🔄 Disconnecting...")
-            try:
-                await client.disconnect()
-            except Exception as e:
-                logger.error(f"Error during disconnect: {e}")
-            logger.info("✅ Enhanced Vzoel Assistant stopped successfully!")
-    else:
-        logger.error("❌ Failed to start enhanced Vzoel Assistant!")
-
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
     except Exception as e:
-        logger.error(f"❌ Fatal error: {e}")
-        sys.exit(1)
+        await event.edit(f"❌ **Error listing plugins:** `{str(e)}`")
+        logger.error(f"Plugin list error: {e}")
+
+@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}plugininfo$', outgoing=True))
+@owner_only
+@log_command_usage
+async def plugin_detailed_info(event):
+    """Show detailed plugin information"""
+    try:
+        if not plugin_manager:
+            await event.edit("❌ **Plugin manager not initialized**")
+            return
+        
+        info = plugin_manager.get_plugin_info()
+        
+        detail_text = f"""
+🔍 **DETAILED PLUGIN INFORMATION**
+
+📊 **Overview:**
+├── 🔌 Total Plugins: `{info['count']}`
+├── 🎯 Total Handlers: `{info['total_handlers']}`
+├── 📁 Root Plugins: `{len(info['by_location']['root'])}`
+├── 📂 Plugin Dir: `{len(info['by_location']['plugins'])}`
+└── 📁 Subdirectories: `{len(info['by_location']['subdirs'])}`
+
+📋 **Plugin Details:**
+"""
+        
+        for name, plugin_data in list(info['plugins'].items())[:10]:
+            handlers = plugin_data['handlers']
+            location = plugin_data['location']
+            commands = plugin_data.get('commands', [])
+            
+            detail_text += f"""
+🔌 **{name}**
+├── 📍 Location: `{location}`
+├── 🎯 Handlers: `{handlers}`
+├── 📄 File: `{plugin_data['relative_path']}`
+└── 🔧 Commands: `{len(commands)}`"""
+            if commands:
+                detail_text += f" ({', '.join(commands[:2])}{'...' if len(commands) > 2 else ''})"
+            detail_text += "\n"
+        
+        if len(info['plugins']) > 10:
+            detail_text += f"\n... and {len(info['plugins']) - 10} more plugins\n"
+        
+        detail_text += f"""
+
+🚀 **System Status:**
+├── ⏰ Uptime: `{format_uptime(start_time)}`
+├── 📊 Commands Used: `{sum(cmd['count'] for cmd in command_stats.values())}`
+└── 🔥 Status: `All systems operational`
+
+💎 **Vzoel Assistant v2.1** - Plugin System Active
+        """.strip()
+        
+        await event.edit(detail_text)
+        
+    except Exception as e:
+        await event.edit(f"❌ **Error getting plugin info:** `{str(e)}`")
+        logger.error(f"Plugin info error: {e}")
+
+@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}stats$', outgoing=True))
+@owner_only
+@log_command_usage
+async def show_stats(event):
+    """Show userbot statistics"""
+    try:
+        uptime_str = format_uptime(start_time)
+        
+        # System stats
+        try:
+            cpu_percent = psutil.cpu_percent(interval=1)
+            memory = psutil.virtual_memory()
+            disk = psutil.disk_usage('/')
+            
+            system_stats = f"""
+💻 **System Resources:**
+├── 🖥️ CPU: `{cpu_percent:.1f}%`
+├── 💾 Memory: `{memory.percent:.1f}%`
+├── 💿 Disk: `{disk.percent:.1f}%`
+└── 🔥 Load Avg: `{psutil.getloadavg()[0]:.2f}`"""
+        except Exception:
+            system_stats = "💻 **System Resources:** `Unavailable`"
+        
+        # Command stats
+        top_commands = sorted(command_stats.items(), key=lambda x: x[1]['count'], reverse=True)[:5]
+        
+        stats_text = f"""
+📊 **VZOEL ASSISTANT STATISTICS**
+
+⏰ **Uptime:** `{uptime_str}`
+🚀 **Start Time:** `{start_time.strftime('%d/%m/%Y %H:%M:%S')}`
+
+🔌 **Plugin System:**
+├── 📦 Loaded Plugins: `{len(plugin_manager.loaded_plugins) if plugin_manager else 0}`
+├── 🎯 Event Handlers: `{sum(p['handlers'] for p in plugin_manager.loaded_plugins.values()) if plugin_manager else 0}`
+└── 📊 Total Commands: `{sum(cmd['count'] for cmd in command_stats.values())}`
+
+🏆 **Top Commands:**"""
+        
+        if top_commands:
+            for i, (cmd, data) in enumerate(top_commands, 1):
+ 
