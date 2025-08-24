@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# ============= USERBOT SECURITY HARDENING =============
-# KRUSIAL untuk melindungi userbot di AWS Ubuntu
+# ============= VZOEL ASSISTANT SECURITY HARDENING =============
+# KRUSIAL untuk melindungi Vzoel Assistant di AWS Ubuntu
 
 set -e
 
@@ -31,7 +31,7 @@ warning() {
 # Check if running as root
 check_root() {
     if [[ $EUID -eq 0 ]]; then
-        error "Don't run userbot as root! Use regular user."
+        error "Don't run Vzoel Assistant as root! Use regular user."
         exit 1
     fi
 }
@@ -126,8 +126,8 @@ secure_ssh() {
     sudo cp "$SSH_CONFIG" "${SSH_CONFIG}.backup.$(date +%Y%m%d)"
     
     # Secure SSH settings
-    cat << 'EOF' | sudo tee /etc/ssh/sshd_config.d/99-userbot-security.conf
-# Userbot Security Hardening
+    cat << 'EOF' | sudo tee /etc/ssh/sshd_config.d/99-vzoel-security.conf
+# Vzoel Assistant Security Hardening
 PermitRootLogin no
 PasswordAuthentication no
 PubkeyAuthentication yes
@@ -157,8 +157,8 @@ install_fail2ban() {
     sudo apt update
     sudo apt install -y fail2ban
     
-    # Create custom jail for userbot
-    cat << 'EOF' | sudo tee /etc/fail2ban/jail.d/userbot.conf
+    # Create custom jail for Vzoel Assistant
+    cat << 'EOF' | sudo tee /etc/fail2ban/jail.d/vzoel_assistant.conf
 [DEFAULT]
 bantime = 3600
 findtime = 600
@@ -185,8 +185,8 @@ EOF
 setup_log_rotation() {
     log "📋 Setting up log rotation..."
     
-    cat << EOF | sudo tee /etc/logrotate.d/userbot
-$(pwd)/userbot.log {
+    cat << EOF | sudo tee /etc/logrotate.d/vzoel_assistant
+$(pwd)/vzoel_assistant.log {
     daily
     missingok
     rotate 7
@@ -245,7 +245,7 @@ create_monitoring() {
     cat << 'EOF' > monitor_security.sh
 #!/bin/bash
 
-# Security monitoring for userbot
+# Security monitoring for Vzoel Assistant
 LOG_FILE="security_monitor.log"
 ALERT_EMAIL=""  # Add email if needed
 
@@ -261,12 +261,12 @@ check_failed_logins() {
     fi
 }
 
-# Check userbot process
-check_userbot() {
-    if [[ -f "userbot.pid" ]]; then
-        PID=$(cat userbot.pid)
+# Check Vzoel Assistant process
+check_vzoel_assistant() {
+    if [[ -f "vzoel_assistant.pid" ]]; then
+        PID=$(cat vzoel_assistant.pid)
         if ! ps -p "$PID" > /dev/null 2>&1; then
-            log_event "ALERT: Userbot process died unexpectedly"
+            log_event "ALERT: Vzoel Assistant process died unexpectedly"
         fi
     fi
 }
@@ -300,7 +300,7 @@ check_disk() {
 
 # Run checks
 check_failed_logins
-check_userbot
+check_vzoel_assistant
 check_integrity
 check_disk
 
@@ -320,7 +320,7 @@ setup_security_cron() {
     log "⏰ Setting up security cron jobs..."
     
     # Add cron jobs
-    (crontab -l 2>/dev/null; echo "# Userbot Security Jobs") | crontab -
+    (crontab -l 2>/dev/null; echo "# Vzoel Assistant Security Jobs") | crontab -
     (crontab -l 2>/dev/null; echo "0 2 * * * $(pwd)/backup.sh auto >/dev/null 2>&1") | crontab -
     (crontab -l 2>/dev/null; echo "*/15 * * * * $(pwd)/monitor_security.sh >/dev/null 2>&1") | crontab -
     (crontab -l 2>/dev/null; echo "0 4 * * 0 $(pwd)/security.sh audit >/dev/null 2>&1") | crontab -
@@ -333,7 +333,7 @@ setup_security_cron() {
 security_audit() {
     log "🔍 Running comprehensive security audit..."
     
-    echo -e "\n=== USERBOT SECURITY AUDIT ==="
+    echo -e "\n=== VZOEL ASSISTANT SECURITY AUDIT ==="
     echo "Audit Time: $(date)"
     echo "Hostname: $(hostname)"
     echo "User: $(whoami)"
@@ -388,7 +388,7 @@ security_audit() {
     echo ""
     echo "🔄 Running Processes:"
     echo "===================="
-    ps aux | grep -E "(python|userbot)" | grep -v grep
+    ps aux | grep -E "(python|vzoel)" | grep -v grep
     
     echo ""
     echo "📋 Recent Login Attempts:"
@@ -445,7 +445,7 @@ security_audit() {
     echo "Security Score: $SCORE/100"
     
     if [[ $SCORE -ge 80 ]]; then
-        echo "✅ EXCELLENT - Your userbot is well secured!"
+        echo "✅ EXCELLENT - Your Vzoel Assistant is well secured!"
     elif [[ $SCORE -ge 60 ]]; then
         echo "⚠️  GOOD - Consider implementing remaining security measures"
     else
@@ -499,8 +499,8 @@ case "${1:-menu}" in
         security_audit
         ;;
     "menu"|*)
-        echo "🛡️  USERBOT SECURITY HARDENING SYSTEM"
-        echo "====================================="
+        echo "🛡️  VZOEL ASSISTANT SECURITY HARDENING SYSTEM"
+        echo "=============================================="
         echo ""
         echo "Usage: $0 <command>"
         echo ""
