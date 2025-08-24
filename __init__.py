@@ -224,4 +224,46 @@ from __init__ import owner_only, log_command_usage
 @log_command_usage
 async def {plugin_name}_handler(event):
     """{plugin_name.title()} command"""
-    await event.reply(f"🎉 {plugin_name.title(
+    await event.reply(f"🎉 {plugin_name.title()} plugin is working!")
+
+# Optional: Add more functions here
+'''
+    
+    if save_to:
+        file_path = os.path.join(save_to, f"{plugin_name}.py")
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(template)
+        logger.info(f"✅ Plugin template created: {file_path}")
+    
+    return template
+
+# ============= VERSION INFO =============
+__version__ = "2.0.0"
+__author__ = "Enhanced Vzoel Assistant"
+__description__ = "Advanced plugin system for Telegram Vzoel Assistant"
+
+# ============= EXPORTS =============
+__all__ = [
+    'PluginManager',
+    'get_plugin_manager', 
+    'cmd',
+    'owner_only',
+    'log_command_usage',
+    'create_plugin_template',
+    'COMMAND_PREFIX',
+    'OWNER_ID',
+    'SESSION_NAME'
+]
+
+# ============= AUTO-INITIALIZATION =============
+if __name__ == "__main__":
+    print("🔌 Enhanced Vzoel Assistant Plugin System")
+    print(f"📋 Version: {__version__}")
+    print("🔧 Initializing plugin manager...")
+    
+    pm = get_plugin_manager()
+    results = pm.load_all_plugins()
+    
+    print(f"✅ Plugin system ready!")
+    print(f"📊 Loaded: {len(results['loaded'])} plugins")
+    print(f"🎯 Total handlers: {results['total_handlers']}")
