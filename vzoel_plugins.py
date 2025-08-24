@@ -1,32 +1,43 @@
 #!/usr/bin/env python3
 """
-Vzoel Assistant Advanced Plugins Collection
+Vzoel Assistant Advanced Plugins Collection - FIXED VERSION
 4 plugins dalam 1 file untuk Enhanced Vzoel Assistant
 - alive.py - Status dengan custom template
-- gcast_advanced.py - Broadcast dengan 8x edit animation
-- joinleavevc.py - Voice chat management
+- gcast_advanced.py - Broadcast dengan 8x edit animation (FIXED)
+- joinleavevc.py - Voice chat management (FIXED) 
 - infofounder.py - Custom founder info template
 """
 
 import asyncio
 import time
+import os
 from datetime import datetime
 from telethon import events
 from telethon.tl.functions.channels import JoinChannelRequest, LeaveChannelRequest
-from telethon.tl.functions.phone import CreateGroupCallRequest, DiscardGroupCallRequest
+from telethon.tl.functions.phone import CreateGroupCallRequest, DiscardGroupCallRequest, JoinGroupCallRequest
 from telethon.errors import FloodWaitError, ChatAdminRequiredError
-import config
+from telethon.tl.types import InputPeerChannel, InputPeerChat
+
+# Import config dengan error handling
+try:
+    import config
+    COMMAND_PREFIX = config.COMMAND_PREFIX
+except ImportError:
+    COMMAND_PREFIX = "."
 
 # ============= PLUGIN 1: ALIVE WITH CUSTOM TEMPLATE =============
 
-@events.register(events.NewMessage(pattern=r"\.alive"))
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}alive$'))
 async def enhanced_alive(event):
     """Enhanced alive command dengan custom template"""
     try:
         # Check if user is owner
-        from main import is_owner
-        if not await is_owner(event.sender_id):
-            return
+        try:
+            from main import is_owner
+            if not await is_owner(event.sender_id):
+                return
+        except ImportError:
+            pass  # Skip owner check if can't import
             
         me = await event.client.get_me()
         start_time = getattr(event.client, 'start_time', datetime.now())
@@ -54,7 +65,7 @@ async def enhanced_alive(event):
 👤 **Master:** {me.first_name or 'Anonymous'}
 🆔 **User ID:** `{me.id}`
 📱 **Phone:** `{me.phone or 'Hidden'}`
-⚡ **Prefix:** `{config.COMMAND_PREFIX}`
+⚡ **Prefix:** `{COMMAND_PREFIX}`
 🚀 **Uptime:** `{uptime_str}`
 ⏰ **Time:** `{datetime.now().strftime('%H:%M:%S')}`
 📅 **Date:** `{datetime.now().strftime('%d/%m/%Y')}`
@@ -80,16 +91,19 @@ async def enhanced_alive(event):
     except Exception as e:
         await event.reply(f"❌ **Error in alive command:** `{str(e)}`")
 
-# ============= PLUGIN 2: ADVANCED GCAST WITH 8X EDIT ANIMATION =============
+# ============= PLUGIN 2: FIXED ADVANCED GCAST =============
 
-@events.register(events.NewMessage(pattern=r"\.gcast (.+)"))
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}gcast (.+)', outgoing=True))
 async def advanced_gcast(event):
-    """Advanced global cast dengan 8x edit animation"""
+    """FIXED Advanced global cast dengan 8x edit animation"""
     try:
         # Check if user is owner
-        from main import is_owner
-        if not await is_owner(event.sender_id):
-            return
+        try:
+            from main import is_owner
+            if not await is_owner(event.sender_id):
+                return
+        except ImportError:
+            pass
             
         message = event.pattern_match.group(1)
         
@@ -118,12 +132,21 @@ async def advanced_gcast(event):
         failed_count = 0
         total_chats = 0
         
-        # Get all dialogs
+        # Get all dialogs with better filtering
         dialogs = []
-        async for dialog in event.client.iter_dialogs():
-            if dialog.is_group or dialog.is_channel:
-                dialogs.append(dialog)
-                total_chats += 1
+        try:
+            async for dialog in event.client.iter_dialogs():
+                # Skip saved messages, deleted accounts, etc
+                if (dialog.is_group or dialog.is_channel) and not dialog.entity.left:
+                    dialogs.append(dialog)
+                    total_chats += 1
+        except Exception as e:
+            await status_msg.edit(f"❌ **Error getting dialogs:** `{str(e)}`")
+            return
+        
+        if total_chats == 0:
+            await status_msg.edit("❌ **No groups/channels found to broadcast!**")
+            return
         
         # Update status with total count
         await status_msg.edit(f"📊 **Found {total_chats} chats**\n🚀 **Broadcasting message...**")
@@ -133,19 +156,17 @@ async def advanced_gcast(event):
         for i, dialog in enumerate(dialogs, 1):
             try:
                 # Add custom footer to message
-                final_message = f"""
-{message}
+                final_message = f"""{message}
 
 ━━━━━━━━━━━━━━━━━
 💎 **Vzoel Assistant** | Global Cast
-⚡ Powered by Master's Command
-                """.strip()
+⚡ Powered by Master's Command"""
                 
                 await event.client.send_message(dialog.id, final_message)
                 success_count += 1
                 
-                # Update progress every 10 messages
-                if i % 10 == 0:
+                # Update progress every 5 messages
+                if i % 5 == 0:
                     progress = int((i / total_chats) * 100)
                     await status_msg.edit(
                         f"📤 **Broadcasting Progress**\n"
@@ -154,12 +175,12 @@ async def advanced_gcast(event):
                         f"❌ Failed: `{failed_count}`"
                     )
                 
-                await asyncio.sleep(0.1)  # Anti-flood delay
+                await asyncio.sleep(0.3)  # Anti-flood delay
                 
             except FloodWaitError as e:
                 await asyncio.sleep(e.seconds)
                 failed_count += 1
-            except Exception:
+            except Exception as ex:
                 failed_count += 1
                 continue
         
@@ -184,20 +205,23 @@ async def advanced_gcast(event):
     except Exception as e:
         await event.reply(f"❌ **Gcast Error:** `{str(e)}`")
 
-# ============= PLUGIN 3: JOIN/LEAVE VOICE CHAT =============
+# ============= PLUGIN 3: FIXED JOIN/LEAVE VOICE CHAT =============
 
-@events.register(events.NewMessage(pattern=r"\.joinvc"))
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}joinvc$', outgoing=True))
 async def join_voice_chat(event):
-    """Join voice chat in current group"""
+    """FIXED Join voice chat in current group"""
     try:
         # Check if user is owner
-        from main import is_owner
-        if not await is_owner(event.sender_id):
-            return
+        try:
+            from main import is_owner
+            if not await is_owner(event.sender_id):
+                return
+        except ImportError:
+            pass
             
         chat = await event.get_chat()
         
-        if not chat.megagroup and not chat.broadcast:
+        if not (hasattr(chat, 'megagroup') and chat.megagroup) and not (hasattr(chat, 'broadcast') and chat.broadcast):
             await event.reply("❌ **This command only works in groups/channels!**")
             return
         
@@ -208,13 +232,21 @@ async def join_voice_chat(event):
         await asyncio.sleep(1)
         
         try:
-            # Try to create or join group call
-            await event.client(CreateGroupCallRequest(
-                peer=chat,
-                random_id=event.client._get_rand_id()
-            ))
+            # Simple approach - try to join existing call
+            from telethon.tl.functions.phone import JoinGroupCallRequest
             
-            success_message = f"""
+            # First, check if there's an active call
+            full_chat = await event.client.get_entity(chat.id)
+            
+            if hasattr(full_chat, 'call') and full_chat.call:
+                # Try to join existing call
+                await event.client(JoinGroupCallRequest(
+                    call=full_chat.call,
+                    join_as=await event.client.get_me(),
+                    params=None
+                ))
+                
+                success_message = f"""
 🎉 **Successfully Joined Voice Chat!**
 
 🎤 **Chat:** {chat.title or 'Unknown'}
@@ -223,27 +255,33 @@ async def join_voice_chat(event):
 🔊 **Mode:** Voice Chat Active
 
 💎 **Vzoel Assistant** is now in the voice chat!
-Use `.leavevc` to disconnect.
-            """.strip()
-            
-            await msg.edit(success_message)
-            
+Use `{COMMAND_PREFIX}leavevc` to disconnect.
+                """.strip()
+                
+                await msg.edit(success_message)
+            else:
+                await msg.edit("❌ **No active voice chat found in this group!**\nStart a voice chat first, then use this command.")
+                
         except ChatAdminRequiredError:
             await msg.edit("❌ **Admin rights required to manage voice chats!**")
         except Exception as e:
-            await msg.edit(f"❌ **Error joining voice chat:** `{str(e)}`")
+            # Fallback message
+            await msg.edit(f"⚠️ **Voice chat feature experimental**\n`{str(e)[:100]}`")
             
     except Exception as e:
         await event.reply(f"❌ **Join VC Error:** `{str(e)}`")
 
-@events.register(events.NewMessage(pattern=r"\.leavevc"))
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}leavevc$', outgoing=True))
 async def leave_voice_chat(event):
-    """Leave voice chat in current group"""
+    """FIXED Leave voice chat in current group"""
     try:
         # Check if user is owner
-        from main import is_owner
-        if not await is_owner(event.sender_id):
-            return
+        try:
+            from main import is_owner
+            if not await is_owner(event.sender_id):
+                return
+        except ImportError:
+            pass
             
         chat = await event.get_chat()
         
@@ -254,12 +292,18 @@ async def leave_voice_chat(event):
         await asyncio.sleep(1)
         
         try:
-            # Try to leave/discard group call
-            await event.client(DiscardGroupCallRequest(
-                call=chat.id  # This might need adjustment based on actual call object
-            ))
+            from telethon.tl.functions.phone import LeaveGroupCallRequest
             
-            success_message = f"""
+            # Get full chat info
+            full_chat = await event.client.get_entity(chat.id)
+            
+            if hasattr(full_chat, 'call') and full_chat.call:
+                await event.client(LeaveGroupCallRequest(
+                    call=full_chat.call,
+                    source=0
+                ))
+                
+                success_message = f"""
 👋 **Successfully Left Voice Chat!**
 
 🎤 **Chat:** {chat.title or 'Unknown'}
@@ -268,27 +312,32 @@ async def leave_voice_chat(event):
 🔇 **Mode:** Voice Chat Left
 
 💎 **Vzoel Assistant** has left the voice chat.
-Use `.joinvc` to reconnect.
-            """.strip()
-            
-            await msg.edit(success_message)
-            
+Use `{COMMAND_PREFIX}joinvc` to reconnect.
+                """.strip()
+                
+                await msg.edit(success_message)
+            else:
+                await msg.edit("✅ **No active voice chat to leave** (or already left)")
+                
         except Exception as e:
-            await msg.edit(f"✅ **Left voice chat** (or wasn't connected)\n`{str(e)}`")
+            await msg.edit(f"✅ **Left voice chat** (or wasn't connected)\n`{str(e)[:100]}`")
             
     except Exception as e:
         await event.reply(f"❌ **Leave VC Error:** `{str(e)}`")
 
 # ============= PLUGIN 4: INFO FOUNDER WITH CUSTOM TEMPLATE =============
 
-@events.register(events.NewMessage(pattern=r"\.infofounder"))
+@events.register(events.NewMessage(pattern=rf'{COMMAND_PREFIX}infofounder$', outgoing=True))
 async def info_founder(event):
     """Custom founder information template"""
     try:
         # Check if user is owner
-        from main import is_owner
-        if not await is_owner(event.sender_id):
-            return
+        try:
+            from main import is_owner
+            if not await is_owner(event.sender_id):
+                return
+        except ImportError:
+            pass
             
         me = await event.client.get_me()
         
@@ -343,7 +392,7 @@ async def info_founder(event):
 └── 🛠️ **Plugin System:** Modular architecture
 
 🏆 **Master's Command Center:**
-⚡ Prefix: `{config.COMMAND_PREFIX}`
+⚡ Prefix: `{COMMAND_PREFIX}`
 🕐 Current Time: `{datetime.now().strftime('%H:%M:%S')}`
 📅 Today's Date: `{datetime.now().strftime('%d %B %Y')}`
 
@@ -372,7 +421,7 @@ async def info_founder(event):
 # Plugin info for the enhanced system
 PLUGIN_INFO = {
     'name': 'Vzoel Advanced Plugins Collection',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'description': '4 advanced plugins: alive, gcast, joinleavevc, infofounder',
     'commands': [
         '.alive - Enhanced status with system info',
