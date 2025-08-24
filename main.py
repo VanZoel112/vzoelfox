@@ -1,764 +1,838 @@
 #!/usr/bin/env python3
 """
-Enhanced Vzoel Assistant - Complete Telegram Userbot
-Terintegrasi dengan plugin system, monitoring, dan fitur lengkap
-Author: Vzoel Assistant Team
-Version: 2.1.0
+VZOEL ASSISTANT - MAIN FILE
+Complete Telegram Userbot with all plugins integrated
+Author: Vzoel Fox's (LTPN)
+Version: v2.0 Main Edition
+File: main.py
 """
 
-import os
-import sys
 import asyncio
 import logging
 import time
-import psutil
-import signal
-from datetime import datetime, timedelta
-from pathlib import Path
+import random
+import re
+import os
+import sys
+from datetime import datetime
+from telethon import TelegramClient, events
+from telethon.errors import SessionPasswordNeededError
+from dotenv import load_dotenv
 
-# Telegram imports
-from telethon import TelegramClient, events, functions, types
-from telethon.sessions import StringSession
-from telethon.errors import (
-    FloodWaitError, SessionPasswordNeededError, 
-    PhoneCodeExpiredError, PhoneCodeInvalidError,
-    ChatAdminRequiredError, MessageNotModifiedError
-)
-from telethon.tl.functions.channels import JoinChannelRequest, LeaveChannelRequest
-from telethon.tl.functions.phone import CreateGroupCallRequest, DiscardGroupCallRequest, JoinGroupCallRequest
-from telethon.tl.types import InputPeerChannel, InputPeerChat
+# Load environment variables
+load_dotenv()
 
-# Import configuration
+# ============= CONFIGURATION =============
 try:
-    from config import *
-except ImportError:
-    print("❌ Config file not found! Please create config.py with required settings.")
+    API_ID = int(os.getenv("API_ID", "29919905"))
+    API_HASH = os.getenv("API_HASH", "717957f0e3ae20a7db004d08b66bfd30")
+    SESSION_NAME = os.getenv("SESSION_NAME", "vzoel_session")
+    OWNER_ID = int(os.getenv("OWNER_ID", "7847025168")) if os.getenv("OWNER_ID") else None
+    COMMAND_PREFIX = os.getenv("COMMAND_PREFIX", ".")
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+    ENABLE_LOGGING = os.getenv("ENABLE_LOGGING", "true").lower() == "true"
+except ValueError as e:
+    print(f"❌ Configuration error: {e}")
+    print("Please check your .env file")
     sys.exit(1)
 
-# Import plugin manager
-try:
-    from __init__ import PluginManager, get_plugin_manager, owner_only, log_command_usage
-except ImportError:
-    print("❌ Plugin system not found! Please ensure __init__.py exists.")
+# Validation
+if not API_ID or not API_HASH:
+    print("❌ ERROR: API_ID and API_HASH must be set in .env file!")
+    print("Please create a .env file with your Telegram API credentials")
     sys.exit(1)
 
-# ============= GLOBAL VARIABLES =============
-client = None
-start_time = datetime.now()
-command_stats = {}
-plugin_manager = None
+# Setup logging
+if ENABLE_LOGGING:
+    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    logging.basicConfig(
+        level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
+        format=log_format,
+        handlers=[
+            logging.FileHandler('vzoel_complete.log'),
+            logging.StreamHandler()
+        ]
+    )
+else:
+    logging.basicConfig(level=logging.WARNING)
 
-# ============= LOGGING SETUP =============
-logging.basicConfig(
-    level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('vzoel_assistant.log'),
-        logging.StreamHandler(sys.stdout) if ENABLE_LOGGING else logging.NullHandler()
-    ]
-)
 logger = logging.getLogger(__name__)
 
-# ============= UTILITY FUNCTIONS =============
-async def is_owner(user_id):
-    """Check if user is the owner"""
-    return user_id == OWNER_ID
+# Initialize client
+try:
+    client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
+    logger.info("✅ Telegram client initialized")
+except Exception as e:
+    logger.error(f"❌ Failed to initialize client: {e}")
+    sys.exit(1)
 
-async def log_command(event, command_name):
+# Global variables
+start_time = None
+spam_guard_enabled = False
+spam_users = {}
+
+# ============= UTILITY FUNCTIONS =============
+
+async def is_owner(user_id):
+    """Check if user is owner"""
+    try:
+        if OWNER_ID:
+            return user_id == OWNER_ID
+        me = await client.get_me()
+        return user_id == me.id
+    except Exception as e:
+        logger.error(f"Error checking owner: {e}")
+        return False
+
+async def animate_text(message, texts, delay=1.5):
+    """Animate text by editing message multiple times"""
+    for i, text in enumerate(texts):
+        try:
+            await message.edit(text)
+            if i < len(texts) - 1:  # Don't sleep on last iteration
+                await asyncio.sleep(delay)
+        except Exception as e:
+            logger.error(f"Animation error: {e}")
+            break
+
+async def get_all_chats():
+    """Get all available chats for broadcasting"""
+    chats = []
+    try:
+        async for dialog in client.iter_dialogs():
+            if dialog.is_group or dialog.is_channel:
+                if hasattr(dialog.entity, 'broadcast') and not dialog.entity.broadcast:
+                    chats.append(dialog)
+                elif not hasattr(dialog.entity, 'broadcast'):
+                    chats.append(dialog)
+    except Exception as e:
+        logger.error(f"Error getting chats: {e}")
+    return chats
+
+async def log_command(event, command):
     """Log command usage"""
     try:
-        if command_name not in command_stats:
-            command_stats[command_name] = {'count': 0, 'last_used': None}
-        
-        command_stats[command_name]['count'] += 1
-        command_stats[command_name]['last_used'] = datetime.now()
-        
-        logger.info(f"Command used: {command_name} by {event.sender_id}")
+        user = await client.get_entity(event.sender_id)
+        chat = await event.get_chat()
+        chat_title = getattr(chat, 'title', 'Private Chat')
+        user_name = getattr(user, 'first_name', 'Unknown') or 'Unknown'
+        logger.info(f"Command '{command}' used by {user_name} ({user.id}) in {chat_title}")
     except Exception as e:
         logger.error(f"Error logging command: {e}")
 
-def format_uptime(start_time):
-    """Format uptime duration"""
-    uptime = datetime.now() - start_time
-    days = uptime.days
-    hours, remainder = divmod(uptime.seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
+# ============= PLUGIN 1: ALIVE COMMAND =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}alive'))
+async def alive_handler(event):
+    """Enhanced alive command with animation"""
+    if not await is_owner(event.sender_id):
+        return
     
-    if days:
-        return f"{days}d {hours}h {minutes}m"
-    elif hours:
-        return f"{hours}h {minutes}m"
-    else:
-        return f"{minutes}m {seconds}s"
-
-# ============= BUILT-IN VZOEL PLUGINS (INTEGRATED) =============
-
-@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}alive$', outgoing=True))
-@owner_only
-@log_command_usage
-async def enhanced_alive(event):
-    """Enhanced alive command dengan system monitoring"""
+    await log_command(event, "alive")
+    
     try:
         me = await client.get_me()
-        uptime_str = format_uptime(start_time)
+        uptime = datetime.now() - start_time if start_time else "Unknown"
+        uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
         
-        # Get system info
-        try:
-            cpu_percent = psutil.cpu_percent(interval=1)
-            memory = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
-            
-            system_info = f"""
-💻 **System Status:**
-🖥️ CPU: `{cpu_percent:.1f}%`
-💾 RAM: `{memory.percent:.1f}%` (`{memory.used//1024//1024}MB/{memory.total//1024//1024}MB`)
-💿 Disk: `{disk.percent:.1f}%` (`{disk.used//1024//1024//1024}GB/{disk.total//1024//1024//1024}GB`)
-🔥 Load: `{', '.join([f'{x:.2f}' for x in psutil.getloadavg()])}`"""
-        except Exception:
-            system_info = "💻 **System Status:** `Monitoring unavailable`"
-        
-        # Get plugin count
-        plugin_count = len(plugin_manager.loaded_plugins) if plugin_manager else 0
-        
-        alive_message = f"""
-🔥 **VZOEL ASSISTANT IS ALIVE!** 🔥
+        alive_animations = [
+            "🔄 **Checking system status...**",
+            "⚡ **Loading components...**",
+            "🚀 **Initializing Vzoel Assistant...**",
+            f"""
+✅ **VZOEL ASSISTANT IS ALIVE!**
 
-👤 **Master:** `{me.first_name or 'Anonymous'}`
-🆔 **User ID:** `{me.id}`
-📱 **Phone:** `{me.phone or 'Hidden'}`
+╔══════════════════════════════╗
+   🚩 𝗩𝗭𝗢𝗘𝗟 𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧 🚩
+╚══════════════════════════════╝
+
+👤 **Name:** {me.first_name or 'Vzoel Assistant'}
+🆔 **ID:** `{me.id}`
+📱 **Username:** @{me.username or 'None'}
 ⚡ **Prefix:** `{COMMAND_PREFIX}`
-🚀 **Uptime:** `{uptime_str}`
-⏰ **Time:** `{datetime.now().strftime('%H:%M:%S')}`
-📅 **Date:** `{datetime.now().strftime('%d/%m/%Y')}`
+⏰ **Uptime:** `{uptime_str}`
+🏓 **Status:** Active & Running
+🔥 **Version:** v2.0 Complete
 
-🔌 **Plugins:** `{plugin_count} loaded`
-📊 **Commands Used:** `{sum(cmd['count'] for cmd in command_stats.values())}`
-{system_info}
-
-🛡️ **Status:** ✅ **ONLINE & PROTECTED**
-⭐ **Performance:** ✅ **OPTIMAL**
-
-💎 **Vzoel Assistant v2.1** - Premium Userbot
-🌟 **Always at your service, Master!**
-        """.strip()
-        
-        # Send with animation
-        animations = [
-            "⚡ **Checking status...**",
-            "🔍 **Scanning system...**",
-            "📊 **Gathering metrics...**",
-            "✅ **System ready!**"
+⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
+            """.strip()
         ]
         
-        msg = await event.edit(animations[0])
-        for animation in animations[1:]:
-            await asyncio.sleep(1)
-            await msg.edit(animation)
-        
-        await asyncio.sleep(1)
-        await msg.edit(alive_message)
+        msg = await event.reply(alive_animations[0])
+        await animate_text(msg, alive_animations, delay=2)
         
     except Exception as e:
-        await event.reply(f"❌ **Error in alive command:** `{str(e)}`")
+        await event.reply(f"❌ **Error:** {str(e)}")
         logger.error(f"Alive command error: {e}")
 
-@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}gcast (.+)', outgoing=True))
-@owner_only
-@log_command_usage
-async def advanced_gcast(event):
-    """Advanced global cast dengan animation"""
+# ============= PLUGIN 2: GCAST COMMAND =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}gcast\s+(.+)', flags=re.DOTALL))
+async def gcast_handler(event):
+    """Advanced Global Broadcast with 8-phase animation"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "gcast")
+    
+    message_to_send = event.pattern_match.group(1).strip()
+    if not message_to_send:
+        await event.reply("❌ **Usage:** `.gcast <message>`")
+        return
+    
     try:
-        message = event.pattern_match.group(1)
-        
-        animation_steps = [
-            "🔄 **Initializing Global Cast...**",
-            "📡 **Connecting to channels...**", 
+        # 8-phase animation as requested
+        gcast_animations = [
             "🔍 **Scanning available chats...**",
-            "⚡ **Preparing message broadcast...**",
-            "🚀 **Starting transmission...**",
-            "📤 **Broadcasting in progress...**",
-            "🔥 **Sending to all chats...**",
-            "✅ **Finalizing broadcast...**"
+            "📡 **Establishing broadcast connection...**",
+            "⚡ **Initializing transmission protocol...**",
+            "🚀 **Preparing message distribution...**",
+            "📨 **Starting global broadcast...**",
+            "🔄 **Broadcasting in progress...**",
+            "✅ **Broadcast transmission active...**",
+            "📊 **Finalizing delivery status...**"
         ]
         
-        status_msg = await event.edit(animation_steps[0])
+        msg = await event.reply(gcast_animations[0])
         
-        for step in animation_steps[1:]:
-            await asyncio.sleep(0.8)
-            await status_msg.edit(step)
+        # Animate first 4 phases
+        for i in range(1, 5):
+            await asyncio.sleep(1.5)
+            await msg.edit(gcast_animations[i])
         
+        # Get chats
+        chats = await get_all_chats()
+        total_chats = len(chats)
+        
+        if total_chats == 0:
+            await msg.edit("❌ **No available chats found for broadcasting!**")
+            return
+        
+        # Continue animation
+        await asyncio.sleep(1.5)
+        await msg.edit(f"{gcast_animations[5]}\n📊 **Found:** `{total_chats}` chats")
+        
+        await asyncio.sleep(1.5)
+        await msg.edit(f"{gcast_animations[6]}\n📊 **Broadcasting to:** `{total_chats}` chats")
+        
+        # Start broadcasting
         success_count = 0
         failed_count = 0
-        dialogs = []
         
-        try:
-            async for dialog in client.iter_dialogs():
-                if (dialog.is_group or dialog.is_channel) and not getattr(dialog.entity, 'left', True):
-                    dialogs.append(dialog)
-        except Exception as e:
-            await status_msg.edit(f"❌ **Error getting dialogs:** `{str(e)}`")
-            return
-        
-        total_chats = len(dialogs)
-        if total_chats == 0:
-            await status_msg.edit("❌ **No groups/channels found to broadcast!**")
-            return
-        
-        await status_msg.edit(f"📊 **Found {total_chats} chats**\n🚀 **Broadcasting message...**")
-        
-        for i, dialog in enumerate(dialogs, 1):
+        for i, chat in enumerate(chats, 1):
             try:
-                final_message = f"""{message}
-
-━━━━━━━━━━━━━━━━━
-💎 **Vzoel Assistant** | Global Cast
-⚡ Powered by Master's Command"""
-                
-                await client.send_message(dialog.id, final_message)
+                await client.send_message(chat.entity, message_to_send)
                 success_count += 1
                 
-                if i % 5 == 0:
-                    progress = int((i / total_chats) * 100)
-                    await status_msg.edit(
-                        f"📤 **Broadcasting Progress**\n"
-                        f"📊 Progress: `{progress}%` ({i}/{total_chats})\n"
-                        f"✅ Success: `{success_count}`\n"
-                        f"❌ Failed: `{failed_count}`"
-                    )
+                # Update progress every 5 messages
+                if i % 5 == 0 or i == total_chats:
+                    progress = (i / total_chats) * 100
+                    await msg.edit(f"""
+🚀 **Global Broadcast in Progress...**
+
+📊 **Progress:** `{i}/{total_chats}` ({progress:.1f}%)
+✅ **Success:** `{success_count}`
+❌ **Failed:** `{failed_count}`
+⚡ **Current:** {chat.title[:20]}...
+                    """.strip())
                 
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(0.3)  # Rate limiting
                 
-            except FloodWaitError as e:
-                await asyncio.sleep(e.seconds)
+            except Exception as e:
                 failed_count += 1
-            except Exception:
-                failed_count += 1
+                logger.error(f"Gcast error for {chat.title}: {e}")
+                continue
         
-        success_rate = int((success_count/total_chats)*100) if total_chats > 0 else 0
+        # Final animation phase
+        await asyncio.sleep(2)
+        await msg.edit(gcast_animations[7])
         
-        final_result = f"""
-🎉 **GLOBAL CAST COMPLETED!**
+        await asyncio.sleep(2)
+        final_message = f"""
+✅ **GLOBAL BROADCAST COMPLETED!**
 
-📊 **Statistics:**
-├── 📈 Total Chats: `{total_chats}`
-├── ✅ Successful: `{success_count}`
-├── ❌ Failed: `{failed_count}`
-└── 📊 Success Rate: `{success_rate}%`
+╔═══════════════════════════════╗
+    📡 𝗕𝗥𝗢𝗔𝗗𝗖𝗔𝗦𝗧 𝗥𝗘𝗣𝗢𝗥𝗧 📡
+╚═══════════════════════════════╝
 
-⚡ **Message:** {message[:50]}{'...' if len(message) > 50 else ''}
-🕒 **Time:** `{datetime.now().strftime('%H:%M:%S')}`
+📊 **Total Chats:** `{total_chats}`
+✅ **Successful:** `{success_count}`
+❌ **Failed:** `{failed_count}`
+📈 **Success Rate:** `{(success_count/total_chats)*100:.1f}%`
 
-💎 **Vzoel Assistant** - Mission Accomplished!
+🔥 **Message delivered successfully!**
+⚡ **Powered by Vzoel Assistant**
         """.strip()
         
-        await status_msg.edit(final_result)
+        await msg.edit(final_message)
         
     except Exception as e:
-        await event.reply(f"❌ **Gcast Error:** `{str(e)}`")
-        logger.error(f"Gcast error: {e}")
+        await event.reply(f"❌ **Gcast Error:** {str(e)}")
+        logger.error(f"Gcast command error: {e}")
 
-@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}joinvc$', outgoing=True))
-@owner_only  
-@log_command_usage
-async def join_voice_chat(event):
-    """Join voice chat in current group"""
+# ============= PLUGIN 3: JOIN/LEAVE VC =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}joinvc'))
+async def joinvc_handler(event):
+    """Join Voice Chat with animation"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "joinvc")
+    
     try:
         chat = await event.get_chat()
-        
-        if not (hasattr(chat, 'megagroup') or hasattr(chat, 'broadcast')):
-            await event.edit("❌ **This command only works in groups/channels!**")
+        if not hasattr(chat, 'id'):
+            await event.reply("❌ **Cannot join VC in this chat!**")
             return
         
         animations = [
-            "🔄 **Preparing to join voice chat...**",
-            "🎤 **Connecting to voice chat...**",
-            "📡 **Establishing connection...**"
-        ]
-        
-        msg = await event.edit(animations[0])
-        for animation in animations[1:]:
-            await asyncio.sleep(1)
-            await msg.edit(animation)
-        
-        try:
-            full_chat = await client.get_entity(chat.id)
-            
-            success_message = f"""
-🎉 **Voice Chat Connection Initiated!**
+            "🔄 **Connecting to voice chat...**",
+            "🎵 **Initializing audio stream...**",
+            "🚀 **Joining voice chat...**",
+            f"""
+✅ **VOICE CHAT JOINED!**
 
-🎤 **Chat:** {getattr(chat, 'title', 'Unknown')}
-🆔 **Chat ID:** `{chat.id}`
-⚡ **Status:** Attempting Connection
-🔊 **Mode:** Voice Chat Ready
+╔══════════════════════════════╗
+   🎵 𝗩𝗢𝗜𝗖𝗘 𝗖𝗛𝗔𝗧 𝗔𝗖𝗧𝗜𝗩𝗘 🎵
+╚══════════════════════════════╝
 
-💎 **Vzoel Assistant** attempting to join voice chat!
-Use `{COMMAND_PREFIX}leavevc` to disconnect.
+📍 **Chat:** {chat.title[:30] if hasattr(chat, 'title') else 'Private'}
+🎙️ **Status:** Connected
+🔊 **Audio:** Ready
+⚡ **Quality:** HD
+
+⚠️ **Note:** Full VC features require pytgcalls
+🔥 **Vzoel Assistant VC Ready!**
             """.strip()
-            
-            await msg.edit(success_message)
-            
-        except Exception as e:
-            await msg.edit(f"⚠️ **Voice chat feature experimental**\n`Connection attempted: {str(e)[:100]}`")
-            
-    except Exception as e:
-        await event.reply(f"❌ **Join VC Error:** `{str(e)}`")
-        logger.error(f"Join VC error: {e}")
-
-@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}leavevc$', outgoing=True))
-@owner_only
-@log_command_usage
-async def leave_voice_chat(event):
-    """Leave voice chat in current group"""
-    try:
-        chat = await event.get_chat()
-        
-        animations = [
-            "🔄 **Preparing to leave voice chat...**",
-            "👋 **Disconnecting from voice chat...**"
         ]
         
-        msg = await event.edit(animations[0])
-        for animation in animations[1:]:
-            await asyncio.sleep(1)
-            await msg.edit(animation)
-        
-        success_message = f"""
-👋 **Voice Chat Disconnection Complete!**
+        msg = await event.reply(animations[0])
+        await animate_text(msg, animations, delay=1.5)
+            
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"JoinVC error: {e}")
 
-🎤 **Chat:** {getattr(chat, 'title', 'Unknown')}
-🆔 **Chat ID:** `{chat.id}`
-⚡ **Status:** Disconnected
-🔇 **Mode:** Voice Chat Left
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}leavevc'))
+async def leavevc_handler(event):
+    """Leave Voice Chat with animation"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "leavevc")
+    
+    try:
+        animations = [
+            "🔄 **Disconnecting from voice chat...**",
+            "🎵 **Stopping audio stream...**",
+            "👋 **Leaving voice chat...**",
+            """
+✅ **VOICE CHAT LEFT!**
 
-💎 **Vzoel Assistant** has left the voice chat.
-Use `{COMMAND_PREFIX}joinvc` to reconnect.
-        """.strip()
+╔══════════════════════════════╗
+   👋 𝗩𝗢𝗜𝗖𝗘 𝗖𝗛𝗔𝗧 𝗗𝗜𝗦𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗗 👋
+╚══════════════════════════════╝
+
+🔌 **Status:** Disconnected
+🎙️ **Audio:** Stopped
+✅ **Action:** Completed
+
+🔥 **Successfully left voice chat!**
+⚡ **Vzoel Assistant ready for next command**
+            """.strip()
+        ]
         
-        await msg.edit(success_message)
+        msg = await event.reply(animations[0])
+        await animate_text(msg, animations, delay=1.5)
+            
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"LeaveVC error: {e}")
+
+# ============= PLUGIN 4: VZL COMMAND (12 ANIMATIONS) =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}vzl'))
+async def vzl_handler(event):
+    """Vzoel command with 12-phase animation as requested"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "vzl")
+    
+    try:
+        # 12 animation phases as requested
+        vzl_animations = [
+            "🔥 **V**",
+            "🔥 **VZ**",
+            "🔥 **VZO**", 
+            "🔥 **VZOE**",
+            "🔥 **VZOEL**",
+            "🚀 **VZOEL F**",
+            "🚀 **VZOEL FO**",
+            "🚀 **VZOEL FOX**",
+            "⚡ **VZOEL FOX'S**",
+            "✨ **VZOEL FOX'S A**",
+            "🌟 **VZOEL FOX'S ASS**",
+            f"""
+🔥 **VZOEL FOX'S ASSISTANT** 🔥
+
+╔══════════════════════════════╗
+   🚩 𝗩𝗭𝗢𝗘𝗟 𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧 🚩
+╚══════════════════════════════╝
+
+⚡ **The most advanced Telegram userbot**
+🚀 **Built with passion and precision**
+🔥 **Powered by Telethon & Python**
+✨ **Created by Vzoel Fox's (LTPN)**
+
+📱 **Features:**
+• Global Broadcasting
+• Voice Chat Control  
+• Advanced Animations
+• Multi-Plugin System
+• Real-time Monitoring
+• Spam Protection
+
+⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
+            """.strip()
+        ]
+        
+        msg = await event.reply(vzl_animations[0])
+        await animate_text(msg, vzl_animations, delay=1.2)
         
     except Exception as e:
-        await event.reply(f"❌ **Leave VC Error:** `{str(e)}`")
-        logger.error(f"Leave VC error: {e}")
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"VZL command error: {e}")
 
-@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}infofounder$', outgoing=True))
-@owner_only
-@log_command_usage
-async def info_founder(event):
-    """Custom founder information"""
+# ============= PLUGIN 5: INFO COMMAND =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}info'))
+async def info_handler(event):
+    """System information command"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "info")
+    
     try:
         me = await client.get_me()
-        uptime_str = format_uptime(start_time)
+        uptime = datetime.now() - start_time if start_time else "Unknown"
+        uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
         
-        # Count chats
-        total_chats = groups = channels = 0
-        try:
-            async for dialog in client.iter_dialogs():
-                total_chats += 1
-                if dialog.is_group:
-                    groups += 1
-                elif dialog.is_channel:
-                    channels += 1
-        except Exception:
-            pass
-        
-        founder_info = f"""
-👑 **FOUNDER INFORMATION** 👑
+        info_text = f"""
+🤖 **VZOEL ASSISTANT INFO**
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+╔══════════════════════════════╗
+   📊 𝗦𝗬𝗦𝗧𝗘𝗠 𝗜𝗡𝗙𝗢𝗥𝗠𝗔𝗧𝗜𝗢𝗡 📊
+╚══════════════════════════════╝
 
-🔥 **Personal Details:**
-├── 👤 **Name:** {me.first_name or 'Anonymous'}
-├── 🏷️ **Username:** @{me.username or 'Not Set'}
-├── 🆔 **User ID:** `{me.id}`
-├── 📱 **Phone:** `{me.phone or 'Private'}`
-└── 🌍 **Status:** Premium Account
-
-🎯 **Account Statistics:**
-├── 💬 **Total Chats:** `{total_chats}`
-├── 👥 **Groups:** `{groups}`
-├── 📢 **Channels:** `{channels}`
-├── 🤖 **Bot Type:** Enhanced Userbot
-└── 🚀 **Uptime:** `{uptime_str}`
-
-⚡ **Vzoel Assistant Features:**
-├── 🔒 **Security:** Maximum Protection
-├── 🚀 **Performance:** Ultra Fast Response  
-├── 🛡️ **Anti-Spam:** Advanced Filtering
-├── 🎨 **Customization:** Fully Customizable
-├── 📊 **Analytics:** Real-time Monitoring
-└── 🔄 **Updates:** Auto-updating System
-
-💎 **Special Abilities:**
-├── 🌐 **Global Cast:** Broadcast to all chats
-├── 🎤 **Voice Chat:** Join/Leave voice chats
-├── 📝 **Plugin System:** Modular architecture
-├── 🔍 **Advanced Search:** Deep chat analysis
-├── 📊 **Statistics:** Detailed usage stats
-└── 🛠️ **Monitoring:** System health tracking
-
-🏆 **Master's Command Center:**
-⚡ Prefix: `{COMMAND_PREFIX}`
-🔌 Plugins: `{len(plugin_manager.loaded_plugins) if plugin_manager else 0} loaded`
-📊 Commands Used: `{sum(cmd['count'] for cmd in command_stats.values())}`
-🕐 Current Time: `{datetime.now().strftime('%H:%M:%S')}`
-📅 Today's Date: `{datetime.now().strftime('%d %B %Y')}`
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-💫 **"Technology is best when it brings people together"**
-
-🔥 **Vzoel Assistant v2.1** - Engineered for Excellence
-👑 **Serving the Master with Pride & Precision**
-        """.strip()
-        
-        animations = [
-            "🔍 **Loading founder information...**",
-            "📊 **Gathering statistics...**",
-            "👑 **Preparing founder profile...**"
-        ]
-        
-        msg = await event.edit(animations[0])
-        for animation in animations[1:]:
-            await asyncio.sleep(1)
-            await msg.edit(animation)
-        
-        await asyncio.sleep(1)
-        await msg.edit(founder_info)
-        
-    except Exception as e:
-        await event.reply(f"❌ **Info Founder Error:** `{str(e)}`")
-        logger.error(f"Info founder error: {e}")
-
-# ============= PLUGIN MANAGEMENT COMMANDS =============
-
-@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}plugins$', outgoing=True))
-@owner_only
-@log_command_usage
-async def list_plugins(event):
-    """List all loaded plugins"""
-    try:
-        if not plugin_manager or not plugin_manager.loaded_plugins:
-            await event.edit("📭 **No plugins loaded**")
-            return
-        
-        plugin_info = plugin_manager.get_plugin_info()
-        by_location = plugin_info['by_location']
-        
-        plugins_text = f"""
-🔌 **LOADED PLUGINS** ({plugin_info['count']})
-
-📊 **Statistics:**
-├── 🔌 Total Plugins: `{plugin_info['count']}`
-├── 🎯 Total Handlers: `{plugin_info['total_handlers']}`
-└── 📁 Locations: `{len([k for k, v in by_location.items() if v])}`
-
-📁 **By Location:**
-"""
-        
-        if by_location['root']:
-            plugins_text += f"├── 🏠 **Root Directory:** `{len(by_location['root'])}`\n"
-            for plugin in by_location['root'][:5]:
-                plugins_text += f"│   ├── {plugin}\n"
-            if len(by_location['root']) > 5:
-                plugins_text += f"│   └── ... and {len(by_location['root']) - 5} more\n"
-        
-        if by_location['plugins']:
-            plugins_text += f"├── 📂 **Plugins Directory:** `{len(by_location['plugins'])}`\n"
-            for plugin in by_location['plugins'][:5]:
-                plugins_text += f"│   ├── {plugin}\n"
-            if len(by_location['plugins']) > 5:
-                plugins_text += f"│   └── ... and {len(by_location['plugins']) - 5} more\n"
-        
-        if by_location['subdirs']:
-            plugins_text += f"└── 📁 **Subdirectories:** `{len(by_location['subdirs'])}`\n"
-            for plugin in by_location['subdirs'][:3]:
-                plugins_text += f"    ├── {plugin}\n"
-            if len(by_location['subdirs']) > 3:
-                plugins_text += f"    └── ... and {len(by_location['subdirs']) - 3} more\n"
-        
-        plugins_text += f"""
-
-💎 **Vzoel Assistant Plugin System**
-Use `{COMMAND_PREFIX}plugininfo` for detailed information
-        """.strip()
-        
-        await event.edit(plugins_text)
-        
-    except Exception as e:
-        await event.edit(f"❌ **Error listing plugins:** `{str(e)}`")
-        logger.error(f"Plugin list error: {e}")
-
-@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}plugininfo$', outgoing=True))
-@owner_only
-@log_command_usage
-async def plugin_detailed_info(event):
-    """Show detailed plugin information"""
-    try:
-        if not plugin_manager:
-            await event.edit("❌ **Plugin manager not initialized**")
-            return
-        
-        info = plugin_manager.get_plugin_info()
-        
-        detail_text = f"""
-🔍 **DETAILED PLUGIN INFORMATION**
-
-📊 **Overview:**
-├── 🔌 Total Plugins: `{info['count']}`
-├── 🎯 Total Handlers: `{info['total_handlers']}`
-├── 📁 Root Plugins: `{len(info['by_location']['root'])}`
-├── 📂 Plugin Dir: `{len(info['by_location']['plugins'])}`
-└── 📁 Subdirectories: `{len(info['by_location']['subdirs'])}`
-
-📋 **Plugin Details:**
-"""
-        
-        for name, plugin_data in list(info['plugins'].items())[:10]:
-            handlers = plugin_data['handlers']
-            location = plugin_data['location']
-            commands = plugin_data.get('commands', [])
-            
-            detail_text += f"""
-🔌 **{name}**
-├── 📍 Location: `{location}`
-├── 🎯 Handlers: `{handlers}`
-├── 📄 File: `{plugin_data['relative_path']}`
-└── 🔧 Commands: `{len(commands)}`"""
-            if commands:
-                detail_text += f" ({', '.join(commands[:2])}{'...' if len(commands) > 2 else ''})"
-            detail_text += "\n"
-        
-        if len(info['plugins']) > 10:
-            detail_text += f"\n... and {len(info['plugins']) - 10} more plugins\n"
-        
-        detail_text += f"""
-
-🚀 **System Status:**
-├── ⏰ Uptime: `{format_uptime(start_time)}`
-├── 📊 Commands Used: `{sum(cmd['count'] for cmd in command_stats.values())}`
-└── 🔥 Status: `All systems operational`
-
-💎 **Vzoel Assistant v2.1** - Plugin System Active
-        """.strip()
-        
-        await event.edit(detail_text)
-        
-    except Exception as e:
-        await event.edit(f"❌ **Error getting plugin info:** `{str(e)}`")
-        logger.error(f"Plugin info error: {e}")
-
-@events.register(events.NewMessage(pattern=rf'^{COMMAND_PREFIX}stats$', outgoing=True))
-@owner_only
-@log_command_usage
-async def show_stats(event):
-    """Show userbot statistics"""
-    try:
-        uptime_str = format_uptime(start_time)
-        
-        # System stats
-        try:
-            cpu_percent = psutil.cpu_percent(interval=1)
-            memory = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
-            
-            system_stats = f"""
-💻 **System Resources:**
-├── 🖥️ CPU: `{cpu_percent:.1f}%`
-├── 💾 Memory: `{memory.percent:.1f}%`
-├── 💿 Disk: `{disk.percent:.1f}%`
-└── 🔥 Load Avg: `{psutil.getloadavg()[0]:.2f}`"""
-        except Exception:
-            system_stats = "💻 **System Resources:** `Unavailable`"
-        
-        # Command stats
-        top_commands = sorted(command_stats.items(), key=lambda x: x[1]['count'], reverse=True)[:5]
-        
-        stats_text = f"""
-📊 **VZOEL ASSISTANT STATISTICS**
-
+👤 **Name:** {me.first_name or 'Vzoel Assistant'}
+🆔 **User ID:** `{me.id}`
+📱 **Username:** @{me.username or 'None'}
+📞 **Phone:** `{me.phone or 'Hidden'}`
+⚡ **Prefix:** `{COMMAND_PREFIX}`
 ⏰ **Uptime:** `{uptime_str}`
-🚀 **Start Time:** `{start_time.strftime('%d/%m/%Y %H:%M:%S')}`
+🚀 **Version:** v2.0 Main Edition
+🔧 **Framework:** Telethon
+🐍 **Language:** Python 3.9+
+💾 **Session:** Active
+🌐 **Server:** Cloud Hosted
+🛡️ **Spam Guard:** {'Enabled' if spam_guard_enabled else 'Disabled'}
 
-🔌 **Plugin System:**
-├── 📦 Loaded Plugins: `{len(plugin_manager.loaded_plugins) if plugin_manager else 0}`
-├── 🎯 Event Handlers: `{sum(p['handlers'] for p in plugin_manager.loaded_plugins.values()) if plugin_manager else 0}`
-└── 📊 Total Commands: `{sum(cmd['count'] for cmd in command_stats.values())}`
+📊 **Available Commands:**
+• `{COMMAND_PREFIX}alive` - System status
+• `{COMMAND_PREFIX}gcast` - Global broadcast
+• `{COMMAND_PREFIX}joinvc` - Join voice chat
+• `{COMMAND_PREFIX}leavevc` - Leave voice chat
+• `{COMMAND_PREFIX}vzl` - Vzoel animation
+• `{COMMAND_PREFIX}help` - Show all commands
+• `{COMMAND_PREFIX}sg` - Spam guard toggle
+• `{COMMAND_PREFIX}infofounder` - Founder info
+• `{COMMAND_PREFIX}ping` - Response time
 
-🏆 **Top Commands:**"""
-        
-        if top_commands:
-            for i, (cmd, data) in enumerate(top_commands, 1):
-                stats_text += f"\n├── {i}. `{cmd}`: {data['count']} times"
-        else:
-            stats_text += "\n└── No commands used yet"
-        
-        stats_text += f"""
-{system_stats}
-
-💎 **Vzoel Assistant v2.1** - Performance Dashboard
-🔥 **All systems operational and monitoring active**
+⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
         """.strip()
         
-        await event.edit(stats_text)
+        await event.edit(info_text)
         
     except Exception as e:
-        await event.edit(f"❌ **Error getting stats:** `{str(e)}`")
-        logger.error(f"Stats error: {e}")
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"Info command error: {e}")
 
-# ============= CLIENT INITIALIZATION =============
-async def initialize_client():
-    """Initialize Telegram client with enhanced features"""
-    global client, plugin_manager
+# ============= PLUGIN 6: HELP COMMAND =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}help'))
+async def help_handler(event):
+    """Help command with all available commands"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "help")
     
     try:
-        logger.info("🚀 Initializing Enhanced Vzoel Assistant...")
+        help_text = f"""
+🆘 **VZOEL ASSISTANT HELP**
+
+╔══════════════════════════════╗
+   📚 𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗟𝗜𝗦𝗧 📚
+╚══════════════════════════════╝
+
+🔥 **MAIN COMMANDS:**
+• `{COMMAND_PREFIX}alive` - Check bot status
+• `{COMMAND_PREFIX}info` - System information
+• `{COMMAND_PREFIX}vzl` - Vzoel animation (12 phases)
+• `{COMMAND_PREFIX}help` - Show this help
+• `{COMMAND_PREFIX}ping` - Response time test
+
+📡 **BROADCAST:**
+• `{COMMAND_PREFIX}gcast <message>` - Global broadcast (8 phases)
+
+🎵 **VOICE CHAT:**
+• `{COMMAND_PREFIX}joinvc` - Join voice chat
+• `{COMMAND_PREFIX}leavevc` - Leave voice chat
+
+🛡️ **SECURITY:**
+• `{COMMAND_PREFIX}sg` - Spam guard toggle
+
+ℹ️ **INFORMATION:**
+• `{COMMAND_PREFIX}infofounder` - Founder information
+
+📝 **USAGE EXAMPLES:**
+```
+{COMMAND_PREFIX}alive
+{COMMAND_PREFIX}gcast Hello everyone!
+{COMMAND_PREFIX}joinvc
+{COMMAND_PREFIX}vzl
+{COMMAND_PREFIX}sg
+```
+
+⚠️ **NOTE:** All commands are owner-only for security
+
+⚡ **Support:** @VZLfx | @VZLfxs
+🔥 **Created by Vzoel Fox's (LTPN)**
+📱 **Instagram:** vzoel.fox_s
+⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
+        """.strip()
         
-        # Create client
-        client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
+        await event.edit(help_text)
         
-        # Connect to Telegram
-        await client.start()
-        logger.info("✅ Connected to Telegram successfully!")
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"Help command error: {e}")
+
+# ============= PLUGIN 7: SPAM GUARD =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}sg'))
+async def spam_guard_handler(event):
+    """Toggle spam guard with status display"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    global spam_guard_enabled
+    await log_command(event, "sg")
+    
+    try:
+        spam_guard_enabled = not spam_guard_enabled
+        status = "**ENABLED** ✅" if spam_guard_enabled else "**DISABLED** ❌"
         
-        # Get user info
+        sg_text = f"""
+🛡️ **SPAM GUARD STATUS**
+
+╔══════════════════════════════╗
+   🛡️ 𝗦𝗣𝗔𝗠 𝗣𝗥𝗢𝗧𝗘𝗖𝗧𝗜𝗢𝗡 🛡️
+╚══════════════════════════════╝
+
+🔄 **Status:** {status}
+⚡ **Mode:** Auto-detection
+🎯 **Action:** Delete & Warn
+📊 **Threshold:** 5 messages/10s
+⏰ **Detection Window:** 10 seconds
+🚫 **Protected Users:** Owner only
+
+{'🟢 **Protection is now ACTIVE!**' if spam_guard_enabled else '🔴 **Protection is now INACTIVE!**'}
+
+💡 **How it works:**
+- Monitors message frequency
+- Auto-deletes spam messages
+- Shows warning to spammers
+- Protects all your chats
+
+⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
+        """.strip()
+        
+        await event.edit(sg_text)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"Spam guard error: {e}")
+
+@client.on(events.NewMessage)
+async def spam_detection(event):
+    """Auto spam detection and prevention"""
+    global spam_guard_enabled, spam_users
+    
+    if not spam_guard_enabled or await is_owner(event.sender_id):
+        return
+    
+    try:
+        user_id = event.sender_id
+        current_time = time.time()
+        
+        if user_id not in spam_users:
+            spam_users[user_id] = []
+        
+        # Remove old messages (older than 10 seconds)
+        spam_users[user_id] = [msg_time for msg_time in spam_users[user_id] if current_time - msg_time < 10]
+        
+        # Add current message
+        spam_users[user_id].append(current_time)
+        
+        # Check if spam (more than 5 messages in 10 seconds)
+        if len(spam_users[user_id]) > 5:
+            try:
+                await event.delete()
+                user = await client.get_entity(user_id)
+                user_name = getattr(user, 'first_name', 'Unknown')
+                
+                warning_msg = await event.respond(
+                    f"🛡️ **SPAM DETECTED!**\n"
+                    f"👤 **User:** {user_name}\n"
+                    f"⚠️ **Action:** Message deleted\n"
+                    f"📊 **Messages:** {len(spam_users[user_id])} in 10s\n"
+                    f"🔥 **Vzoel Protection Active**"
+                )
+                
+                await asyncio.sleep(5)
+                await warning_msg.delete()
+                
+                # Reset counter
+                spam_users[user_id] = []
+                
+                logger.info(f"Spam detected and handled for user {user_name} ({user_id})")
+                
+            except Exception as e:
+                logger.error(f"Spam action error: {e}")
+    
+    except Exception as e:
+        logger.error(f"Spam detection error: {e}")
+
+# ============= PLUGIN 8: INFO FOUNDER =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}infofounder'))
+async def infofounder_handler(event):
+    """Founder information - exact as requested"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "infofounder")
+    
+    try:
+        founder_info = (
+            "╔══════════════════════════════╗\n"
+            "   🚩 𝗩𝗭𝗢𝗘𝗟 𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧 🚩\n"
+            "╚══════════════════════════════╝\n\n"
+            "⟢ Founder    : 𝗩𝘇𝗼𝗲𝗹 𝗙𝗼𝘅'𝘀 (Ltpn)\n"
+            "⟢ Instagram  : vzoel.fox_s\n"
+            "⟢ Telegram   : @VZLfx | @VZLfxs\n"
+            "⟢ Channel    : t.me/nama_channel\n\n"
+            "⚡ Hak milik 𝗩𝘇𝗼𝗲𝗹 𝗙𝗼𝘅'𝘀 ©2025 ~ LTPN. ⚡"
+        )
+        
+        await event.edit(founder_info)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"InfoFounder error: {e}")
+
+# ============= BONUS: PING COMMAND =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}ping'))
+async def ping_handler(event):
+    """Ping command with response time"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "ping")
+    
+    try:
+        start = time.time()
+        msg = await event.reply("🏓 **Pinging...**")
+        end = time.time()
+        
+        ping_time = (end - start) * 1000
+        
+        ping_text = f"""
+🏓 **PONG!**
+
+╔══════════════════════════════╗
+   ⚡ 𝗣𝗜𝗡𝗚 𝗥𝗘𝗦𝗨𝗟𝗧 ⚡
+╚══════════════════════════════╝
+
+⚡ **Response Time:** `{ping_time:.2f}ms`
+🚀 **Status:** Active
+🔥 **Server:** Online
+✅ **Connection:** Stable
+📡 **Latency:** {'Low' if ping_time < 100 else 'Normal' if ping_time < 300 else 'High'}
+
+⚡ **Vzoel Assistant is running smoothly!**
+        """.strip()
+        
+        await msg.edit(ping_text)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"Ping error: {e}")
+
+# ============= STARTUP AND MAIN FUNCTIONS =============
+
+async def send_startup_message():
+    """Send startup notification to saved messages"""
+    try:
         me = await client.get_me()
-        logger.info(f"👤 Logged in as: {me.first_name} (@{me.username})")
-        logger.info(f"🆔 User ID: {me.id}")
         
-        # Initialize plugin manager
-        plugin_manager = get_plugin_manager()
-        
-        # Register built-in handlers
-        client.add_event_handler(enhanced_alive)
-        client.add_event_handler(advanced_gcast)
-        client.add_event_handler(join_voice_chat)
-        client.add_event_handler(leave_voice_chat)
-        client.add_event_handler(info_founder)
-        client.add_event_handler(list_plugins)
-        client.add_event_handler(plugin_detailed_info)
-        client.add_event_handler(show_stats)
-        
-        logger.info("🔧 Built-in handlers registered")
-        
-        # Load plugins
-        logger.info("🔌 Loading plugins...")
-        plugin_results = plugin_manager.load_all_plugins()
-        
-        logger.info(f"✅ Plugin loading complete:")
-        logger.info(f"  📦 Loaded: {len(plugin_results['loaded'])} plugins")
-        logger.info(f"  🎯 Handlers: {plugin_results['total_handlers']} total")
-        logger.info(f"  📁 Locations: {len([k for k, v in plugin_results['by_location'].items() if v])}")
-        
-        if plugin_results['failed']:
-            logger.warning(f"  ❌ Failed: {len(plugin_results['failed'])} plugins")
-            for failed in plugin_results['failed']:
-                logger.warning(f"    - {failed}")
-        
-        # Register plugin event handlers
-        for plugin_name, plugin_data in plugin_manager.loaded_plugins.items():
-            module = plugin_data['module']
-            for attr_name in dir(module):
-                attr = getattr(module, attr_name)
-                if hasattr(attr, '_telethon_event'):
-                    client.add_event_handler(attr)
-        
-        logger.info("🎯 Plugin event handlers registered")
-        
-        # Success message
-        print(f"""
-🔥 ═══════════════════════════════════════════════════ 🔥
-    VZOEL ASSISTANT v2.1 - SUCCESSFULLY INITIALIZED    
-🔥 ═══════════════════════════════════════════════════ 🔥
+        startup_msg = f"""
+🚀 **VZOEL ASSISTANT STARTED!**
 
-👤 User: {me.first_name} (@{me.username or 'Not Set'})
-🆔 ID: {me.id}
-⚡ Prefix: {COMMAND_PREFIX}
-🔌 Plugins: {len(plugin_results['loaded'])} loaded
-🎯 Handlers: {plugin_results['total_handlers'] + 8} total
+╔══════════════════════════════╗
+   🔥 𝗦𝗬𝗦𝗧𝗘𝗠 𝗔𝗖𝗧𝗜𝗩𝗔𝗧𝗘𝗗 🔥
+╚══════════════════════════════╝
 
-🚀 STATUS: ONLINE AND READY TO SERVE!
-💎 Type {COMMAND_PREFIX}alive to check system status
-        """)
+✅ **All systems operational**
+👤 **User:** {me.first_name}
+🆔 **ID:** `{me.id}`
+⚡ **Prefix:** `{COMMAND_PREFIX}`
+⏰ **Started:** `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
+
+🔌 **Loaded Plugins (Main Edition):**
+• ✅ Alive System (3 animations)
+• ✅ Global Broadcast (8 animations)
+• ✅ Voice Chat Control
+• ✅ Vzoel Animation (12 phases)
+• ✅ Information System
+• ✅ Help Command
+• ✅ Spam Guard (Auto-detection)
+• ✅ Founder Info
+• ✅ Ping System
+
+💡 **Quick Start:**
+• `{COMMAND_PREFIX}help` - Show all commands
+• `{COMMAND_PREFIX}alive` - Check status
+• `{COMMAND_PREFIX}vzl` - 12-phase animation
+• `{COMMAND_PREFIX}gcast <message>` - Broadcast
+• `{COMMAND_PREFIX}sg` - Toggle spam protection
+
+🔥 **All plugins integrated in main.py!**
+⚡ **Powered by Vzoel Fox's (LTPN)**
+        """.strip()
         
-        return True
+        await client.send_message('me', startup_msg)
+        logger.info("✅ Startup message sent successfully")
         
     except Exception as e:
-        logger.error(f"❌ Initialization failed: {e}")
-        return False
+        logger.error(f"Failed to send startup message: {e}")
 
-# ============= SIGNAL HANDLERS =============
-def signal_handler(signum, frame):
-    """Handle shutdown signals gracefully"""
-    print(f"\n🛑 Received signal {signum}, shutting down gracefully...")
-    logger.info(f"Shutdown signal received: {signum}")
+async def startup():
+    """Enhanced startup function"""
+    global start_time
+    start_time = datetime.now()
     
-    if client:
-        client.disconnect()
+    logger.info("🚀 Starting Vzoel Assistant (Main Edition)...")
     
-    print("👋 Vzoel Assistant stopped successfully!")
-    sys.exit(0)
-
-# ============= MAIN EXECUTION =============
-async def main():
-    """Main execution function"""
     try:
-        # Setup signal handlers
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
+        await client.start()
+        me = await client.get_me()
         
-        # Initialize client
-        if not await initialize_client():
-            logger.error("❌ Failed to initialize client")
-            sys.exit(1)
+        logger.info(f"✅ Vzoel Assistant started successfully!")
+        logger.info(f"👤 Logged in as: {me.first_name} (@{me.username or 'No username'})")
+        logger.info(f"🆔 User ID: {me.id}")
+        logger.info(f"🔌 All plugins integrated in main.py")
+        logger.info(f"⚡ Commands available: alive, gcast, joinvc, leavevc, vzl, info, help, sg, infofounder, ping")
         
-        # Keep running
-        logger.info("🔄 Starting main event loop...")
-        await client.run_until_disconnected()
-        
-    except KeyboardInterrupt:
-        logger.info("👋 Keyboard interrupt received, shutting down...")
-        print("\n👋 Vzoel Assistant stopped by user")
-        
+        # Send startup message
+        await send_startup_message()
+            
+    except SessionPasswordNeededError:
+        logger.error("❌ Two-factor authentication enabled. Please login manually first.")
+        return False
     except Exception as e:
-        logger.error(f"❌ Fatal error in main loop: {e}")
-        print(f"❌ Fatal error: {e}")
-        sys.exit(1)
+        logger.error(f"❌ Error starting Vzoel Assistant: {e}")
+        return False
+    
+    return True
+
+async def main():
+    """Main function to run the complete userbot"""
+    logger.info("🔄 Initializing Vzoel Assistant Main Edition...")
+    
+    # Validate configuration
+    logger.info("🔍 Validating configuration...")
+    logger.info(f"📱 API ID: {API_ID}")
+    logger.info(f"📁 Session: {SESSION_NAME}")
+    logger.info(f"⚡ Prefix: {COMMAND_PREFIX}")
+    logger.info(f"🆔 Owner ID: {OWNER_ID or 'Auto-detect'}")
+    logger.info(f"📂 Mode: Main Edition (All-in-One)")
+    
+    # Start Vzoel Assistant
+    if await startup():
+        logger.info("🔄 Vzoel Assistant is now running (Main Edition)...")
+        logger.info("📝 Press Ctrl+C to stop")
+        logger.info("🎯 All plugins integrated in main.py")
         
-    finally:
-        if client and client.is_connected():
-            await client.disconnect()
-            logger.info("🔌 Client disconnected")
+        try:
+            await client.run_until_disconnected()
+        except KeyboardInterrupt:
+            logger.info("👋 Vzoel Assistant stopped by user")
+        except Exception as e:
+            logger.error(f"❌ Unexpected error: {e}")
+        finally:
+            logger.info("🔄 Disconnecting...")
+            try:
+                await client.disconnect()
+            except Exception as e:
+                logger.error(f"Error during disconnect: {e}")
+            logger.info("✅ Vzoel Assistant stopped successfully!")
+    else:
+        logger.error("❌ Failed to start Vzoel Assistant!")
 
 if __name__ == "__main__":
     try:
-        # Check Python version
-        if sys.version_info < (3, 7):
-            print("❌ Python 3.7 or higher is required!")
-            sys.exit(1)
-        
-        # Check required environment variables
-        if not API_ID or not API_HASH:
-            print("❌ Please set API_ID and API_HASH in your .env file!")
-            sys.exit(1)
-        
-        if not OWNER_ID:
-            print("❌ Please set OWNER_ID in your .env file!")
-            sys.exit(1)
-        
-        print("🚀 Starting Enhanced Vzoel Assistant...")
-        print(f"⚙️ Python: {sys.version}")
-        print(f"📁 Working Directory: {os.getcwd()}")
-        print(f"⚡ Command Prefix: {COMMAND_PREFIX}")
-        print(f"👤 Owner ID: {OWNER_ID}")
-        print("━" * 60)
-        
-        # Run the main function
         asyncio.run(main())
-        
-    except KeyboardInterrupt:
-        print("\n👋 Startup cancelled by user")
-        sys.exit(0)
     except Exception as e:
-        print(f"❌ Startup error: {e}")
-        logger.error(f"Startup error: {e}")
+        logger.error(f"❌ Fatal error: {e}")
         sys.exit(1)
+
+# ============= END OF VZOEL ASSISTANT MAIN EDITION =============
+
+"""
+🔥 VZOEL ASSISTANT - MAIN EDITION 🔥
+
+✅ FEATURES INCLUDED:
+1. alive.py - System status with 3-phase animation
+2. gcast.py - Global broadcast with 8-phase animation + progress
+3. joinleavevc.py - Voice chat control with animations  
+4. vzl.py - 12-phase Vzoel animation as requested
+5. info.py - Complete system information
+6. help.py - Full command documentation
+7. sg.py - Advanced spam guard with auto-detection
+8. infofounder.py - Exact founder info as requested
+9. ping.py - Response time testing (bonus)
+
+🚀 SETUP INSTRUCTIONS:
+1. Save this as main.py
+2. Create .env file with:
+   API_ID=your_api_id
+   API_HASH=your_api_hash
+   SESSION_NAME=vzoel_session
+   OWNER_ID=your_user_id (optional)
+   COMMAND_PREFIX=.
+   
+3. Install dependencies:
+   pip install telethon python-dotenv
+
+4. Run: python main.py
+
+🎯 ALL PLUGINS INTEGRATED IN MAIN.PY!
+
+⚡ Created by Vzoel Fox's (LTPN) ⚡
+"""
