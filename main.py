@@ -167,7 +167,7 @@ async def alive_handler(event):
 
 # ============= PLUGIN 2: GCAST COMMAND =============
 
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}gcast\s+(.+)', flags=re.DOTALL))
+@client.on(events.NewMessage(pattern=re.compile(rf'{re.escape(COMMAND_PREFIX)}gcast\s+(.+)', re.DOTALL)))
 async def gcast_handler(event):
     """Advanced Global Broadcast with 8-phase animation"""
     if not await is_owner(event.sender_id):
@@ -835,4 +835,5 @@ if __name__ == "__main__":
 🎯 ALL PLUGINS INTEGRATED IN MAIN.PY!
 
 ⚡ Created by Vzoel Fox's (LTPN) ⚡
+
 """
