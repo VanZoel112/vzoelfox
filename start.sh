@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# ============= USERBOT STARTUP SCRIPT =============
-# Script untuk menjalankan userbot dengan auto-restart
+# ============= VZOEL ASSISTANT STARTUP SCRIPT =============
+# Script untuk menjalankan Vzoel Assistant dengan auto-restart
 # Usage: ./start.sh
 
 set -e
@@ -17,8 +17,8 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MAIN_FILE="main.py"
 VENV_DIR="telethon_env"
-LOG_FILE="userbot.log"
-PID_FILE="userbot.pid"
+LOG_FILE="vzoel_assistant.log"
+PID_FILE="vzoel_assistant.pid"
 
 # Functions
 log() {
@@ -62,12 +62,12 @@ setup_venv() {
     success "Dependencies installed!"
 }
 
-# Check if userbot is already running
+# Check if Vzoel Assistant is already running
 check_running() {
     if [[ -f "$PID_FILE" ]]; then
         PID=$(cat "$PID_FILE")
         if ps -p "$PID" > /dev/null 2>&1; then
-            error "Userbot is already running (PID: $PID)"
+            error "Vzoel Assistant is already running (PID: $PID)"
             echo "Use './start.sh stop' to stop it first"
             exit 1
         else
@@ -77,49 +77,49 @@ check_running() {
     fi
 }
 
-# Start userbot
-start_userbot() {
-    log "Starting userbot..."
+# Start Vzoel Assistant
+start_vzoel_assistant() {
+    log "Starting Vzoel Assistant..."
     
     # Activate virtual environment
     source "$VENV_DIR/bin/activate"
     
-    # Start userbot in background
+    # Start Vzoel Assistant in background
     nohup python3 "$MAIN_FILE" > "$LOG_FILE" 2>&1 &
     
     # Save PID
     echo $! > "$PID_FILE"
     
-    success "Userbot started! PID: $(cat $PID_FILE)"
+    success "Vzoel Assistant started! PID: $(cat $PID_FILE)"
     log "Log file: $LOG_FILE"
     log "Use './start.sh logs' to view logs"
-    log "Use './start.sh stop' to stop userbot"
+    log "Use './start.sh stop' to stop Vzoel Assistant"
 }
 
-# Stop userbot
-stop_userbot() {
+# Stop Vzoel Assistant
+stop_vzoel_assistant() {
     if [[ -f "$PID_FILE" ]]; then
         PID=$(cat "$PID_FILE")
         if ps -p "$PID" > /dev/null 2>&1; then
-            log "Stopping userbot (PID: $PID)..."
+            log "Stopping Vzoel Assistant (PID: $PID)..."
             kill "$PID"
             rm -f "$PID_FILE"
-            success "Userbot stopped!"
+            success "Vzoel Assistant stopped!"
         else
-            warning "Userbot not running"
+            warning "Vzoel Assistant not running"
             rm -f "$PID_FILE"
         fi
     else
-        warning "PID file not found. Userbot may not be running."
+        warning "PID file not found. Vzoel Assistant may not be running."
     fi
 }
 
-# Restart userbot
-restart_userbot() {
-    log "Restarting userbot..."
-    stop_userbot
+# Restart Vzoel Assistant
+restart_vzoel_assistant() {
+    log "Restarting Vzoel Assistant..."
+    stop_vzoel_assistant
     sleep 2
-    start_userbot
+    start_vzoel_assistant
 }
 
 # Show logs
@@ -137,7 +137,7 @@ show_status() {
     if [[ -f "$PID_FILE" ]]; then
         PID=$(cat "$PID_FILE")
         if ps -p "$PID" > /dev/null 2>&1; then
-            success "Userbot is running (PID: $PID)"
+            success "Vzoel Assistant is running (PID: $PID)"
             
             # Show process info
             echo "Process info:"
@@ -149,25 +149,25 @@ show_status() {
                 echo "Log file size: $LOG_SIZE"
             fi
         else
-            error "Userbot not running (stale PID file)"
+            error "Vzoel Assistant not running (stale PID file)"
             rm -f "$PID_FILE"
         fi
     else
-        warning "Userbot not running"
+        warning "Vzoel Assistant not running"
     fi
 }
 
 # Auto-restart function
 auto_restart() {
-    log "Starting userbot with auto-restart..."
+    log "Starting Vzoel Assistant with auto-restart..."
     
     while true; do
-        log "Starting userbot process..."
+        log "Starting Vzoel Assistant process..."
         source "$VENV_DIR/bin/activate"
         python3 "$MAIN_FILE"
         
         EXIT_CODE=$?
-        error "Userbot stopped with exit code: $EXIT_CODE"
+        error "Vzoel Assistant stopped with exit code: $EXIT_CODE"
         
         if [[ $EXIT_CODE -eq 130 ]]; then
             log "Received interrupt signal, stopping auto-restart"
@@ -185,13 +185,13 @@ case "${1:-start}" in
         check_directory
         setup_venv
         check_running
-        start_userbot
+        start_vzoel_assistant
         ;;
     "stop")
-        stop_userbot
+        stop_vzoel_assistant
         ;;
     "restart")
-        restart_userbot
+        restart_vzoel_assistant
         ;;
     "logs")
         show_logs
@@ -207,11 +207,11 @@ case "${1:-start}" in
     "install")
         check_directory
         setup_venv
-        success "Setup completed! Run './start.sh' to start userbot"
+        success "Setup completed! Run './start.sh' to start Vzoel Assistant"
         ;;
     "clean")
         log "Cleaning up..."
-        stop_userbot
+        stop_vzoel_assistant
         rm -f "$LOG_FILE" "$PID_FILE"
         rm -rf __pycache__/
         success "Cleanup completed!"
@@ -220,18 +220,18 @@ case "${1:-start}" in
         echo "Usage: $0 {start|stop|restart|logs|status|auto|install|clean}"
         echo ""
         echo "Commands:"
-        echo "  start    - Start userbot in background"
-        echo "  stop     - Stop userbot"
-        echo "  restart  - Restart userbot"
+        echo "  start    - Start Vzoel Assistant in background"
+        echo "  stop     - Stop Vzoel Assistant"
+        echo "  restart  - Restart Vzoel Assistant"
         echo "  logs     - Show live logs"
-        echo "  status   - Show userbot status"
+        echo "  status   - Show Vzoel Assistant status"
         echo "  auto     - Start with auto-restart (foreground)"
         echo "  install  - Setup environment and install dependencies"
-        echo "  clean    - Stop userbot and clean temporary files"
+        echo "  clean    - Stop Vzoel Assistant and clean temporary files"
         echo ""
         echo "Examples:"
         echo "  ./start.sh install  # First time setup"
-        echo "  ./start.sh start    # Start userbot"
+        echo "  ./start.sh start    # Start Vzoel Assistant"
         echo "  ./start.sh logs     # Monitor logs"
         exit 1
         ;;
