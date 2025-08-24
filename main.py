@@ -290,4 +290,270 @@ async def plugininfo_handler(event):
             cmd_list = ', '.join([f"`{cmd}`" for cmd in commands[:3]])
             if len(commands) > 3:
                 cmd_list += f" and {len(commands)-3} more"
-            info_text
+            info_text += f"• Commands: {cmd_list}\n"
+        
+        info_text += "\n"
+    
+    await event.edit(info_text)
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}structure'))
+async def structure_handler(event):
+    """Show plugins directory structure"""
+    if not await is_owner(event.sender_id):
+        return
+        
+    await log_command(event, "structure")
+    structure_text = list_plugins_structure()
+    await event.edit(f"```\n{structure_text}\n```")
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}reload'))
+async def reload_handler(event):
+    """Reload all plugins"""
+    if not await is_owner(event.sender_id):
+        return
+        
+    await log_command(event, "reload")
+    msg = await event.reply("🔄 Reloading plugins...")
+    
+    try:
+        # Clear existing handlers (we'll need to restart for full clean reload)
+        global plugin_manager
+        
+        # Load plugins again
+        results = load_plugins()
+        
+        if results['loaded']:
+            location_info = ""
+            if results['by_location']['root']:
+                location_info += f"\n📁 Root: {len(results['by_location']['root'])} plugins"
+            if results['by_location']['plugins']:
+                location_info += f"\n📂 Plugins dir: {len(results['by_location']['plugins'])} plugins"
+            if results['by_location']['subdirs']:
+                location_info += f"\n📁 Subdirs: {len(results['by_location']['subdirs'])} plugins"
+            
+            await msg.edit(f"✅ **Plugins Reloaded!**\n\n🔌 Loaded {len(results['loaded'])} plugins with {results['total_handlers']} handlers{location_info}")
+        else:
+            await msg.edit("⚠️ No external plugins found to reload")
+            
+    except Exception as e:
+        await msg.edit(f"❌ Error reloading plugins: {str(e)}")
+
+@client.on(events.NewMessage(pattern=r'\.typing (\d+)'))
+async def typing_handler(event):
+    """Show typing indicator"""
+    if event.sender_id == (await client.get_me()).id:
+        duration = int(event.pattern_match.group(1))
+        if duration > 60:  # Max 60 seconds
+            duration = 60
+            
+        await event.delete()
+        async with client.action(event.chat_id, 'typing'):
+            await asyncio.sleep(duration)
+
+@client.on(events.NewMessage(pattern=r'\.del'))
+async def delete_handler(event):
+    """Delete replied message"""
+    if event.sender_id == (await client.get_me()).id:
+        if event.reply_to_msg_id:
+            try:
+                await client.delete_messages(event.chat_id, event.reply_to_msg_id)
+                await event.delete()
+            except Exception as e:
+                await event.edit(f"❌ Error: {str(e)}")
+        else:
+            await event.edit("❌ Reply to a message to delete it!")
+
+@client.on(events.NewMessage(pattern=r'\.edit (.+)'))
+async def edit_handler(event):
+    """Edit your last message"""
+    if event.sender_id == (await client.get_me()).id:
+        new_text = event.pattern_match.group(1)
+        
+        # Get last message from user
+        messages = await client.get_messages(event.chat_id, limit=10, from_user='me')
+        for msg in messages:
+            if msg.id != event.id and not msg.text.startswith('.edit'):
+                try:
+                    await msg.edit(new_text)
+                    await event.delete()
+                    return
+                except Exception as e:
+                    await event.edit(f"❌ Error: {str(e)}")
+                    return
+        
+        await event.edit("❌ No recent message found to edit!")
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}spam (\d+) (.+)'))
+async def spam_handler(event):
+    """Send message multiple times"""
+    if not await is_owner(event.sender_id):
+        return
+        
+    await log_command(event, "spam")
+    count = int(event.pattern_match.group(1))
+    text = event.pattern_match.group(2)
+    
+    # Limit spam count
+    if count > MAX_SPAM_COUNT:
+        await event.edit(f"❌ Spam limit: max {MAX_SPAM_COUNT} messages!")
+        return
+        
+    await event.delete()
+    
+    for i in range(count):
+        await client.send_message(event.chat_id, f"{text}")
+        await asyncio.sleep(0.5)  # Delay to avoid flood
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}restart'))
+async def restart_handler(event):
+    """Restart Vzoel Assistant"""
+    if not await is_owner(event.sender_id):
+        return
+        
+    await log_command(event, "restart")
+    await event.edit("🔄 **Restarting Vzoel Assistant...**")
+    logger.info("Vzoel Assistant restart requested by user")
+    
+    # Send notification
+    try:
+        await client.send_message(NOTIFICATION_CHAT, "🔄 **Vzoel Assistant is restarting...**")
+    except:
+        pass
+    
+    await client.disconnect()
+    os._exit(0)
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}logs'))
+async def logs_handler(event):
+    """Show recent logs"""
+    if not await is_owner(event.sender_id):
+        return
+        
+    await log_command(event, "logs")
+    
+    try:
+        with open('vzoel_assistant.log', 'r') as f:
+            logs = f.readlines()
+            recent_logs = ''.join(logs[-20:])  # Last 20 lines
+            
+        if len(recent_logs) > 4000:
+            recent_logs = recent_logs[-4000:]
+            
+        await event.edit(f"📋 **Recent Logs:**\n```\n{recent_logs}\n```")
+    except FileNotFoundError:
+        await event.edit("❌ Log file not found!")
+    except Exception as e:
+        await event.edit(f"❌ Error reading logs: {str(e)}")
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}env'))
+async def env_handler(event):
+    """Show environment info"""
+    if not await is_owner(event.sender_id):
+        return
+        
+    await log_command(event, "env")
+    
+    plugin_info = plugin_manager.get_plugin_info() if plugin_manager else {'count': 0}
+    
+    env_info = f"""
+🔧 **Environment Info:**
+📁 Session: `{SESSION_NAME}`
+⚡ Prefix: `{COMMAND_PREFIX}`
+📊 Log Level: `{LOG_LEVEL}`
+📝 Logging: `{'Enabled' if ENABLE_LOGGING else 'Disabled'}`
+🚫 Spam Limit: `{MAX_SPAM_COUNT}`
+💬 Notifications: `{NOTIFICATION_CHAT}`
+🆔 Owner ID: `{OWNER_ID or 'Auto-detect'}`
+🔌 Plugins: `{plugin_info['count']}` loaded
+📂 Plugins Dir: `{'Available' if os.path.exists('plugins') else 'Not found'}`
+    """.strip()
+    
+    await event.edit(env_info)
+
+# ============= STARTUP FUNCTIONS =============
+
+async def startup():
+    """Enhanced startup function with plugin loading"""
+    global start_time
+    start_time = datetime.now()
+    
+    logger.info("🚀 Starting enhanced Vzoel Assistant...")
+    
+    try:
+        await client.start()
+        me = await client.get_me()
+        
+        # Load external plugins using enhanced system
+        logger.info("🔌 Loading plugins...")
+        results = load_plugins()
+        
+        logger.info(f"✅ Vzoel Assistant started successfully!")
+        logger.info(f"👤 Logged in as: {me.first_name} (@{me.username or 'No username'})")
+        logger.info(f"🆔 User ID: {me.id}")
+        logger.info(f"🔌 Loaded {len(results['loaded'])} plugins with {results['total_handlers']} handlers")
+        
+        # Log plugin locations
+        if results['by_location']['root']:
+            logger.info(f"📁 Root directory: {len(results['by_location']['root'])} plugins")
+        if results['by_location']['plugins']:
+            logger.info(f"📂 Plugins directory: {len(results['by_location']['plugins'])} plugins")
+        if results['by_location']['subdirs']:
+            logger.info(f"📁 Subdirectories: {len(results['by_location']['subdirs'])} plugins")
+        
+        # Enhanced startup message
+        plugin_text = ""
+        if results['loaded']:
+            location_details = []
+            if results['by_location']['root']:
+                location_details.append(f"📁 Root: {len(results['by_location']['root'])}")
+            if results['by_location']['plugins']:
+                location_details.append(f"📂 Plugins: {len(results['by_location']['plugins'])}")
+            if results['by_location']['subdirs']:
+                location_details.append(f"📁 Subdirs: {len(results['by_location']['subdirs'])}")
+            
+            plugin_text = f"""
+**🔌 External Plugins ({len(results['loaded'])}):**
+{' | '.join(location_details)}
+**Total Handlers:** `{results['total_handlers']}`
+"""
+        
+        startup_message = f"""
+🚀 **Enhanced Vzoel Assistant Started!**
+
+✅ All systems operational
+👤 **User:** {me.first_name}
+🆔 **ID:** `{me.id}`
+⚡ **Prefix:** `{COMMAND_PREFIX}`
+⏰ **Started:** `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
+🔌 **Built-in Commands:** Ready
+{plugin_text}
+**💡 Quick Start:**
+• `{COMMAND_PREFIX}help` - Show all commands
+• `{COMMAND_PREFIX}info` - Vzoel Assistant information
+• `{COMMAND_PREFIX}plugins` - List plugins
+• `{COMMAND_PREFIX}structure` - Show directory layout
+
+**🎯 Ready to receive commands!**
+        """.strip()
+        
+        try:
+            await client.send_message('me', startup_message)
+        except Exception as e:
+            logger.warning(f"Could not send startup message: {e}")
+            
+    except SessionPasswordNeededError:
+        logger.error("❌ Two-factor authentication enabled. Please login manually first.")
+        return False
+    except Exception as e:
+        logger.error(f"❌ Error starting Vzoel Assistant: {e}")
+        return False
+    
+    return True
+
+async def main():
+    """Enhanced main function"""
+    logger.info("🔄 Initializing enhanced Vzoel Assistant...")
+    
+    # Validate configuration
+    logger.info("🔍 Validating configuration...")
+    logger.info(f"
