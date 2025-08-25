@@ -4,6 +4,16 @@
 Vzoel Assistant Plugins Package
 Author: Vzoel Fox's (LTPN)
 """
+# plugins/__init__.py
+from .vzoel_assistant import *
+from .vzoel_complete import *
+
+# Atau lebih spesifik
+from .vzoel_assistant import assistant_handler
+from .vzoel_complete import complete_handler
+
+# Export semua
+__all__ = ['assistant_handler', 'complete_handler']
 
 # This file makes the plugins directory a Python package
 # Required for dynamic plugin loading system
