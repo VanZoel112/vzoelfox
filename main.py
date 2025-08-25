@@ -73,8 +73,8 @@ spam_guard_enabled = False
 spam_users = {}
 
 # Logo URLs (Telegraph links)
-LOGO_URL = "https://telegra.ph/file/8b9c2c5c5a5a5c5c5c5c5.jpg"  # Ganti dengan URL logo Anda
-VZOEL_LOGO = "https://telegra.ph/file/vzoel-assistant-logo.jpg"  # Ganti dengan URL logo VZL
+LOGO_URL = "https://imgur.com/gallery/logo-S6biYEi"  # Ganti dengan URL logo Anda
+VZOEL_LOGO = "https://imgur.com/gallery/logo-S6biYEi"  # Ganti dengan URL logo VZL
 
 # ============= UTILITY FUNCTIONS =============
 
@@ -336,7 +336,7 @@ async def gcast_handler(event):
  **Success Rate:** `{success_rate:.1f}%`
 
         **Message delivered successfully!**
-        **Gcast by by Vzoel Assistant**
+        **Gcast by Vzoel Assistant**
         """.strip()
         
         await msg.edit(final_message)
