@@ -14,6 +14,7 @@ import random
 import re
 import os
 import sys
+import json
 from datetime import datetime
 from telethon import TelegramClient, events
 from telethon.errors import SessionPasswordNeededError, FloodWaitError
@@ -71,10 +72,39 @@ except Exception as e:
 start_time = None
 spam_guard_enabled = False
 spam_users = {}
+blacklist_file = "gcast_blacklist.json"
+blacklisted_chats = set()
 
-# Logo URLs (Telegraph links)
+# Logo URLs (Imgur links)
 LOGO_URL = "https://imgur.com/gallery/logo-S6biYEi"  # Ganti dengan URL logo Anda
 VZOEL_LOGO = "https://imgur.com/gallery/logo-S6biYEi"  # Ganti dengan URL logo VZL
+
+# ============= BLACKLIST MANAGEMENT FUNCTIONS =============
+
+def load_blacklist():
+    """Load blacklisted chat IDs from file"""
+    global blacklisted_chats
+    try:
+        if os.path.exists(blacklist_file):
+            with open(blacklist_file, 'r') as f:
+                data = json.load(f)
+                blacklisted_chats = set(data.get('blacklisted_chats', []))
+                logger.info(f"📋 Loaded {len(blacklisted_chats)} blacklisted chats")
+        else:
+            blacklisted_chats = set()
+            logger.info("📋 No blacklist file found, starting with empty blacklist")
+    except Exception as e:
+        logger.error(f"Error loading blacklist: {e}")
+        blacklisted_chats = set()
+
+def save_blacklist():
+    """Save blacklisted chat IDs to file"""
+    try:
+        with open(blacklist_file, 'w') as f:
+            json.dump({'blacklisted_chats': list(blacklisted_chats)}, f, indent=2)
+        logger.info(f"💾 Saved {len(blacklisted_chats)} blacklisted chats")
+    except Exception as e:
+        logger.error(f"Error saving blacklist: {e}")
 
 # ============= UTILITY FUNCTIONS =============
 
@@ -101,7 +131,7 @@ async def animate_text(message, texts, delay=1.5):
             break
 
 async def get_broadcast_channels():
-    """Get all channels and groups for broadcasting (improved)"""
+    """Get all channels and groups for broadcasting (improved with blacklist filter)"""
     channels = []
     try:
         async for dialog in client.iter_dialogs():
@@ -109,6 +139,10 @@ async def get_broadcast_channels():
             
             # Skip private chats
             if isinstance(entity, User):
+                continue
+            
+            # Skip blacklisted chats
+            if entity.id in blacklisted_chats:
                 continue
                 
             # Include groups and channels where we can send messages
@@ -199,6 +233,7 @@ async def alive_handler(event):
 ⏰ **Uptime:** `{uptime_str}`
 🔥 **Status:** Active & Running
 📦 **Version:** v2.1 Enhanced
+🚫 **Blacklisted Chats:** `{len(blacklisted_chats)}`
 
 ⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
             """.strip()
@@ -215,7 +250,7 @@ async def alive_handler(event):
 
 @client.on(events.NewMessage(pattern=re.compile(rf'{re.escape(COMMAND_PREFIX)}gcast\s+(.+)', re.DOTALL)))
 async def gcast_handler(event):
-    """Enhanced Global Broadcast with improved error handling"""
+    """Enhanced Global Broadcast with improved error handling and blacklist support"""
     if not await is_owner(event.sender_id):
         return
     
@@ -246,9 +281,10 @@ async def gcast_handler(event):
             await asyncio.sleep(1.5)
             await msg.edit(gcast_animations[i])
         
-        # Get channels
+        # Get channels (now with blacklist filtering)
         channels = await get_broadcast_channels()
         total_channels = len(channels)
+        blacklisted_count = len(blacklisted_chats)
         
         if total_channels == 0:
             await msg.edit("❌ **No available channels found for broadcasting!**")
@@ -256,7 +292,7 @@ async def gcast_handler(event):
         
         # Continue animation
         await asyncio.sleep(1.5)
-        await msg.edit(f"{gcast_animations[5]}\n📊 **Found:** `{total_channels}` chats")
+        await msg.edit(f"{gcast_animations[5]}\n📊 **Found:** `{total_channels}` chats (🚫 `{blacklisted_count}` blacklisted)")
         
         await asyncio.sleep(1.5)
         await msg.edit(f"{gcast_animations[6]}\n📊 **Broadcasting to:** `{total_channels}` chats")
@@ -286,6 +322,7 @@ async def gcast_handler(event):
 **Kandang yang berhasil:** `{success_count}`
 **Kandang pelit.. alay.. dikit² maen mute** `{failed_count}`
 ⚡ **Current:** {current_title}...
+🚫 **Blacklisted:** `{blacklisted_count}` chats skipped
                     """.strip())
                 
                 # Rate limiting - important!
@@ -327,13 +364,14 @@ async def gcast_handler(event):
  **Gcast kelar....**
 
 ╔═══════════════════════════════════╗
-     **𝐕𝐙𝐎𝐄𝐋 𝐆𝐂𝐀𝐒𝐓.** 
+     **𝖁𝖟𝖔𝖊𝖑 𝖌𝖈𝖆𝖘𝖙.** 
 ╚═══════════════════════════════════╝
 
  **Total Kandang:** `{total_channels}`
  **Kandang yang berhasil:** `{success_count}`
  **Kandang pelit.. alay.. dikit² mute:** `{failed_count}`
  **Success Rate:** `{success_rate:.1f}%`
+🚫 **Blacklisted Chats Skipped:** `{blacklisted_count}`
 
         **Message delivered successfully!**
         **Gcast by Vzoel Assistant**
@@ -354,6 +392,226 @@ async def gcast_handler(event):
     except Exception as e:
         await event.reply(f"❌ **Gcast Error:** {str(e)}")
         logger.error(f"Gcast command error: {e}")
+
+# ============= NEW PLUGIN: ADDBL COMMAND =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}addbl(\s+(.+))?'))
+async def addbl_handler(event):
+    """Add chat to gcast blacklist"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "addbl")
+    
+    try:
+        # Get current chat if no argument provided
+        chat_input = event.pattern_match.group(2)
+        
+        if chat_input:
+            # Try to get chat by username/ID
+            if chat_input.isdigit() or chat_input.lstrip('-').isdigit():
+                chat_id = int(chat_input)
+                try:
+                    chat = await client.get_entity(chat_id)
+                except Exception:
+                    await event.reply(f"❌ **Chat ID `{chat_id}` not found!**")
+                    return
+            else:
+                # Try by username
+                try:
+                    username = chat_input.lstrip('@')
+                    chat = await client.get_entity(username)
+                    chat_id = chat.id
+                except Exception:
+                    await event.reply(f"❌ **Chat `@{username}` not found!**")
+                    return
+        else:
+            # Use current chat
+            chat = await event.get_chat()
+            chat_id = chat.id
+        
+        # Check if it's a private chat
+        if isinstance(chat, User):
+            await event.reply("❌ **Cannot blacklist private chats!**")
+            return
+        
+        # Check if already blacklisted
+        if chat_id in blacklisted_chats:
+            chat_title = getattr(chat, 'title', 'Unknown')
+            await event.reply(f"⚠️ **Chat `{chat_title}` is already blacklisted!**")
+            return
+        
+        # Add to blacklist
+        blacklisted_chats.add(chat_id)
+        save_blacklist()
+        
+        chat_title = getattr(chat, 'title', 'Unknown')
+        chat_type = 'Channel' if isinstance(chat, Channel) and chat.broadcast else 'Group'
+        
+        success_msg = f"""
+🚫 **CHAT BLACKLISTED!**
+
+╔═══════════════════════════════════╗
+   🚫 **𝗚𝗖𝗔𝗦𝗧 𝗕𝗟𝗔𝗖𝗞𝗟𝗜𝗦𝗧** 🚫
+╚═══════════════════════════════════╝
+
+📝 **Chat:** {chat_title}
+🆔 **ID:** `{chat_id}`
+📊 **Type:** {chat_type}
+✅ **Status:** Added to blacklist
+
+📋 **Total Blacklisted:** `{len(blacklisted_chats)}`
+🔥 **Action:** This chat will be skipped in gcast
+
+⚡ **Note:** Use `{COMMAND_PREFIX}rmbl` to remove from blacklist
+        """.strip()
+        
+        await event.edit(success_msg)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"AddBL command error: {e}")
+
+# ============= NEW PLUGIN: RMBL COMMAND (Remove Blacklist) =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}rmbl(\s+(.+))?'))
+async def rmbl_handler(event):
+    """Remove chat from gcast blacklist"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "rmbl")
+    
+    try:
+        # Get current chat if no argument provided
+        chat_input = event.pattern_match.group(2)
+        
+        if chat_input:
+            # Try to get chat by username/ID
+            if chat_input.isdigit() or chat_input.lstrip('-').isdigit():
+                chat_id = int(chat_input)
+                try:
+                    chat = await client.get_entity(chat_id)
+                except Exception:
+                    await event.reply(f"❌ **Chat ID `{chat_id}` not found!**")
+                    return
+            else:
+                # Try by username
+                try:
+                    username = chat_input.lstrip('@')
+                    chat = await client.get_entity(username)
+                    chat_id = chat.id
+                except Exception:
+                    await event.reply(f"❌ **Chat `@{username}` not found!**")
+                    return
+        else:
+            # Use current chat
+            chat = await event.get_chat()
+            chat_id = chat.id
+        
+        # Check if blacklisted
+        if chat_id not in blacklisted_chats:
+            chat_title = getattr(chat, 'title', 'Unknown')
+            await event.reply(f"⚠️ **Chat `{chat_title}` is not blacklisted!**")
+            return
+        
+        # Remove from blacklist
+        blacklisted_chats.remove(chat_id)
+        save_blacklist()
+        
+        chat_title = getattr(chat, 'title', 'Unknown')
+        chat_type = 'Channel' if isinstance(chat, Channel) and chat.broadcast else 'Group'
+        
+        success_msg = f"""
+✅ **CHAT REMOVED FROM BLACKLIST!**
+
+╔═══════════════════════════════════╗
+   ✅ **𝗚𝗖𝗔𝗦𝗧 𝗨𝗡𝗕𝗟𝗔𝗖𝗞𝗟𝗜𝗦𝗧** ✅
+╚═══════════════════════════════════╝
+
+📝 **Chat:** {chat_title}
+🆔 **ID:** `{chat_id}`
+📊 **Type:** {chat_type}
+✅ **Status:** Removed from blacklist
+
+📋 **Total Blacklisted:** `{len(blacklisted_chats)}`
+🔥 **Action:** This chat will receive gcast messages
+
+⚡ **Note:** Use `{COMMAND_PREFIX}addbl` to add back to blacklist
+        """.strip()
+        
+        await event.edit(success_msg)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"RmBL command error: {e}")
+
+# ============= NEW PLUGIN: LISTBL COMMAND (List Blacklist) =============
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}listbl'))
+async def listbl_handler(event):
+    """Show all blacklisted chats"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "listbl")
+    
+    try:
+        if not blacklisted_chats:
+            await event.edit(f"""
+📋 **GCAST BLACKLIST**
+
+╔═══════════════════════════════════╗
+   📋 **𝗕𝗟𝗔𝗖𝗞𝗟𝗜𝗦𝗧 𝗘𝗠𝗣𝗧𝗬** 📋
+╚═══════════════════════════════════╝
+
+🔥 **No chats are blacklisted**
+⚡ **All chats will receive gcast**
+
+💡 **Use `{COMMAND_PREFIX}addbl` to blacklist chats**
+            """.strip())
+            return
+        
+        blacklist_text = f"""
+📋 **GCAST BLACKLIST**
+
+╔═══════════════════════════════════╗
+   📋 **𝗚𝗖𝗔𝗦𝗧 𝗕𝗟𝗔𝗖𝗞𝗟𝗜𝗦𝗧** 📋
+╚═══════════════════════════════════╝
+
+📊 **Total Blacklisted:** `{len(blacklisted_chats)}`
+
+🚫 **Blacklisted Chats:**
+        """.strip()
+        
+        count = 0
+        for chat_id in blacklisted_chats:
+            if count >= 20:  # Limit to prevent message too long
+                blacklist_text += f"\n• And {len(blacklisted_chats) - count} more..."
+                break
+                
+            try:
+                chat = await client.get_entity(chat_id)
+                chat_title = getattr(chat, 'title', 'Unknown')[:30]
+                blacklist_text += f"\n• `{chat_id}` - {chat_title}"
+                count += 1
+            except Exception:
+                blacklist_text += f"\n• `{chat_id}` - [Chat not accessible]"
+                count += 1
+        
+        blacklist_text += f"""
+
+💡 **Commands:**
+• `{COMMAND_PREFIX}addbl [chat]` - Add to blacklist
+• `{COMMAND_PREFIX}rmbl [chat]` - Remove from blacklist
+• `{COMMAND_PREFIX}listbl` - Show this list
+        """
+        
+        await event.edit(blacklist_text)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"ListBL command error: {e}")
 
 # ============= PLUGIN 3: JOIN/LEAVE VC =============
 
@@ -378,9 +636,9 @@ async def joinvc_handler(event):
             f"""
  **Panglima Pizol udah diatas**
 
-╔═══════════════════════════════╗
+╔═══════════════════════════════════╗
     **𝗩𝗢𝗜𝗖𝗘 𝗖𝗛𝗔𝗧 𝗔𝗖𝗧𝗜𝗩𝗘** 
-╚═══════════════════════════════╝
+╚═══════════════════════════════════╝
 
  **Kandang:** {chat.title[:30] if hasattr(chat, 'title') else 'Private'}
  **Status:** Connected
@@ -416,11 +674,11 @@ async def leavevc_handler(event):
             """
 ✅ **VOICE CHAT LEFT!**
 
-╔═══════════════════════════════╗
+╔═══════════════════════════════════╗
    👋 **𝗩𝗢𝗜𝗖𝗘 𝗖𝗛𝗔𝗧 𝗗𝗜𝗦𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗗** 👋
-╚═══════════════════════════════╝
+╚═══════════════════════════════════╝
 
-🔌 **Status:** Disconnected
+📌 **Status:** Disconnected
 🎙️ **Audio:** Stopped
 ✅ **Action:** Completed
 
@@ -463,9 +721,9 @@ async def vzl_handler(event):
             f"""
 [🔥]({VZOEL_LOGO}) **VZOEL FOX'S ASSISTANT** 🔥
 
-╔═══════════════════════════════╗
+╔═══════════════════════════════════╗
    🚩 **𝗩𝗭𝗢𝗘𝗟 𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧** 🚩
-╚═══════════════════════════════╝
+╚═══════════════════════════════════╝
 
 ⚡ **The most advanced Telegram userbot**
 🚀 **Built with passion and precision**
@@ -480,6 +738,7 @@ async def vzl_handler(event):
 • Real-time Monitoring
 • Spam Protection
 • User ID Lookup
+• Gcast Blacklist System
 
 ⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
             """.strip()
@@ -538,19 +797,19 @@ async def id_handler(event):
         id_info = f"""
 🆔 **Ni boss informasi khodamnya**
 
-╔═══════════════════════════════╗
+╔═══════════════════════════════════╗
     **𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐒𝐈 𝐊𝐇𝐎𝐃𝐀𝐌** 
-╚═══════════════════════════════╝
+╚═══════════════════════════════════╝
 
 👤 **Nama Makhluk ini :** {user.first_name or 'None'} {user.last_name or ''}
 🆔 **Nomor Togel:** `{user.id}`
 📱 **Nama Khodam:** @{user.username or 'None'}
 📞 **Phone:** `{user.phone or 'Hidden'}`
-🏷️ **STATUS:** **Jomblo**
+🏷️ **STATUS:** {status_text}
 🌐 **Language:** `{user.lang_code or 'Unknown'}`
 
 📊 **Informasi Khodam:**
-• **Nama Akhir Makhluknya:** `{user.first_name or 'Not set'}`
+• **Nama Pertama Makhluknya:** `{user.first_name or 'Not set'}`
 • **Nama Akhir Makhluknya:** `{user.last_name or 'Not set'}`
 • **Quotes alaynya :** {'Yes' if hasattr(user, 'about') else 'No'}
 
@@ -581,26 +840,30 @@ async def info_handler(event):
         info_text = f"""
 🤖 **VZOEL ASSISTANT INFO**
 
-╔═══════════════════════════════╗
+╔═══════════════════════════════════╗
     💢**𝗦𝗬𝗦𝗧𝗘𝗠 𝗜𝗡𝗙𝗢𝗥𝗠𝗔𝗧𝗜𝗢𝗡** 💢
-╚═══════════════════════════════╝
+╚═══════════════════════════════════╝
 
 👤 **USER:** {me.first_name or 'Vzoel Assistant'}
 🆔 **User ID:** `{me.id}`
 📱 **Username:** @{me.username or 'None'}
-🧠 **FOUNDER UBOT:** **Vzoel Fox's (Lutpan)
+🧠 **FOUNDER UBOT:** **Vzoel Fox's (Lutpan)**
 ⚡ **Prefix:** `{COMMAND_PREFIX}`
 ⏰ **Uptime:** `{uptime_str}`
-🚀 **Version:** v0.0.0.69
+🚀 **Version:** v2.1 Enhanced
 🔧 **Framework:** Telethon
 🐍 **Language:** Python 3.9+
 💾 **Session:** Active
-🌍 **Server:** Cloud Hosted
+🌐 **Server:** Cloud Hosted
 🛡️ **Spam Guard:** {'Enabled' if spam_guard_enabled else 'Disabled'}
+🚫 **Blacklisted Chats:** `{len(blacklisted_chats)}`
 
 📊 **Available Commands:**
 • `{COMMAND_PREFIX}alive` - System status
 • `{COMMAND_PREFIX}gcast` - Global broadcast
+• `{COMMAND_PREFIX}addbl` - Add chat to blacklist
+• `{COMMAND_PREFIX}rmbl` - Remove from blacklist
+• `{COMMAND_PREFIX}listbl` - Show blacklisted chats
 • `{COMMAND_PREFIX}joinvc` - Join voice chat
 • `{COMMAND_PREFIX}leavevc` - Leave voice chat
 • `{COMMAND_PREFIX}vzl` - Vzoel animation
@@ -631,11 +894,11 @@ async def help_handler(event):
     
     try:
         help_text = f"""
-[🆘]({https://imgur.com/gallery/k-qzrssZX}) **VZOEL ASSISTANT HELP**
+[🆘]({LOGO_URL}) **VZOEL ASSISTANT HELP**
 
-╔═══════════════════════════════╗
+╔═══════════════════════════════════╗
    📚 **𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗟𝗜𝗦𝗧** 📚
-╚═══════════════════════════════╝
+╚═══════════════════════════════════╝
 
 🔥 **MAIN COMMANDS:**
 • `{COMMAND_PREFIX}alive` - Check bot status
@@ -646,6 +909,9 @@ async def help_handler(event):
 
 📡 **BROADCAST:**
 • `{COMMAND_PREFIX}gcast <message>` - Enhanced global broadcast
+• `{COMMAND_PREFIX}addbl [chat]` - Add chat to blacklist
+• `{COMMAND_PREFIX}rmbl [chat]` - Remove from blacklist
+• `{COMMAND_PREFIX}listbl` - Show blacklisted chats
 
 🎵 **VOICE CHAT:**
 • `{COMMAND_PREFIX}joinvc` - Join voice chat
@@ -662,6 +928,10 @@ async def help_handler(event):
 ```
 {COMMAND_PREFIX}alive
 {COMMAND_PREFIX}gcast Hello everyone!
+{COMMAND_PREFIX}addbl @spamgroup
+{COMMAND_PREFIX}addbl -1001234567890
+{COMMAND_PREFIX}rmbl (remove current chat)
+{COMMAND_PREFIX}listbl
 {COMMAND_PREFIX}id @username
 {COMMAND_PREFIX}id (reply to message)
 {COMMAND_PREFIX}joinvc
@@ -701,9 +971,9 @@ async def spam_guard_handler(event):
         sg_text = f"""
 🛡️ **SPAM GUARD STATUS**
 
-╔═══════════════════════════════╗
+╔═══════════════════════════════════╗
    🛡️ **𝗦𝗣𝗔𝗠 𝗣𝗥𝗢𝗧𝗘𝗖𝗧𝗜𝗢𝗡** 🛡️
-╚═══════════════════════════════╝
+╚═══════════════════════════════════╝
 
 🔥 **Status:** {status}
 ⚡ **Mode:** Auto-detection
@@ -793,9 +1063,9 @@ async def infofounder_handler(event):
         founder_info = f"""
         
  **apa woy**
-[╔═══════════════════════════════╗]({VZOEL_LOGO})
-    **𝐕𝐙𝐎𝐄𝐋 𝐀𝐬𝐬𝐢𝐬𝐭𝐚𝐧𝐭** 
-╚═══════════════════════════════╝
+[╔═══════════════════════════════════╗]({VZOEL_LOGO})
+    **𝖁𝖟𝖔𝖊𝖑 𝖆𝖘𝖘𝖎𝖘𝖙𝖆𝖓𝖙** 
+╚═══════════════════════════════════╝
 
 ⟢ Founder    : **𝗩𝘇𝗼𝗲𝗹 𝗙𝗼𝘅'𝘀 (Ltpn)**
 ⟢ Instagram  : @vzoel.fox_s
@@ -823,17 +1093,17 @@ async def ping_handler(event):
     
     try:
         start = time.time()
-        msg = await event.reply("🏓 **Lagi ngetest ping dulu om.......**")
+        msg = await event.reply("🔍 **Lagi ngetest ping dulu om.......**")
         end = time.time()
         
         ping_time = (end - start) * 1000
         
         ping_text = f"""
-🏓 **Tch....**
+🔍 **Tch....**
 
-╔═══════════════════════════════╗
+╔═══════════════════════════════════╗
    ⚡ **𝗣𝗜𝗡𝗚 𝗥𝗘𝗦𝗨𝗟𝗧** ⚡
-╚═══════════════════════════════╝
+╚═══════════════════════════════════╝
 
 ⚡ **Response Time:** `{ping_time:.2f}ms`
 🚀 **Status:** Active
@@ -860,19 +1130,21 @@ async def send_startup_message():
         startup_msg = f"""
 [🚀]({LOGO_URL}) **VZOEL ASSISTANT STARTED!**
 
-╔═══════════════════════════════╗
+╔═══════════════════════════════════╗
    🔥 **𝗦𝗬𝗦𝗧𝗘𝗠 𝗔𝗖𝗧𝗜𝗩𝗔𝗧𝗘𝗗** 🔥
-╚═══════════════════════════════╝
+╚═══════════════════════════════════╝
 
 ✅ **All systems operational**
 👤 **User:** {me.first_name}
 🆔 **ID:** `{me.id}`
 ⚡ **Prefix:** `{COMMAND_PREFIX}`
 ⏰ **Started:** `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
+🚫 **Blacklisted Chats:** `{len(blacklisted_chats)}`
 
 📌 **Loaded Plugins (Enhanced Edition):**
 • ✅ Alive System (3 animations + logo)
-• ✅ Enhanced Global Broadcast (8 animations)
+• ✅ Enhanced Global Broadcast (8 animations + blacklist)
+• ✅ Gcast Blacklist System (addbl/rmbl/listbl)
 • ✅ Voice Chat Control
 • ✅ Vzoel Animation (12 phases + logo)
 • ✅ User ID Lookup System
@@ -887,15 +1159,17 @@ async def send_startup_message():
 • `{COMMAND_PREFIX}alive` - Check status
 • `{COMMAND_PREFIX}vzl` - 12-phase animation
 • `{COMMAND_PREFIX}gcast <message>` - Enhanced broadcast
+• `{COMMAND_PREFIX}addbl @group` - Blacklist chat
+• `{COMMAND_PREFIX}listbl` - Show blacklist
 • `{COMMAND_PREFIX}id @username` - Get user ID
 • `{COMMAND_PREFIX}sg` - Toggle spam protection
 
 🔥 **Enhanced features:**
-• Improved gcast with better error handling
-• New ID lookup plugin
+• NEW: Gcast blacklist system (addbl/rmbl/listbl)
+• Improved gcast with blacklist filtering
+• Better error handling and flood protection
 • Logo integration on key commands
-• Better broadcast channel detection
-• Flood wait protection
+• Enhanced broadcast success tracking
 
 ⚡ **Powered by Vzoel Fox's (LTPN)**
         """.strip()
@@ -911,7 +1185,10 @@ async def startup():
     global start_time
     start_time = datetime.now()
     
-    logger.info("🚀 Starting Vzoel Assistant (Enhanced Edition)...")
+    # Load blacklist on startup
+    load_blacklist()
+    
+    logger.info("🚀 Starting Vzoel Assistant (Enhanced Edition with Blacklist)...")
     
     try:
         await client.start()
@@ -921,8 +1198,8 @@ async def startup():
         logger.info(f"👤 Logged in as: {me.first_name} (@{me.username or 'No username'})")
         logger.info(f"🆔 User ID: {me.id}")
         logger.info(f"📌 All plugins integrated in main.py")
-        logger.info(f"⚡ Enhanced commands: alive, gcast, joinvc, leavevc, vzl, id, info, help, sg, infofounder, ping")
-        logger.info(f"🔥 New features: Enhanced gcast, ID lookup, Logo integration")
+        logger.info(f"⚡ Enhanced commands: alive, gcast, addbl, rmbl, listbl, joinvc, leavevc, vzl, id, info, help, sg, infofounder, ping")
+        logger.info(f"🔥 NEW: Gcast blacklist system with {len(blacklisted_chats)} blacklisted chats")
         
         # Send startup message
         await send_startup_message()
@@ -938,7 +1215,7 @@ async def startup():
 
 async def main():
     """Main function to run the enhanced userbot"""
-    logger.info("🔥 Initializing Vzoel Assistant Enhanced Edition...")
+    logger.info("🔥 Initializing Vzoel Assistant Enhanced Edition with Blacklist...")
     
     # Validate configuration
     logger.info("🔍 Validating configuration...")
@@ -946,13 +1223,13 @@ async def main():
     logger.info(f"📝 Session: {SESSION_NAME}")
     logger.info(f"⚡ Prefix: {COMMAND_PREFIX}")
     logger.info(f"🆔 Owner ID: {OWNER_ID or 'Auto-detect'}")
-    logger.info(f"📂 Mode: Enhanced Edition (All-in-One with improvements)")
+    logger.info(f"📂 Mode: Enhanced Edition with Gcast Blacklist System")
     
     # Start Vzoel Assistant
     if await startup():
-        logger.info("🔥 Vzoel Assistant is now running (Enhanced Edition)...")
-        logger.info("📝 Press Ctrl+C to stop")
-        logger.info("🎯 Enhanced features: Better gcast, ID lookup, Logo integration")
+        logger.info("🔥 Vzoel Assistant is now running (Enhanced Edition with Blacklist)...")
+        logger.info("🔍 Press Ctrl+C to stop")
+        logger.info("🎯 NEW: Gcast blacklist commands (addbl/rmbl/listbl)")
         
         try:
             await client.run_until_disconnected()
@@ -962,6 +1239,8 @@ async def main():
             logger.error(f"❌ Unexpected error: {e}")
         finally:
             logger.info("🔥 Disconnecting...")
+            # Save blacklist before exit
+            save_blacklist()
             try:
                 await client.disconnect()
             except Exception as e:
@@ -977,48 +1256,47 @@ if __name__ == "__main__":
         logger.error(f"❌ Fatal error: {e}")
         sys.exit(1)
 
-# ============= END OF VZOEL ASSISTANT ENHANCED EDITION =============
+# ============= END OF VZOEL ASSISTANT ENHANCED EDITION WITH BLACKLIST =============
 
 """
-🔥 VZOEL ASSISTANT - ENHANCED EDITION 🔥
+🔥 VZOEL ASSISTANT - ENHANCED EDITION WITH BLACKLIST SYSTEM 🔥
 
-✅ NEW FEATURES ADDED:
-1. Enhanced gcast.py - Improved error handling, flood protection, better channel detection
-2. NEW id.py - User ID lookup by reply or username/ID
-3. Logo integration - Telegraph links on alive, help, infofounder, vzl commands
-4. Better broadcast system - Based on ultroid's broadcast.py reference
-5. Improved error reporting for gcast failures
-6. Enhanced channel filtering for better broadcast success
-7. FloodWaitError handling with smart retry logic
-8. Better progress reporting during broadcast
+🆕 NEW FEATURES ADDED:
+1. ✅ ADDBL Command - Add chats to gcast blacklist
+2. ✅ RMBL Command - Remove chats from blacklist  
+3. ✅ LISTBL Command - Show all blacklisted chats
+4. ✅ Blacklist Integration - Gcast now skips blacklisted chats
+5. ✅ Persistent Storage - Blacklist saved to JSON file
+6. ✅ Enhanced Logo Support - InfoFounder with proper Imgur logo
 
-🚀 ENHANCED GCAST FEATURES:
-• Smart channel detection (groups + channels with permissions)
-• FloodWait error handling with retry logic
-• Better progress reporting every 3 messages
-• Error logging with failed chat details
-• Improved success rate calculation
-• Rate limiting to prevent flood errors
+🚀 BLACKLIST SYSTEM FEATURES:
+• Smart chat detection (current chat, username, or ID)
+• Persistent storage in gcast_blacklist.json
+• Real-time filtering during gcast
+• Comprehensive blacklist management
+• Error handling for inaccessible chats
+• Blacklist counter in status displays
 
-🔍 NEW ID COMMAND FEATURES:
-• Get user ID by replying to their message
-• Get user ID by username or user ID
-• Shows comprehensive user information
-• Detects bots, verified, premium, scam accounts
-• Shows phone number if available
+📋 BLACKLIST COMMANDS:
+• .addbl - Blacklist current chat
+• .addbl @username - Blacklist by username  
+• .addbl -1001234567890 - Blacklist by ID
+• .rmbl - Remove current chat from blacklist
+• .rmbl @username - Remove by username
+• .rmbl -1001234567890 - Remove by ID
+• .listbl - Show all blacklisted chats
 
-🖼️ LOGO INTEGRATION:
-• Telegraph logo links on key commands
-• Enhanced visual presentation
-• Consistent branding across commands
+🔧 ENHANCED FEATURES:
+• All existing plugins preserved (10 total)
+• Gcast now shows blacklisted count
+• Better error handling and logging
+• Logo properly implemented in InfoFounder
+• Blacklist loaded/saved automatically
+• Real-time filtering during broadcast
 
-🛠️ SETUP INSTRUCTIONS:
-1. Save this as main.py
-2. Update LOGO_URL and VZOEL_LOGO with your telegraph links
-3. Create .env file with your credentials
-4. Install: pip install telethon python-dotenv
-5. Run: python main.py
+📂 FILES CREATED:
+• gcast_blacklist.json - Stores blacklisted chat IDs
 
-⚡ All improvements maintain existing architecture!
+⚡ All improvements maintain existing structure!
 ⚡ Created by Vzoel Fox's (LTPN) ⚡
 """
