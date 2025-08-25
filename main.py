@@ -1,307 +1,193 @@
-#!/usr/bin/env python3
+# ============= ENHANCED FEATURES FOR VZOEL ASSISTANT =============
 """
-VZOEL ASSISTANT - ENHANCED MAIN FILE
-Complete Telegram Userbot with improved gcast and new features
-Author: Vzoel Fox's (LTPN)
-Version: v2.1 Enhanced Edition
-File: main.py
+TAMBAHAN FITUR BARU:
+1. .addbl - Menambahkan grup/channel ke blacklist
+2. .rmbl - Menghapus dari blacklist  
+3. .listbl - Melihat daftar blacklist
+4. .gcast - Sekarang bisa reply pesan
+5. Help command yang diperbaiki
 """
 
-import asyncio
-import logging
-import time
-import random
-import re
-import os
-import sys
-from datetime import datetime
-from telethon import TelegramClient, events
-from telethon.errors import SessionPasswordNeededError, FloodWaitError
-from telethon.tl.types import User, Chat, Channel
-from dotenv import load_dotenv
+# Tambahkan di bagian global variables (setelah spam_users = {})
+blacklisted_chats = set()  # Set untuk menyimpan chat yang diblacklist
+BLACKLIST_FILE = "vzoel_blacklist.txt"  # File untuk menyimpan blacklist
 
-# Load environment variables
-load_dotenv()
+# ============= BLACKLIST MANAGEMENT FUNCTIONS =============
 
-# ============= CONFIGURATION =============
-try:
-    API_ID = int(os.getenv("API_ID", "29919905"))
-    API_HASH = os.getenv("API_HASH", "717957f0e3ae20a7db004d08b66bfd30")
-    SESSION_NAME = os.getenv("SESSION_NAME", "vzoel_session")
-    OWNER_ID = int(os.getenv("OWNER_ID", "7847025168")) if os.getenv("OWNER_ID") else None
-    COMMAND_PREFIX = os.getenv("COMMAND_PREFIX", ".")
-    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
-    ENABLE_LOGGING = os.getenv("ENABLE_LOGGING", "true").lower() == "true"
-except ValueError as e:
-    print(f"⚠️ Configuration error: {e}")
-    print("Please check your .env file")
-    sys.exit(1)
-
-# Validation
-if not API_ID or not API_HASH:
-    print("❌ ERROR: API_ID and API_HASH must be set in .env file!")
-    print("Please create a .env file with your Telegram API credentials")
-    sys.exit(1)
-
-# Setup logging
-if ENABLE_LOGGING:
-    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    logging.basicConfig(
-        level=getattr(logging, LOG_LEVEL.upper(), logging.INFO),
-        format=log_format,
-        handlers=[
-            logging.FileHandler('vzoel_enhanced.log'),
-            logging.StreamHandler()
-        ]
-    )
-else:
-    logging.basicConfig(level=logging.WARNING)
-
-logger = logging.getLogger(__name__)
-
-# Initialize client
-try:
-    client = TelegramClient(SESSION_NAME, API_ID, API_HASH)
-    logger.info("✅ Telegram client initialized")
-except Exception as e:
-    logger.error(f"❌ Failed to initialize client: {e}")
-    sys.exit(1)
-
-# Global variables
-start_time = None
-spam_guard_enabled = False
-spam_users = {}
-
-# Logo URLs (Telegraph links)
-LOGO_URL = "https://imgur.com/gallery/logo-S6biYEi"  # Ganti dengan URL logo Anda
-VZOEL_LOGO = "https://imgur.com/gallery/logo-S6biYEi"  # Ganti dengan URL logo VZL
-
-# ============= UTILITY FUNCTIONS =============
-
-async def is_owner(user_id):
-    """Check if user is owner"""
+def load_blacklist():
+    """Load blacklist dari file"""
+    global blacklisted_chats
     try:
-        if OWNER_ID:
-            return user_id == OWNER_ID
-        me = await client.get_me()
-        return user_id == me.id
-    except Exception as e:
-        logger.error(f"Error checking owner: {e}")
-        return False
-
-async def animate_text(message, texts, delay=1.5):
-    """Animate text by editing message multiple times"""
-    for i, text in enumerate(texts):
-        try:
-            await message.edit(text)
-            if i < len(texts) - 1:  # Don't sleep on last iteration
-                await asyncio.sleep(delay)
-        except Exception as e:
-            logger.error(f"Animation error: {e}")
-            break
-
-async def get_broadcast_channels():
-    """Get all channels and groups for broadcasting (improved)"""
-    channels = []
-    try:
-        async for dialog in client.iter_dialogs():
-            entity = dialog.entity
-            
-            # Skip private chats
-            if isinstance(entity, User):
-                continue
-                
-            # Include groups and channels where we can send messages
-            if isinstance(entity, (Chat, Channel)):
-                # For channels, check if we have broadcast rights or it's a group
-                if isinstance(entity, Channel):
-                    if entity.broadcast and not (entity.creator or entity.admin_rights):
-                        continue  # Skip channels where we can't post
-                
-                channels.append({
-                    'entity': entity,
-                    'id': entity.id,
-                    'title': getattr(entity, 'title', 'Unknown'),
-                    'type': 'Channel' if isinstance(entity, Channel) and entity.broadcast else 'Group'
-                })
-                
-    except Exception as e:
-        logger.error(f"Error getting broadcast channels: {e}")
-    
-    return channels
-
-async def log_command(event, command):
-    """Log command usage"""
-    try:
-        user = await client.get_entity(event.sender_id)
-        chat = await event.get_chat()
-        chat_title = getattr(chat, 'title', 'Private Chat')
-        user_name = getattr(user, 'first_name', 'Unknown') or 'Unknown'
-        logger.info(f"Command '{command}' used by {user_name} ({user.id}) in {chat_title}")
-    except Exception as e:
-        logger.error(f"Error logging command: {e}")
-
-async def get_user_info(event, user_input=None):
-    """Get user information from reply or username/id"""
-    user = None
-    
-    try:
-        if event.is_reply and not user_input:
-            # Get from reply
-            reply_msg = await event.get_reply_message()
-            user = await client.get_entity(reply_msg.sender_id)
-        elif user_input:
-            # Get from username or ID
-            if user_input.isdigit():
-                user = await client.get_entity(int(user_input))
-            else:
-                # Remove @ if present
-                username = user_input.lstrip('@')
-                user = await client.get_entity(username)
+        if os.path.exists(BLACKLIST_FILE):
+            with open(BLACKLIST_FILE, 'r') as f:
+                blacklisted_chats = set(int(line.strip()) for line in f if line.strip())
+            logger.info(f"✅ Loaded {len(blacklisted_chats)} blacklisted chats")
         else:
-            return None
-            
-        return user
+            blacklisted_chats = set()
+            logger.info("📝 Created new blacklist file")
     except Exception as e:
-        logger.error(f"Error getting user info: {e}")
-        return None
+        logger.error(f"Error loading blacklist: {e}")
+        blacklisted_chats = set()
 
-# ============= PLUGIN 1: ALIVE COMMAND (WITH LOGO) =============
-
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}alive'))
-async def alive_handler(event):
-    """Enhanced alive command with animation and logo"""
-    if not await is_owner(event.sender_id):
-        return
-    
-    await log_command(event, "alive")
-    
+def save_blacklist():
+    """Save blacklist ke file"""
     try:
-        me = await client.get_me()
-        uptime = datetime.now() - start_time if start_time else "Unknown"
-        uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
-        
-        alive_animations = [
-            "🔥 **Checking system status...**",
-            "⚡ **Loading components...**",
-            "🚀 **Initializing Vzoel Assistant...**",
-            f"""
-[🚩]({LOGO_URL}) **VZOEL ASSISTANT IS ALIVE!**
-
-╔═══════════════════════════════╗
-   🚩 **𝗩𝗭𝗢𝗘𝗟 𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧** 🚩
-╚═══════════════════════════════╝
-
-👤 **Name:** {me.first_name or 'Vzoel Assistant'}
-🆔 **ID:** `{me.id}`
-📱 **Username:** @{me.username or 'None'}
-⚡ **Prefix:** `{COMMAND_PREFIX}`
-⏰ **Uptime:** `{uptime_str}`
-🔥 **Status:** Active & Running
-📦 **Version:** v2.1 Enhanced
-
-⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
-            """.strip()
-        ]
-        
-        msg = await event.reply(alive_animations[0])
-        await animate_text(msg, alive_animations, delay=2)
-        
+        with open(BLACKLIST_FILE, 'w') as f:
+            for chat_id in blacklisted_chats:
+                f.write(f"{chat_id}\n")
+        logger.info(f"💾 Saved {len(blacklisted_chats)} blacklisted chats")
     except Exception as e:
-        await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"Alive command error: {e}")
+        logger.error(f"Error saving blacklist: {e}")
 
-# ============= PLUGIN 2: ENHANCED GCAST COMMAND =============
+# ============= ENHANCED GCAST COMMAND (DENGAN REPLY SUPPORT) =============
 
-@client.on(events.NewMessage(pattern=re.compile(rf'{re.escape(COMMAND_PREFIX)}gcast\s+(.+)', re.DOTALL)))
-async def gcast_handler(event):
-    """Enhanced Global Broadcast with improved error handling"""
+@client.on(events.NewMessage(pattern=re.compile(rf'{re.escape(COMMAND_PREFIX)}gcast(\s+(.+))?', re.DOTALL)))
+async def enhanced_gcast_handler(event):
+    """Enhanced Global Broadcast dengan reply support dan blacklist"""
     if not await is_owner(event.sender_id):
         return
     
     await log_command(event, "gcast")
     
-    message_to_send = event.pattern_match.group(1).strip()
+    # Cek apakah ada pesan yang direply atau ada text
+    message_to_send = None
+    
+    if event.is_reply:
+        # Jika reply, gunakan pesan yang direply
+        reply_msg = await event.get_reply_message()
+        message_to_send = reply_msg.text or reply_msg.caption or None
+        
+        # Jika reply pesan kosong tapi ada text setelah .gcast
+        if not message_to_send:
+            text_match = event.pattern_match.group(2)
+            message_to_send = text_match.strip() if text_match else None
+    else:
+        # Jika tidak reply, gunakan text setelah .gcast
+        text_match = event.pattern_match.group(2)
+        message_to_send = text_match.strip() if text_match else None
+    
     if not message_to_send:
-        await event.reply("❌ **Usage:** `.gcast <message>`")
+        await event.reply(f"""
+❌ **GCAST USAGE ERROR!**
+
+📋 **Cara Penggunaan:**
+• `{COMMAND_PREFIX}gcast <pesan>` - Ketik pesan langsung
+• `{COMMAND_PREFIX}gcast` - Reply ke pesan yang mau di-gcast
+
+💡 **Contoh:**
+• `{COMMAND_PREFIX}gcast Halo semua!`
+• Reply pesan lalu ketik `{COMMAND_PREFIX}gcast`
+        """.strip())
         return
     
     try:
-        # 8-phase animation
+        # Load blacklist
+        load_blacklist()
+        
+        # 8-phase animation dengan info blacklist
         gcast_animations = [
-            " **lagi otw ngegikes.......**",
-            " **cuma gikes aja diblacklist.. kek mui ngeblacklist sound horeg wkwkwkwkwkwk...**",
-            " **dikit² blacklist...**",
-            " **dikit² maen mute...**",
-            " **dikit² gban...**",
-            " **wkwkwkwk...**",
-            " **anying......**",
-            " **wkwkwkwkwkwkwkwk...**"
+            "🔥 **lagi otw ngegikes.......**",
+            "⚡ **cuma gikes aja diblacklist.. kek mui ngeblacklist sound horeg wkwkwkwkwkwk...**",
+            "🛡️ **Loading blacklist filter...**",
+            f"📊 **Blacklisted chats: {len(blacklisted_chats)}**",
+            "🚀 **dikitÂ² blacklist...**",
+            "⚠️ **dikitÂ² maen mute...**",
+            "🔨 **dikitÂ² gban...**",
+            "😂 **wkwkwkwk...**"
         ]
         
         msg = await event.reply(gcast_animations[0])
         
-        # Animate first 4 phases
+        # Animate first phases
         for i in range(1, 5):
             await asyncio.sleep(1.5)
             await msg.edit(gcast_animations[i])
         
-        # Get channels
-        channels = await get_broadcast_channels()
+        # Get channels (exclude blacklisted)
+        all_channels = await get_broadcast_channels()
+        channels = [ch for ch in all_channels if ch['id'] not in blacklisted_chats]
+        
         total_channels = len(channels)
+        blacklisted_count = len(all_channels) - total_channels
         
         if total_channels == 0:
-            await msg.edit("❌ **No available channels found for broadcasting!**")
+            await msg.edit(f"""
+❌ **No available channels for broadcasting!**
+
+📊 **Stats:**
+• Total chats found: `{len(all_channels)}`
+• Blacklisted chats: `{blacklisted_count}`
+• Available for broadcast: `0`
+
+💡 Use `{COMMAND_PREFIX}listbl` to see blacklisted chats
+            """.strip())
             return
         
-        # Continue animation
+        # Continue animation dengan stats
         await asyncio.sleep(1.5)
-        await msg.edit(f"{gcast_animations[5]}\n📊 **Found:** `{total_channels}` chats")
+        await msg.edit(f"""
+{gcast_animations[5]}
+
+📊 **Broadcast Stats:**
+• Total chats: `{len(all_channels)}`
+• Blacklisted: `{blacklisted_count}`
+• Target chats: `{total_channels}`
+        """.strip())
         
         await asyncio.sleep(1.5)
-        await msg.edit(f"{gcast_animations[6]}\n📊 **Broadcasting to:** `{total_channels}` chats")
+        await msg.edit(f"{gcast_animations[6]}\n🚀 **Starting broadcast...**")
         
         # Start broadcasting
         success_count = 0
         failed_count = 0
         failed_chats = []
+        skipped_count = blacklisted_count
         
         for i, channel_info in enumerate(channels, 1):
             try:
                 entity = channel_info['entity']
                 
                 # Send message
-                await client.send_message(entity, message_to_send)
+                if event.is_reply and reply_msg.media:
+                    # Jika reply pesan dengan media, forward media + caption
+                    await client.send_message(entity, message_to_send, file=reply_msg.media)
+                else:
+                    # Kirim text biasa
+                    await client.send_message(entity, message_to_send)
+                
                 success_count += 1
                 
-                # Update progress every 3 messages or on last message
+                # Update progress every 3 messages
                 if i % 3 == 0 or i == total_channels:
                     progress = (i / total_channels) * 100
                     current_title = channel_info['title'][:20]
                     
                     await msg.edit(f"""
- **lagi otw ngegikesss...**
+🔥 **lagi otw ngegikesss...**
 
 **Total Kandang:** `{i}/{total_channels}` ({progress:.1f}%)
 **Kandang yang berhasil:** `{success_count}`
-**Kandang pelit.. alay.. dikit² maen mute** `{failed_count}`
+**Kandang pelit.. alay.. dikitÂ² maen mute:** `{failed_count}`
+**Kandang di-blacklist:** `{skipped_count}`
 ⚡ **Current:** {current_title}...
                     """.strip())
                 
-                # Rate limiting - important!
+                # Rate limiting
                 await asyncio.sleep(0.5)
                 
             except FloodWaitError as e:
-                # Handle flood wait
                 wait_time = e.seconds
-                if wait_time > 300:  # Skip if wait is too long
+                if wait_time > 300:  # Skip if wait too long
                     failed_count += 1
                     failed_chats.append(f"{channel_info['title']} (Flood: {wait_time}s)")
                     continue
                     
                 await asyncio.sleep(wait_time)
                 try:
-                    await client.send_message(entity, message_to_send)
+                    if event.is_reply and reply_msg.media:
+                        await client.send_message(entity, message_to_send, file=reply_msg.media)
+                    else:
+                        await client.send_message(entity, message_to_send)
                     success_count += 1
                 except Exception:
                     failed_count += 1
@@ -314,316 +200,291 @@ async def gcast_handler(event):
                 logger.error(f"Gcast error for {channel_info['title']}: {e}")
                 continue
         
-        # Final animation phase
+        # Final animation
         await asyncio.sleep(2)
         await msg.edit(gcast_animations[7])
-        
         await asyncio.sleep(2)
         
         # Calculate success rate
         success_rate = (success_count / total_channels * 100) if total_channels > 0 else 0
         
         final_message = f"""
- **Gcast kelar....**
+🔥 **Gcast kelar....**
 
-╔═══════════════════════════════════╗
-     **𝐕𝐙𝐎𝐄𝐋 𝐆𝐂𝐀𝐒𝐓.** 
-╚═══════════════════════════════════╝
+╔═══════════════════════════════════════╗
+     **𝐕𝐙𝐎𝐄𝐋 𝐆𝐂𝐀𝐒𝐓 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐄** 
+╚═══════════════════════════════════════╝
 
- **Total Kandang:** `{total_channels}`
- **Kandang yang berhasil:** `{success_count}`
- **Kandang pelit.. alay.. dikit² mute:** `{failed_count}`
- **Success Rate:** `{success_rate:.1f}%`
+📊 **Final Stats:**
+• **Total Kandang:** `{len(all_channels)}`
+• **Kandang yang berhasil:** `{success_count}`
+• **Kandang pelit.. alay.. dikitÂ² mute:** `{failed_count}`
+• **Kandang di-blacklist:** `{skipped_count}`
+• **Success Rate:** `{success_rate:.1f}%`
 
-        **Message delivered successfully!**
-        **Gcast by Vzoel Assistant**
+💌 **Message Type:** {'Media + Text' if (event.is_reply and reply_msg.media) else 'Text Only'}
+✅ **Message delivered successfully!**
+⚡ **Enhanced Gcast by Vzoel Assistant**
         """.strip()
         
         await msg.edit(final_message)
         
-        # Send error log if there are failures
-        if failed_chats and len(failed_chats) <= 10:  # Only show first 10 errors
+        # Show error log if needed
+        if failed_chats and len(failed_chats) <= 10:
             error_log = "**Failed Chats:**\n"
             for chat in failed_chats[:10]:
                 error_log += f"• {chat}\n"
             if len(failed_chats) > 10:
                 error_log += f"• And {len(failed_chats) - 10} more..."
-                
             await event.reply(error_log)
         
     except Exception as e:
-        await event.reply(f"❌ **Gcast Error:** {str(e)}")
-        logger.error(f"Gcast command error: {e}")
+        await event.reply(f"❌ **Enhanced Gcast Error:** {str(e)}")
+        logger.error(f"Enhanced gcast error: {e}")
 
-# ============= PLUGIN 3: JOIN/LEAVE VC =============
+# ============= BLACKLIST COMMANDS =============
 
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}joinvc'))
-async def joinvc_handler(event):
-    """Join Voice Chat with animation"""
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}addbl(\s+(.+))?'))
+async def addbl_handler(event):
+    """Add chat to blacklist - bisa dengan ID atau reply di grup"""
     if not await is_owner(event.sender_id):
         return
     
-    await log_command(event, "joinvc")
+    await log_command(event, "addbl")
     
     try:
-        chat = await event.get_chat()
-        if not hasattr(chat, 'id'):
-            await event.reply("❌ **Cannot join VC in this chat!**")
-            return
+        chat_to_blacklist = None
+        chat_title = "Unknown"
         
-        animations = [
-            " **lagi naik ya bang.. sabar bentar...**",
-            " **kalo udah diatas ya disapa bukan dicuekin anying...**",
-            " **kalo ga nimbrung berarti bot ye... wkwkwkwkwk**",
-            f"""
- **Panglima Pizol udah diatas**
-
-╔═══════════════════════════════╗
-    **𝗩𝗢𝗜𝗖𝗘 𝗖𝗛𝗔𝗧 𝗔𝗖𝗧𝗜𝗩𝗘** 
-╚═══════════════════════════════╝
-
- **Kandang:** {chat.title[:30] if hasattr(chat, 'title') else 'Private'}
- **Status:** Connected
- **Sound Horeg:** Ready
- **Kualitas:** HD
-
-
-⚠️ **Note:** Full VC features require pytgcalls
- **Pangeran Pizol udah diatas**
-            """.strip()
-        ]
-        
-        msg = await event.reply(animations[0])
-        await animate_text(msg, animations, delay=1.5)
-            
-    except Exception as e:
-        await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"JoinVC error: {e}")
-
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}leavevc'))
-async def leavevc_handler(event):
-    """Leave Voice Chat with animation"""
-    if not await is_owner(event.sender_id):
-        return
-    
-    await log_command(event, "leavevc")
-    
-    try:
-        animations = [
-            "🔥 **Disconnecting from voice chat...**",
-            "🎵 **Stopping audio stream...**",
-            "👋 **Leaving voice chat...**",
-            """
-✅ **VOICE CHAT LEFT!**
-
-╔═══════════════════════════════╗
-   👋 **𝗩𝗢𝗜𝗖𝗘 𝗖𝗛𝗔𝗧 𝗗𝗜𝗦𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗗** 👋
-╚═══════════════════════════════╝
-
-🔌 **Status:** Disconnected
-🎙️ **Audio:** Stopped
-✅ **Action:** Completed
-
- **Udah turun bang!**
- **Vzoel Assistant ready for next command**
-            """.strip()
-        ]
-        
-        msg = await event.reply(animations[0])
-        await animate_text(msg, animations, delay=1.5)
-            
-    except Exception as e:
-        await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"LeaveVC error: {e}")
-
-# ============= PLUGIN 4: VZL COMMAND (12 ANIMATIONS) =============
-
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}vzl'))
-async def vzl_handler(event):
-    """Vzoel command with 12-phase animation as requested"""
-    if not await is_owner(event.sender_id):
-        return
-    
-    await log_command(event, "vzl")
-    
-    try:
-        # 12 animation phases as requested
-        vzl_animations = [
-            "🔥 **V**",
-            "🔥 **VZ**",
-            "🔥 **VZO**", 
-            "🔥 **VZOE**",
-            "🔥 **VZOEL**",
-            "🚀 **VZOEL F**",
-            "🚀 **VZOEL FO**",
-            "🚀 **VZOEL FOX**",
-            "⚡ **VZOEL FOX'S**",
-            "✨ **VZOEL FOX'S A**",
-            "🌟 **VZOEL FOX'S ASS**",
-            f"""
-[🔥]({VZOEL_LOGO}) **VZOEL FOX'S ASSISTANT** 🔥
-
-╔═══════════════════════════════╗
-   🚩 **𝗩𝗭𝗢𝗘𝗟 𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧** 🚩
-╚═══════════════════════════════╝
-
-⚡ **The most advanced Telegram userbot**
-🚀 **Built with passion and precision**
-🔥 **Powered by Telethon & Python**
-✨ **Created by Vzoel Fox's (LTPN)**
-
-📱 **Features:**
-• Global Broadcasting
-• Voice Chat Control  
-• Advanced Animations
-• Multi-Plugin System
-• Real-time Monitoring
-• Spam Protection
-• User ID Lookup
-
-⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
-            """.strip()
-        ]
-        
-        msg = await event.reply(vzl_animations[0])
-        await animate_text(msg, vzl_animations, delay=1.2)
-        
-    except Exception as e:
-        await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"VZL command error: {e}")
-
-# ============= PLUGIN 5: ID COMMAND (NEW) =============
-
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}id(\s+(.+))?'))
-async def id_handler(event):
-    """Get user ID from reply or username"""
-    if not await is_owner(event.sender_id):
-        return
-    
-    await log_command(event, "id")
-    
-    try:
-        user_input = event.pattern_match.group(2)
-        user = await get_user_info(event, user_input)
-        
-        if not user:
-            if event.is_reply:
-                await event.reply("❌ **Could not get user from reply!**")
+        # Cek parameter ID
+        param = event.pattern_match.group(2)
+        if param:
+            try:
+                # Coba parse sebagai ID
+                if param.strip().lstrip('-').isdigit():
+                    chat_id = int(param.strip())
+                    chat_entity = await client.get_entity(chat_id)
+                    chat_to_blacklist = chat_id
+                    chat_title = getattr(chat_entity, 'title', f'Chat {chat_id}')
+                else:
+                    await event.reply("❌ **Invalid chat ID! Use numeric ID only.**")
+                    return
+            except Exception as e:
+                await event.reply(f"❌ **Error getting chat info:** `{str(e)}`")
+                return
+        else:
+            # Jika tidak ada parameter, gunakan chat saat ini
+            chat = await event.get_chat()
+            if hasattr(chat, 'id'):
+                chat_to_blacklist = chat.id
+                chat_title = getattr(chat, 'title', 'Private Chat')
             else:
-                await event.reply(f"❌ **Usage:** `{COMMAND_PREFIX}id` (reply to message) or `{COMMAND_PREFIX}id username/id`")
+                await event.reply(f"""
+❌ **ADDBL USAGE ERROR!**
+
+📋 **Cara Penggunaan:**
+• `{COMMAND_PREFIX}addbl` - Blacklist grup/channel ini
+• `{COMMAND_PREFIX}addbl -1001234567890` - Blacklist dengan ID
+
+💡 **Cara dapat ID grup:**
+1. Forward pesan dari grup ke @userinfobot
+2. Atau gunakan `{COMMAND_PREFIX}id` di grup tersebut
+                """.strip())
+                return
+        
+        # Load current blacklist
+        load_blacklist()
+        
+        if chat_to_blacklist in blacklisted_chats:
+            await event.reply(f"""
+⚠️ **CHAT SUDAH DI-BLACKLIST!**
+
+📊 **Info:**
+• **Chat:** {chat_title}
+• **ID:** `{chat_to_blacklist}`
+• **Status:** Already blacklisted
+
+Use `{COMMAND_PREFIX}listbl` to see all blacklisted chats
+            """.strip())
             return
         
-        # Get additional info
-        is_bot = getattr(user, 'bot', False)
-        is_verified = getattr(user, 'verified', False)
-        is_scam = getattr(user, 'scam', False)
-        is_fake = getattr(user, 'fake', False)
-        is_premium = getattr(user, 'premium', False)
+        # Add to blacklist
+        blacklisted_chats.add(chat_to_blacklist)
+        save_blacklist()
         
-        # Format status
-        status_icons = []
-        if is_bot:
-            status_icons.append("🤖 Manusia Buatan")
-        if is_verified:
-            status_icons.append("✅ Woke")
-        if is_premium:
-            status_icons.append("⭐ Premium ni boss")
-        if is_scam:
-            status_icons.append("⚠️ Scam anying")
-        if is_fake:
-            status_icons.append("🚫 Faker bjirrr")
-        
-        status_text = " | ".join(status_icons) if status_icons else "👤 Regular User"
-        
-        id_info = f"""
-🆔 **Ni boss informasi khodamnya**
+        await event.reply(f"""
+✅ **CHAT BERHASIL DI-BLACKLIST!**
 
-╔═══════════════════════════════╗
-    **𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐒𝐈 𝐊𝐇𝐎𝐃𝐀𝐌** 
-╚═══════════════════════════════╝
+╔═══════════════════════════════════════╗
+    **𝐁𝐋𝐀𝐂𝐊𝐋𝐈𝐒𝐓 𝐀𝐃𝐃𝐄𝐃** 
+╚═══════════════════════════════════════╝
 
-👤 **Nama Makhluk ini :** {user.first_name or 'None'} {user.last_name or ''}
-🆔 **Nomor Togel:** `{user.id}`
-📱 **Nama Khodam:** @{user.username or 'None'}
-📞 **Phone:** `{user.phone or 'Hidden'}`
-🏷️ **STATUS:** **Jomblo**
-🌐 **Language:** `{user.lang_code or 'Unknown'}`
+📝 **Chat:** {chat_title}
+🆔 **ID:** `{chat_to_blacklist}`
+📊 **Total Blacklisted:** `{len(blacklisted_chats)}`
+🚫 **Effect:** Won't receive gcast messages
 
-📊 **Informasi Khodam:**
-• **Nama Akhir Makhluknya:** `{user.first_name or 'Not set'}`
-• **Nama Akhir Makhluknya:** `{user.last_name or 'Not set'}`
-• **Quotes alaynya :** {'Yes' if hasattr(user, 'about') else 'No'}
-
-⚡ **Vzoel Assistant ID Lookup**
-        """.strip()
-        
-        await event.reply(id_info)
+⚡ **Vzoel Blacklist System Active**
+        """.strip())
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"ID command error: {e}")
+        logger.error(f"AddBL error: {e}")
 
-# ============= PLUGIN 6: INFO COMMAND =============
-
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}info'))
-async def info_handler(event):
-    """System information command"""
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}rmbl(\s+(.+))?'))
+async def rmbl_handler(event):
+    """Remove chat from blacklist"""
     if not await is_owner(event.sender_id):
         return
     
-    await log_command(event, "info")
+    await log_command(event, "rmbl")
     
     try:
-        me = await client.get_me()
-        uptime = datetime.now() - start_time if start_time else "Unknown"
-        uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
+        chat_to_remove = None
+        chat_title = "Unknown"
         
-        info_text = f"""
-🤖 **VZOEL ASSISTANT INFO**
+        # Cek parameter ID
+        param = event.pattern_match.group(2)
+        if param:
+            try:
+                if param.strip().lstrip('-').isdigit():
+                    chat_id = int(param.strip())
+                    chat_entity = await client.get_entity(chat_id)
+                    chat_to_remove = chat_id
+                    chat_title = getattr(chat_entity, 'title', f'Chat {chat_id}')
+                else:
+                    await event.reply("❌ **Invalid chat ID! Use numeric ID only.**")
+                    return
+            except Exception as e:
+                await event.reply(f"❌ **Error getting chat info:** `{str(e)}`")
+                return
+        else:
+            # Gunakan chat saat ini
+            chat = await event.get_chat()
+            if hasattr(chat, 'id'):
+                chat_to_remove = chat.id
+                chat_title = getattr(chat, 'title', 'Private Chat')
+            else:
+                await event.reply(f"""
+❌ **RMBL USAGE ERROR!**
 
-╔═══════════════════════════════╗
-    💢**𝗦𝗬𝗦𝗧𝗘𝗠 𝗜𝗡𝗙𝗢𝗥𝗠𝗔𝗧𝗜𝗢𝗡** 💢
-╚═══════════════════════════════╝
+📋 **Cara Penggunaan:**
+• `{COMMAND_PREFIX}rmbl` - Remove blacklist grup/channel ini
+• `{COMMAND_PREFIX}rmbl -1001234567890` - Remove blacklist dengan ID
 
-👤 **USER:** {me.first_name or 'Vzoel Assistant'}
-🆔 **User ID:** `{me.id}`
-📱 **Username:** @{me.username or 'None'}
-🧠 **FOUNDER UBOT:** **Vzoel Fox's (Lutpan)
-⚡ **Prefix:** `{COMMAND_PREFIX}`
-⏰ **Uptime:** `{uptime_str}`
-🚀 **Version:** v0.0.0.69
-🔧 **Framework:** Telethon
-🐍 **Language:** Python 3.9+
-💾 **Session:** Active
-🌍 **Server:** Cloud Hosted
-🛡️ **Spam Guard:** {'Enabled' if spam_guard_enabled else 'Disabled'}
-
-📊 **Available Commands:**
-• `{COMMAND_PREFIX}alive` - System status
-• `{COMMAND_PREFIX}gcast` - Global broadcast
-• `{COMMAND_PREFIX}joinvc` - Join voice chat
-• `{COMMAND_PREFIX}leavevc` - Leave voice chat
-• `{COMMAND_PREFIX}vzl` - Vzoel animation
-• `{COMMAND_PREFIX}id` - Get user ID
-• `{COMMAND_PREFIX}help` - Show all commands
-• `{COMMAND_PREFIX}sg` - Spam guard toggle
-• `{COMMAND_PREFIX}infofounder` - Founder info
-• `{COMMAND_PREFIX}ping` - Response time
-
-⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
-        """.strip()
+Use `{COMMAND_PREFIX}listbl` to see blacklisted chats
+                """.strip())
+                return
         
-        await event.edit(info_text)
+        # Load blacklist
+        load_blacklist()
+        
+        if chat_to_remove not in blacklisted_chats:
+            await event.reply(f"""
+⚠️ **CHAT TIDAK ADA DI BLACKLIST!**
+
+📊 **Info:**
+• **Chat:** {chat_title}
+• **ID:** `{chat_to_remove}`
+• **Status:** Not blacklisted
+
+Use `{COMMAND_PREFIX}listbl` to see all blacklisted chats
+            """.strip())
+            return
+        
+        # Remove from blacklist
+        blacklisted_chats.remove(chat_to_remove)
+        save_blacklist()
+        
+        await event.reply(f"""
+✅ **CHAT BERHASIL DIHAPUS DARI BLACKLIST!**
+
+╔═══════════════════════════════════════╗
+   **𝐁𝐋𝐀𝐂𝐊𝐋𝐈𝐒𝐓 𝐑𝐄𝐌𝐎𝐕𝐄𝐃** 
+╚═══════════════════════════════════════╝
+
+📝 **Chat:** {chat_title}
+🆔 **ID:** `{chat_to_remove}`
+📊 **Total Blacklisted:** `{len(blacklisted_chats)}`
+✅ **Effect:** Will receive gcast messages again
+
+⚡ **Vzoel Blacklist System Updated**
+        """.strip())
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"Info command error: {e}")
+        logger.error(f"RmBL error: {e}")
 
-# ============= PLUGIN 7: HELP COMMAND (WITH LOGO) =============
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}listbl'))
+async def listbl_handler(event):
+    """Show blacklisted chats"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "listbl")
+    
+    try:
+        load_blacklist()
+        
+        if not blacklisted_chats:
+            await event.reply(f"""
+📋 **BLACKLIST KOSONG!**
+
+╔═══════════════════════════════════════╗
+    **𝐁𝐋𝐀𝐂𝐊𝐋𝐈𝐒𝐓 𝐄𝐌𝐏𝐓𝐘** 
+╚═══════════════════════════════════════╝
+
+📊 **Total Blacklisted:** `0`
+✅ **All chats will receive gcast**
+
+💡 **Add to blacklist:**
+• `{COMMAND_PREFIX}addbl` - Blacklist current chat
+• `{COMMAND_PREFIX}addbl -1001234567890` - Blacklist by ID
+            """.strip())
+            return
+        
+        # Get chat info for each blacklisted chat
+        blacklist_info = []
+        for chat_id in list(blacklisted_chats)[:20]:  # Limit to 20 for readability
+            try:
+                entity = await client.get_entity(chat_id)
+                title = getattr(entity, 'title', 'Unknown')
+                chat_type = 'Channel' if isinstance(entity, Channel) and entity.broadcast else 'Group'
+                blacklist_info.append(f"• **{title[:30]}** ({chat_type})\n  `{chat_id}`")
+            except Exception:
+                blacklist_info.append(f"• **Unknown Chat**\n  `{chat_id}` (Error getting info)")
+        
+        blacklist_text = f"""
+📋 **DAFTAR BLACKLIST**
+
+╔═══════════════════════════════════════╗
+    **𝐁𝐋𝐀𝐂𝐊𝐋𝐈𝐒𝐓𝐄𝐃 𝐂𝐇𝐀𝐓𝐒** 
+╚═══════════════════════════════════════╝
+
+📊 **Total:** `{len(blacklisted_chats)}` chats
+
+{chr(10).join(blacklist_info[:15])}
+
+{'...' if len(blacklisted_chats) > 15 else ''}
+
+💡 **Commands:**
+• `{COMMAND_PREFIX}rmbl <id>` - Remove from blacklist
+• `{COMMAND_PREFIX}addbl <id>` - Add to blacklist
+
+⚡ **Vzoel Blacklist System**
+        """.strip()
+        
+        await event.reply(blacklist_text)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"ListBL error: {e}")
+
+# ============= ENHANCED HELP COMMAND =============
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}help'))
-async def help_handler(event):
-    """Help command with all available commands and logo"""
+async def enhanced_help_handler(event):
+    """Enhanced help command with better organization and all new features"""
     if not await is_owner(event.sender_id):
         return
     
@@ -631,394 +492,139 @@ async def help_handler(event):
     
     try:
         help_text = f"""
-[🆘]({https://imgur.com/gallery/k-qzrssZX}) **VZOEL ASSISTANT HELP**
+[🆘](https://imgur.com/gallery/k-qzrssZX) **VZOEL ASSISTANT HELP MENU**
 
-╔═══════════════════════════════╗
-   📚 **𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗟𝗜𝗦𝗧** 📚
-╚═══════════════════════════════╝
+╔═══════════════════════════════════════╗
+   📚 **𝐄𝐍𝐇𝐀𝐍𝐂𝐄𝐃 𝐂𝐎𝐌𝐌𝐀𝐍𝐃 𝐋𝐈𝐒𝐓** 📚
+╚═══════════════════════════════════════╝
 
-🔥 **MAIN COMMANDS:**
-• `{COMMAND_PREFIX}alive` - Check bot status
-• `{COMMAND_PREFIX}info` - System information
-• `{COMMAND_PREFIX}vzl` - Vzoel animation (12 phases)
-• `{COMMAND_PREFIX}help` - Show this help
-• `{COMMAND_PREFIX}ping` - Response time test
+🔥 **SYSTEM COMMANDS:**
+• `{COMMAND_PREFIX}alive` - Bot status dengan logo & animasi
+• `{COMMAND_PREFIX}info` - System info lengkap
+• `{COMMAND_PREFIX}ping` - Test response time
+• `{COMMAND_PREFIX}help` - Show menu ini
 
-📡 **BROADCAST:**
-• `{COMMAND_PREFIX}gcast <message>` - Enhanced global broadcast
+🌐 **BROADCAST SYSTEM (ENHANCED):**
+• `{COMMAND_PREFIX}gcast <pesan>` - Global broadcast text
+• `{COMMAND_PREFIX}gcast` (reply) - Broadcast pesan yang direply
+• `{COMMAND_PREFIX}gcast` (reply media) - Broadcast media + caption
 
-🎵 **VOICE CHAT:**
-• `{COMMAND_PREFIX}joinvc` - Join voice chat
-• `{COMMAND_PREFIX}leavevc` - Leave voice chat
+🛡️ **BLACKLIST MANAGEMENT (NEW):**
+• `{COMMAND_PREFIX}addbl` - Blacklist grup/channel ini
+• `{COMMAND_PREFIX}addbl <id>` - Blacklist by chat ID
+• `{COMMAND_PREFIX}rmbl` - Remove blacklist grup ini
+• `{COMMAND_PREFIX}rmbl <id>` - Remove blacklist by ID
+• `{COMMAND_PREFIX}listbl` - Lihat daftar blacklist
 
-🛡️ **SECURITY:**
-• `{COMMAND_PREFIX}sg` - Spam guard toggle
+🎵 **VOICE CHAT CONTROL:**
+• `{COMMAND_PREFIX}joinvc` - Join voice chat dengan animasi
+• `{COMMAND_PREFIX}leavevc` - Leave voice chat dengan animasi
 
-🔍 **UTILITIES:**
-• `{COMMAND_PREFIX}id` - Get user ID (reply/username)
-• `{COMMAND_PREFIX}infofounder` - Founder information
+🔍 **USER UTILITIES:**
+• `{COMMAND_PREFIX}id` (reply) - Get user ID dari reply
+• `{COMMAND_PREFIX}id <username>` - Get user ID dari username
+• `{COMMAND_PREFIX}id <user_id>` - Get info dari user ID
+
+🛡️ **SECURITY FEATURES:**
+• `{COMMAND_PREFIX}sg` - Toggle spam guard protection
+
+✨ **SPECIAL ANIMATIONS:**
+• `{COMMAND_PREFIX}vzl` - Spektakuler 12-phase animation
+• `{COMMAND_PREFIX}infofounder` - Info founder dengan logo
 
 📝 **USAGE EXAMPLES:**
+
+**Broadcast Examples:**
 ```
-{COMMAND_PREFIX}alive
-{COMMAND_PREFIX}gcast Hello everyone!
+{COMMAND_PREFIX}gcast Halo semua! 👋
+{COMMAND_PREFIX}gcast (reply ke pesan)
+{COMMAND_PREFIX}gcast (reply ke foto/video)
+```
+
+**Blacklist Examples:**
+```
+{COMMAND_PREFIX}addbl (di grup yang mau diblacklist)
+{COMMAND_PREFIX}addbl -1001234567890
+{COMMAND_PREFIX}rmbl -1001234567890
+{COMMAND_PREFIX}listbl
+```
+
+**ID Lookup Examples:**
+```
+{COMMAND_PREFIX}id (reply ke user)
 {COMMAND_PREFIX}id @username
-{COMMAND_PREFIX}id (reply to message)
-{COMMAND_PREFIX}joinvc
-{COMMAND_PREFIX}vzl
-{COMMAND_PREFIX}sg
+{COMMAND_PREFIX}id 123456789
 ```
 
-⚠️ **NOTE:** All commands are owner-only for security
+🆕 **NEW FEATURES v2.1:**
+• Enhanced gcast dengan reply support
+• Media broadcast support (foto/video + caption)
+• Smart blacklist system dengan file storage
+• Improved error handling & flood protection
+• Better progress tracking & statistics
 
-⚡ **Support:** @VZLfx | @VZLfxs
-🔥 **Created by Vzoel Fox's (LTPN)**
-📱 **Instagram:** vzoel.fox_s
-⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
+⚠️ **SECURITY NOTE:**
+Semua commands hanya bisa digunakan oleh owner untuk keamanan maksimal
+
+📞 **SUPPORT & INFO:**
+• **Telegram:** @VZLfx | @VZLfxs
+• **Channel:** t.me/damnitvzoel
+• **Instagram:** @vzoel.fox_s
+
+⚡ **Created by Vzoel Fox's (LTPN) ©2025**
+🔥 **Enhanced Edition v2.1 - Python Powered**
         """.strip()
         
         await event.edit(help_text)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"Help command error: {e}")
+        logger.error(f"Enhanced help error: {e}")
 
-# ============= PLUGIN 8: SPAM GUARD =============
+# ============= TAMBAHAN DI STARTUP FUNCTION =============
+# Tambahkan load_blacklist() di startup function, setelah start_time = datetime.now():
 
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}sg'))
-async def spam_guard_handler(event):
-    """Toggle spam guard with status display"""
-    if not await is_owner(event.sender_id):
-        return
-    
-    global spam_guard_enabled
-    await log_command(event, "sg")
-    
-    try:
-        spam_guard_enabled = not spam_guard_enabled
-        status = "**ENABLED** ✅" if spam_guard_enabled else "**DISABLED** ❌"
-        
-        sg_text = f"""
-🛡️ **SPAM GUARD STATUS**
-
-╔═══════════════════════════════╗
-   🛡️ **𝗦𝗣𝗔𝗠 𝗣𝗥𝗢𝗧𝗘𝗖𝗧𝗜𝗢𝗡** 🛡️
-╚═══════════════════════════════╝
-
-🔥 **Status:** {status}
-⚡ **Mode:** Auto-detection
-🎯 **Action:** Delete & Warn
-📊 **Threshold:** 5 messages/10s
-⏰ **Detection Window:** 10 seconds
-🚫 **Protected Users:** Owner only
-
-{'🟢 **Protection is now ACTIVE!**' if spam_guard_enabled else '🔴 **Protection is now INACTIVE!**'}
-
-💡 **How it works:**
-- Monitors message frequency
-- Auto-deletes spam messages
-- Shows warning to spammers
-- Protects all your chats
-
-⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
-        """.strip()
-        
-        await event.edit(sg_text)
-        
-    except Exception as e:
-        await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"Spam guard error: {e}")
-
-@client.on(events.NewMessage)
-async def spam_detection(event):
-    """Auto spam detection and prevention"""
-    global spam_guard_enabled, spam_users
-    
-    if not spam_guard_enabled or await is_owner(event.sender_id):
-        return
-    
-    try:
-        user_id = event.sender_id
-        current_time = time.time()
-        
-        if user_id not in spam_users:
-            spam_users[user_id] = []
-        
-        # Remove old messages (older than 10 seconds)
-        spam_users[user_id] = [msg_time for msg_time in spam_users[user_id] if current_time - msg_time < 10]
-        
-        # Add current message
-        spam_users[user_id].append(current_time)
-        
-        # Check if spam (more than 5 messages in 10 seconds)
-        if len(spam_users[user_id]) > 5:
-            try:
-                await event.delete()
-                user = await client.get_entity(user_id)
-                user_name = getattr(user, 'first_name', 'Unknown')
-                
-                warning_msg = await event.respond(
-                    f"🛡️ **SPAM DETECTED!**\n"
-                    f"👤 **User:** {user_name}\n"
-                    f"⚠️ **Action:** Message deleted\n"
-                    f"📊 **Messages:** {len(spam_users[user_id])} in 10s\n"
-                    f"🔥 **Vzoel Protection Active**"
-                )
-                
-                await asyncio.sleep(5)
-                await warning_msg.delete()
-                
-                # Reset counter
-                spam_users[user_id] = []
-                
-                logger.info(f"Spam detected and handled for user {user_name} ({user_id})")
-                
-            except Exception as e:
-                logger.error(f"Spam action error: {e}")
-    
-    except Exception as e:
-        logger.error(f"Spam detection error: {e}")
-
-# ============= PLUGIN 9: INFO FOUNDER (WITH LOGO) =============
-
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}infofounder'))
-async def infofounder_handler(event):
-    """Founder information with logo - exact as requested"""
-    if not await is_owner(event.sender_id):
-        return
-    
-    await log_command(event, "infofounder")
-    
-    try:
-        founder_info = f"""
-        
- ({https://imgur.com/gallery/logo-S6biYEi}) **apa woy**
-[╔═══════════════════════════════╗]({VZOEL_LOGO})
-    **𝐕𝐙𝐎𝐄𝐋 𝐀𝐬𝐬𝐢𝐬𝐭𝐚𝐧𝐭** 
-╚═══════════════════════════════╝
-
-⟢ Founder    : **𝗩𝘇𝗼𝗲𝗹 𝗙𝗼𝘅'𝘀 (Ltpn)**
-⟢ Instagram  : @vzoel.fox_s
-⟢ Telegram   : @VZLfx | @VZLfxs
-⟢ Channel    : t.me/damnitvzoel
-
-⚡ Hak milik **𝗩𝘇𝗼𝗲𝗹 𝗙𝗼𝘅'𝘀** ©2025 ~ LTPN. ⚡
-        """.strip()
-        
-        await event.edit(founder_info)
-        
-    except Exception as e:
-        await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"InfoFounder error: {e}")
-
-# ============= PLUGIN 10: PING COMMAND =============
-
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}ping'))
-async def ping_handler(event):
-    """Ping command with response time"""
-    if not await is_owner(event.sender_id):
-        return
-    
-    await log_command(event, "ping")
-    
-    try:
-        start = time.time()
-        msg = await event.reply("🏓 **Lagi ngetest ping dulu om.......**")
-        end = time.time()
-        
-        ping_time = (end - start) * 1000
-        
-        ping_text = f"""
-🏓 **Tch....**
-
-╔═══════════════════════════════╗
-   ⚡ **𝗣𝗜𝗡𝗚 𝗥𝗘𝗦𝗨𝗟𝗧** ⚡
-╚═══════════════════════════════╝
-
-⚡ **Response Time:** `{ping_time:.2f}ms`
-🚀 **Status:** Active
-🔥 **Server:** Online
-✅ **Connection:** Stable
-📡 **Latency:** {'Low' if ping_time < 100 else 'Normal' if ping_time < 300 else 'High'}
-
-⚡ **pasti aman anti delay**
-        """.strip()
-        
-        await msg.edit(ping_text)
-        
-    except Exception as e:
-        await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"Ping error: {e}")
-
-# ============= STARTUP AND MAIN FUNCTIONS =============
-
-async def send_startup_message():
-    """Send startup notification to saved messages"""
-    try:
-        me = await client.get_me()
-        
-        startup_msg = f"""
-[🚀]({LOGO_URL}) **VZOEL ASSISTANT STARTED!**
-
-╔═══════════════════════════════╗
-   🔥 **𝗦𝗬𝗦𝗧𝗘𝗠 𝗔𝗖𝗧𝗜𝗩𝗔𝗧𝗘𝗗** 🔥
-╚═══════════════════════════════╝
-
-✅ **All systems operational**
-👤 **User:** {me.first_name}
-🆔 **ID:** `{me.id}`
-⚡ **Prefix:** `{COMMAND_PREFIX}`
-⏰ **Started:** `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
-
-📌 **Loaded Plugins (Enhanced Edition):**
-• ✅ Alive System (3 animations + logo)
-• ✅ Enhanced Global Broadcast (8 animations)
-• ✅ Voice Chat Control
-• ✅ Vzoel Animation (12 phases + logo)
-• ✅ User ID Lookup System
-• ✅ Information System
-• ✅ Help Command (with logo)
-• ✅ Spam Guard (Auto-detection)
-• ✅ Founder Info (with logo)
-• ✅ Ping System
-
-💡 **Quick Start:**
-• `{COMMAND_PREFIX}help` - Show all commands
-• `{COMMAND_PREFIX}alive` - Check status
-• `{COMMAND_PREFIX}vzl` - 12-phase animation
-• `{COMMAND_PREFIX}gcast <message>` - Enhanced broadcast
-• `{COMMAND_PREFIX}id @username` - Get user ID
-• `{COMMAND_PREFIX}sg` - Toggle spam protection
-
-🔥 **Enhanced features:**
-• Improved gcast with better error handling
-• New ID lookup plugin
-• Logo integration on key commands
-• Better broadcast channel detection
-• Flood wait protection
-
-⚡ **Powered by Vzoel Fox's (LTPN)**
-        """.strip()
-        
-        await client.send_message('me', startup_msg)
-        logger.info("✅ Enhanced startup message sent successfully")
-        
-    except Exception as e:
-        logger.error(f"Failed to send startup message: {e}")
-
-async def startup():
-    """Enhanced startup function"""
+async def enhanced_startup():
+    """Enhanced startup dengan blacklist loading"""
     global start_time
     start_time = datetime.now()
     
-    logger.info("🚀 Starting Vzoel Assistant (Enhanced Edition)...")
+    # Load blacklist at startup
+    load_blacklist()
     
-    try:
-        await client.start()
-        me = await client.get_me()
-        
-        logger.info(f"✅ Vzoel Assistant started successfully!")
-        logger.info(f"👤 Logged in as: {me.first_name} (@{me.username or 'No username'})")
-        logger.info(f"🆔 User ID: {me.id}")
-        logger.info(f"📌 All plugins integrated in main.py")
-        logger.info(f"⚡ Enhanced commands: alive, gcast, joinvc, leavevc, vzl, id, info, help, sg, infofounder, ping")
-        logger.info(f"🔥 New features: Enhanced gcast, ID lookup, Logo integration")
-        
-        # Send startup message
-        await send_startup_message()
-            
-    except SessionPasswordNeededError:
-        logger.error("❌ Two-factor authentication enabled. Please login manually first.")
-        return False
-    except Exception as e:
-        logger.error(f"❌ Error starting Vzoel Assistant: {e}")
-        return False
+    logger.info("🚀 Starting Vzoel Assistant (Enhanced Edition v2.1)...")
+    logger.info(f"🛡️ Loaded {len(blacklisted_chats)} blacklisted chats")
     
-    return True
+    # ... rest of startup function
 
-async def main():
-    """Main function to run the enhanced userbot"""
-    logger.info("🔥 Initializing Vzoel Assistant Enhanced Edition...")
-    
-    # Validate configuration
-    logger.info("🔍 Validating configuration...")
-    logger.info(f"📱 API ID: {API_ID}")
-    logger.info(f"📝 Session: {SESSION_NAME}")
-    logger.info(f"⚡ Prefix: {COMMAND_PREFIX}")
-    logger.info(f"🆔 Owner ID: {OWNER_ID or 'Auto-detect'}")
-    logger.info(f"📂 Mode: Enhanced Edition (All-in-One with improvements)")
-    
-    # Start Vzoel Assistant
-    if await startup():
-        logger.info("🔥 Vzoel Assistant is now running (Enhanced Edition)...")
-        logger.info("📝 Press Ctrl+C to stop")
-        logger.info("🎯 Enhanced features: Better gcast, ID lookup, Logo integration")
-        
-        try:
-            await client.run_until_disconnected()
-        except KeyboardInterrupt:
-            logger.info("👋 Vzoel Assistant stopped by user")
-        except Exception as e:
-            logger.error(f"❌ Unexpected error: {e}")
-        finally:
-            logger.info("🔥 Disconnecting...")
-            try:
-                await client.disconnect()
-            except Exception as e:
-                logger.error(f"Error during disconnect: {e}")
-            logger.info("✅ Vzoel Assistant stopped successfully!")
-    else:
-        logger.error("❌ Failed to start Vzoel Assistant!")
-
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except Exception as e:
-        logger.error(f"❌ Fatal error: {e}")
-        sys.exit(1)
-
-# ============= END OF VZOEL ASSISTANT ENHANCED EDITION =============
-
+# ============= INSTALLATION INSTRUCTIONS =============
 """
-🔥 VZOEL ASSISTANT - ENHANCED EDITION 🔥
+📥 CARA INSTALASI FITUR BARU:
 
-✅ NEW FEATURES ADDED:
-1. Enhanced gcast.py - Improved error handling, flood protection, better channel detection
-2. NEW id.py - User ID lookup by reply or username/ID
-3. Logo integration - Telegraph links on alive, help, infofounder, vzl commands
-4. Better broadcast system - Based on ultroid's broadcast.py reference
-5. Improved error reporting for gcast failures
-6. Enhanced channel filtering for better broadcast success
-7. FloodWaitError handling with smart retry logic
-8. Better progress reporting during broadcast
+1. Backup file main.py yang lama
+2. Tambahkan code di atas ke file main.py Anda:
+   - Tambahkan global variables (blacklisted_chats, BLACKLIST_FILE)
+   - Replace gcast_handler dengan enhanced_gcast_handler
+   - Tambahkan semua function baru (addbl, rmbl, listbl)
+   - Replace help_handler dengan enhanced_help_handler
+   - Tambahkan load_blacklist() di startup
 
-🚀 ENHANCED GCAST FEATURES:
-• Smart channel detection (groups + channels with permissions)
-• FloodWait error handling with retry logic
-• Better progress reporting every 3 messages
-• Error logging with failed chat details
-• Improved success rate calculation
-• Rate limiting to prevent flood errors
+3. Install dependencies (sudah ada):
+   pip install telethon python-dotenv
 
-🔍 NEW ID COMMAND FEATURES:
-• Get user ID by replying to their message
-• Get user ID by username or user ID
-• Shows comprehensive user information
-• Detects bots, verified, premium, scam accounts
-• Shows phone number if available
+4. Run bot:
+   python main.py
 
-🖼️ LOGO INTEGRATION:
-• Telegraph logo links on key commands
-• Enhanced visual presentation
-• Consistent branding across commands
+✅ FITUR BARU YANG DITAMBAHKAN:
+• .gcast sekarang bisa reply pesan (text/media)
+• .addbl untuk blacklist grup/channel
+• .rmbl untuk remove blacklist
+• .listbl untuk lihat daftar blacklist
+• Help menu yang lebih lengkap dan terorganisir
+• Blacklist otomatis tersimpan di file
+• Statistics yang lebih detail di gcast
+• Media broadcast support (foto/video + caption)
 
-🛠️ SETUP INSTRUCTIONS:
-1. Save this as main.py
-2. Update LOGO_URL and VZOEL_LOGO with your telegraph links
-3. Create .env file with your credentials
-4. Install: pip install telethon python-dotenv
-5. Run: python main.py
-
-⚡ All improvements maintain existing architecture!
-⚡ Created by Vzoel Fox's (LTPN) ⚡
+🔥 Semua fitur terintegrasi dengan sistem existing tanpa merusak fungsi lama!
+⚡ Created by Vzoel Fox's (LTPN) ©2025
 """
