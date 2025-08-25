@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Vzoel Assistant Client with Dynamic Plugin System
-Enhanced version with external plugin loading capability
+Vzoel Assistant Client with Dynamic Plugin System (Fixed)
+Compatible version with proper Telethon syntax
 Author: Vzoel Fox's (Ltpn)
 """
 
@@ -147,7 +147,7 @@ class PluginManager:
         # Sample alive plugin
         alive_plugin = '''
 """Sample Alive Plugin"""
-import re
+import asyncio
 from datetime import datetime
 from telethon import events
 
@@ -156,24 +156,34 @@ start_time = datetime.now()
 async def setup(client):
     """Plugin setup function"""
     
-    @client.on(events.NewMessage(pattern=r'\\.alive'))
+    @client.on(events.NewMessage(pattern=r\'\\.alive\'))
     async def alive_handler(event):
         """Enhanced alive command"""
+        me = await client.get_me()
+        if event.sender_id != me.id:
+            return
+            
         uptime = datetime.now() - start_time
         uptime_str = str(uptime).split('.')[0]
         
-        await event.edit(f"""
-✅ **VZOEL ASSISTANT ALIVE!**
+        animations = [
+            "🔄 **Checking system...**",
+            "⚡ **Loading components...**",
+            """✅ **VZOEL ASSISTANT ALIVE!**
 
-🚀 **Status:** Active & Running
-⏰ **Uptime:** `{uptime_str}`
+🚀 **Status:** Active & Running  
+⏰ **Uptime:** `{}`
 🔥 **Plugin System:** Enabled
-
-⚡ **Dynamic Plugin Loaded!**
-        """.strip())
+⚡ **External Plugin Loaded!**""".format(uptime_str)
+        ]
+        
+        msg = await event.edit(animations[0])
+        for anim in animations[1:]:
+            await asyncio.sleep(2)
+            await msg.edit(anim)
 '''
 
-        # Sample ping plugin
+        # Sample ping plugin  
         ping_plugin = '''
 """Sample Ping Plugin"""
 import time
@@ -182,22 +192,24 @@ from telethon import events
 async def setup(client):
     """Plugin setup function"""
     
-    @client.on(events.NewMessage(pattern=r'\\.ping'))
+    @client.on(events.NewMessage(pattern=r\'\\.ping\'))
     async def ping_handler(event):
         """Ping command with response time"""
+        me = await client.get_me()
+        if event.sender_id != me.id:
+            return
+            
         start = time.time()
         msg = await event.edit("🏓 **Pinging...**")
         end = time.time()
         
         ping_time = (end - start) * 1000
         
-        await msg.edit(f"""
-🏓 **PONG!**
+        await msg.edit("""🏓 **PONG!**
 
-⚡ **Response:** `{ping_time:.2f}ms`
+⚡ **Response:** `{:.2f}ms`
 🚀 **Status:** Active
-✅ **Plugin:** Loaded Externally
-        """.strip())
+✅ **Plugin:** Loaded Externally""".format(ping_time))
 '''
 
         # Sample info plugin
@@ -209,26 +221,27 @@ from telethon import events
 async def setup(client):
     """Plugin setup function"""
     
-    @client.on(events.NewMessage(pattern=r'\\.info'))
+    @client.on(events.NewMessage(pattern=r\'\\.info\'))
     async def info_handler(event):
         """System information"""
         me = await client.get_me()
-        
-        await event.edit(f"""
-📊 **SYSTEM INFORMATION**
+        if event.sender_id != me.id:
+            return
+            
+        await event.edit("""📊 **SYSTEM INFORMATION**
 
-👤 **Name:** {me.first_name}
-🆔 **ID:** `{me.id}`
-📱 **Username:** @{me.username or 'None'}
+👤 **Name:** {}
+🆔 **ID:** `{}`
+📱 **Username:** @{}
 🔥 **Plugin System:** ✅ Active
 
-⚡ **Loaded from External Plugin!**
-        """.strip())
+⚡ **Loaded from External Plugin!**""".format(
+            me.first_name, me.id, me.username or 'None'))
 '''
 
         # Write sample plugins
         (self.plugins_dir / "alive.py").write_text(alive_plugin.strip())
-        (self.plugins_dir / "ping.py").write_text(ping_plugin.strip())
+        (self.plugins_dir / "ping.py").write_text(ping_plugin.strip())  
         (self.plugins_dir / "info.py").write_text(info_plugin.strip())
         
         logger.info("📝 Sample plugins created in plugins directory")
@@ -321,7 +334,7 @@ async def help_handler(event):
 
 🔧 **PLUGIN MANAGEMENT:**
 • `{COMMAND_PREFIX}plugins` - Show loaded plugins
-• `{COMMAND_PREFIX}reload <name>` - Reload plugin
+• `{COMMAND_PREFIX}reload <n>` - Reload plugin
 • `{COMMAND_PREFIX}loadall` - Reload all plugins
 
 📊 **SYSTEM:**
