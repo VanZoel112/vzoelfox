@@ -229,14 +229,14 @@ async def gcast_handler(event):
     try:
         # 8-phase animation
         gcast_animations = [
-            "🔍 **Scanning available channels...**",
-            "📡 **Establishing broadcast connection...**",
-            "⚡ **Initializing transmission protocol...**",
-            "🚀 **Preparing message distribution...**",
-            "🔨 **Starting global broadcast...**",
-            "🔄 **Broadcasting in progress...**",
-            "✅ **Broadcast transmission active...**",
-            "📊 **Finalizing delivery status...**"
+            " **lagi otw ngegikes.......**",
+            " **cuma gikes aja diblacklist.. kek mui ngeblacklist sound horeg wkwkwkwkwkwk...**",
+            " **dikit² blacklist...**",
+            " **dikit² maen mute...**",
+            " **dikit² gban...**",
+            " **wkwkwkwk...**",
+            " **anying......**",
+            " **wkwkwkwkwkwkwkwk...**"
         ]
         
         msg = await event.reply(gcast_animations[0])
@@ -280,11 +280,11 @@ async def gcast_handler(event):
                     current_title = channel_info['title'][:20]
                     
                     await msg.edit(f"""
-🚀 **Global Broadcast in Progress...**
+ **lagi otw ngegikesss...**
 
-📊 **Progress:** `{i}/{total_channels}` ({progress:.1f}%)
-✅ **Success:** `{success_count}`
-❌ **Failed:** `{failed_count}`
+**Total Kandang:** `{i}/{total_channels}` ({progress:.1f}%)
+**Kandang yang berhasil:** `{success_count}`
+**Kandang pelit.. alay.. dikit² maen mute** `{failed_count}`
 ⚡ **Current:** {current_title}...
                     """.strip())
                 
@@ -324,19 +324,19 @@ async def gcast_handler(event):
         success_rate = (success_count / total_channels * 100) if total_channels > 0 else 0
         
         final_message = f"""
-✅ **GLOBAL BROADCAST COMPLETED!**
+ **Gcast kelar....**
 
 ╔═══════════════════════════════════╗
-    📡 **𝗕𝗥𝗢𝗔𝗗𝗖𝗔𝗦𝗧 𝗥𝗘𝗣𝗢𝗥𝗧** 📡
+     **𝐕𝐙𝐎𝐄𝐋 𝐆𝐂𝐀𝐒𝐓.** 
 ╚═══════════════════════════════════╝
 
-📊 **Total Chats:** `{total_channels}`
-✅ **Successful:** `{success_count}`
-❌ **Failed:** `{failed_count}`
-📈 **Success Rate:** `{success_rate:.1f}%`
+ **Total Kandang:** `{total_channels}`
+ **Kandang yang berhasil:** `{success_count}`
+ **Kandang pelit.. alay.. dikit² mute:** `{failed_count}`
+ **Success Rate:** `{success_rate:.1f}%`
 
-🔥 **Message delivered successfully!**
-⚡ **Powered by Vzoel Assistant**
+        **Message delivered successfully!**
+        **Gcast by by Vzoel Assistant**
         """.strip()
         
         await msg.edit(final_message)
@@ -372,23 +372,24 @@ async def joinvc_handler(event):
             return
         
         animations = [
-            "🔥 **Connecting to voice chat...**",
-            "🎵 **Initializing audio stream...**",
-            "🚀 **Joining voice chat...**",
+            " **lagi naik ya bang.. sabar bentar...**",
+            " **kalo udah diatas ya disapa bukan dicuekin anying...**",
+            " **kalo ga nimbrung berarti bot ye... wkwkwkwkwk**",
             f"""
-✅ **VOICE CHAT JOINED!**
+ **Panglima Pizol udah diatas**
 
 ╔═══════════════════════════════╗
-   🎵 **𝗩𝗢𝗜𝗖𝗘 𝗖𝗛𝗔𝗧 𝗔𝗖𝗧𝗜𝗩𝗘** 🎵
+    **𝗩𝗢𝗜𝗖𝗘 𝗖𝗛𝗔𝗧 𝗔𝗖𝗧𝗜𝗩𝗘** 
 ╚═══════════════════════════════╝
 
-📍 **Chat:** {chat.title[:30] if hasattr(chat, 'title') else 'Private'}
-🎙️ **Status:** Connected
-📊 **Audio:** Ready
-⚡ **Quality:** HD
+ **Kandang:** {chat.title[:30] if hasattr(chat, 'title') else 'Private'}
+ **Status:** Connected
+ **Sound Horeg:** Ready
+ **Kualitas:** HD
+
 
 ⚠️ **Note:** Full VC features require pytgcalls
-🔥 **Vzoel Assistant VC Ready!**
+ **Pangeran Pizol udah diatas**
             """.strip()
         ]
         
@@ -423,8 +424,8 @@ async def leavevc_handler(event):
 🎙️ **Audio:** Stopped
 ✅ **Action:** Completed
 
-🔥 **Successfully left voice chat!**
-⚡ **Vzoel Assistant ready for next command**
+ **Udah turun bang!**
+ **Vzoel Assistant ready for next command**
             """.strip()
         ]
         
@@ -522,36 +523,36 @@ async def id_handler(event):
         # Format status
         status_icons = []
         if is_bot:
-            status_icons.append("🤖 Bot")
+            status_icons.append("🤖 Manusia Buatan")
         if is_verified:
-            status_icons.append("✅ Verified")
+            status_icons.append("✅ Woke")
         if is_premium:
-            status_icons.append("⭐ Premium")
+            status_icons.append("⭐ Premium ni boss")
         if is_scam:
-            status_icons.append("⚠️ Scam")
+            status_icons.append("⚠️ Scam anying")
         if is_fake:
-            status_icons.append("🚫 Fake")
+            status_icons.append("🚫 Faker bjirrr")
         
         status_text = " | ".join(status_icons) if status_icons else "👤 Regular User"
         
         id_info = f"""
-🆔 **USER ID INFORMATION**
+🆔 **Ni boss informasi khodamnya**
 
 ╔═══════════════════════════════╗
-   🔍 **𝗨𝗦𝗘𝗥 𝗜𝗗 𝗟𝗢𝗢𝗞𝗨𝗣** 🔍
+    **𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐒𝐈 𝐊𝐇𝐎𝐃𝐀𝐌** 
 ╚═══════════════════════════════╝
 
-👤 **Name:** {user.first_name or 'None'} {user.last_name or ''}
-🆔 **User ID:** `{user.id}`
-📱 **Username:** @{user.username or 'None'}
+👤 **Nama Makhluk ini :** {user.first_name or 'None'} {user.last_name or ''}
+🆔 **Nomor Togel:** `{user.id}`
+📱 **Nama Khodam:** @{user.username or 'None'}
 📞 **Phone:** `{user.phone or 'Hidden'}`
-🏷️ **Status:** {status_text}
+🏷️ **STATUS:** **Jomblo**
 🌐 **Language:** `{user.lang_code or 'Unknown'}`
 
-📊 **Account Info:**
-• **First Name:** `{user.first_name or 'Not set'}`
-• **Last Name:** `{user.last_name or 'Not set'}`
-• **Bio Available:** {'Yes' if hasattr(user, 'about') else 'No'}
+📊 **Informasi Khodam:**
+• **Nama Akhir Makhluknya:** `{user.first_name or 'Not set'}`
+• **Nama Akhir Makhluknya:** `{user.last_name or 'Not set'}`
+• **Quotes alaynya :** {'Yes' if hasattr(user, 'about') else 'No'}
 
 ⚡ **Vzoel Assistant ID Lookup**
         """.strip()
@@ -581,16 +582,16 @@ async def info_handler(event):
 🤖 **VZOEL ASSISTANT INFO**
 
 ╔═══════════════════════════════╗
-   📊 **𝗦𝗬𝗦𝗧𝗘𝗠 𝗜𝗡𝗙𝗢𝗥𝗠𝗔𝗧𝗜𝗢𝗡** 📊
+    💢**𝗦𝗬𝗦𝗧𝗘𝗠 𝗜𝗡𝗙𝗢𝗥𝗠𝗔𝗧𝗜𝗢𝗡** 💢
 ╚═══════════════════════════════╝
 
-👤 **Name:** {me.first_name or 'Vzoel Assistant'}
+👤 **USER:** {me.first_name or 'Vzoel Assistant'}
 🆔 **User ID:** `{me.id}`
 📱 **Username:** @{me.username or 'None'}
-📞 **Phone:** `{me.phone or 'Hidden'}`
+🧠 **FOUNDER UBOT:** **Vzoel Fox's (Lutpan)
 ⚡ **Prefix:** `{COMMAND_PREFIX}`
 ⏰ **Uptime:** `{uptime_str}`
-🚀 **Version:** v2.1 Enhanced Edition
+🚀 **Version:** v0.0.0.69
 🔧 **Framework:** Telethon
 🐍 **Language:** Python 3.9+
 💾 **Session:** Active
@@ -630,7 +631,7 @@ async def help_handler(event):
     
     try:
         help_text = f"""
-[🆘]({LOGO_URL}) **VZOEL ASSISTANT HELP**
+[🆘]({https://imgur.com/gallery/k-qzrssZX}) **VZOEL ASSISTANT HELP**
 
 ╔═══════════════════════════════╗
    📚 **𝗖𝗢𝗠𝗠𝗔𝗡𝗗 𝗟𝗜𝗦𝗧** 📚
@@ -790,14 +791,16 @@ async def infofounder_handler(event):
     
     try:
         founder_info = f"""
+        
+ ({https://imgur.com/gallery/logo-S6biYEi}) **apa woy**
 [╔═══════════════════════════════╗]({VZOEL_LOGO})
-   🚩 **𝗩𝗭𝗢𝗘𝗟 𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧** 🚩
+    **𝐕𝐙𝐎𝐄𝐋 𝐀𝐬𝐬𝐢𝐬𝐭𝐚𝐧𝐭** 
 ╚═══════════════════════════════╝
 
 ⟢ Founder    : **𝗩𝘇𝗼𝗲𝗹 𝗙𝗼𝘅'𝘀 (Ltpn)**
-⟢ Instagram  : vzoel.fox_s
+⟢ Instagram  : @vzoel.fox_s
 ⟢ Telegram   : @VZLfx | @VZLfxs
-⟢ Channel    : t.me/nama_channel
+⟢ Channel    : t.me/damnitvzoel
 
 ⚡ Hak milik **𝗩𝘇𝗼𝗲𝗹 𝗙𝗼𝘅'𝘀** ©2025 ~ LTPN. ⚡
         """.strip()
@@ -820,13 +823,13 @@ async def ping_handler(event):
     
     try:
         start = time.time()
-        msg = await event.reply("🏓 **Pinging...**")
+        msg = await event.reply("🏓 **Lagi ngetest ping dulu om.......**")
         end = time.time()
         
         ping_time = (end - start) * 1000
         
         ping_text = f"""
-🏓 **PONG!**
+🏓 **Tch....**
 
 ╔═══════════════════════════════╗
    ⚡ **𝗣𝗜𝗡𝗚 𝗥𝗘𝗦𝗨𝗟𝗧** ⚡
@@ -838,7 +841,7 @@ async def ping_handler(event):
 ✅ **Connection:** Stable
 📡 **Latency:** {'Low' if ping_time < 100 else 'Normal' if ping_time < 300 else 'High'}
 
-⚡ **Vzoel Assistant is running smoothly!**
+⚡ **pasti aman anti delay**
         """.strip()
         
         await msg.edit(ping_text)
