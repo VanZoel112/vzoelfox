@@ -212,6 +212,117 @@ async def setup(client):
 ✅ **Plugin:** Loaded Externally""".format(ping_time))
 '''
 
+        # Sample gcast plugin (FIXED VERSION)
+        gcast_plugin = '''
+"""Sample GCast Plugin - FIXED VERSION"""
+import asyncio
+from telethon import events
+
+async def setup(client):
+    """Plugin setup function"""
+    
+    # FIXED: Proper pattern without flags parameter
+    @client.on(events.NewMessage(pattern=r\'\\.gcast (.+)\'))
+    async def gcast_handler(event):
+        """Global broadcast command - FIXED"""
+        me = await client.get_me()
+        if event.sender_id != me.id:
+            return
+        
+        # Get message from pattern match
+        message_to_send = event.pattern_match.group(1).strip()
+        
+        if not message_to_send:
+            await event.edit("❌ **Usage:** `.gcast <message>`")
+            return
+        
+        try:
+            msg = await event.edit("🔄 **Starting broadcast...**")
+            
+            # Get all chats
+            chats = []
+            async for dialog in client.iter_dialogs():
+                if dialog.is_group or dialog.is_channel:
+                    chats.append(dialog)
+            
+            if not chats:
+                await msg.edit("❌ **No chats found for broadcast!**")
+                return
+            
+            # Broadcast to all chats
+            success = 0
+            failed = 0
+            
+            for chat in chats:
+                try:
+                    await client.send_message(chat.entity, message_to_send)
+                    success += 1
+                except:
+                    failed += 1
+                
+                # Rate limiting
+                await asyncio.sleep(0.3)
+            
+            await msg.edit(f"""✅ **BROADCAST COMPLETED!**
+            
+📊 **Results:**
+✅ **Success:** `{success}`
+❌ **Failed:** `{failed}`
+📈 **Total:** `{len(chats)}`
+
+🔥 **External Plugin Working!**""")
+            
+        except Exception as e:
+            await event.edit(f"❌ **Error:** {str(e)}")
+'''
+
+        # Sample vzl plugin
+        vzl_plugin = '''
+"""Sample VZL Plugin"""
+import asyncio
+from telethon import events
+
+async def setup(client):
+    """Plugin setup function"""
+    
+    @client.on(events.NewMessage(pattern=r\'\\.vzl\'))
+    async def vzl_handler(event):
+        """Vzoel animation command"""
+        me = await client.get_me()
+        if event.sender_id != me.id:
+            return
+        
+        animations = [
+            "🔥 **V**",
+            "🔥 **VZ**", 
+            "🔥 **VZO**",
+            "🔥 **VZOE**",
+            "🔥 **VZOEL**",
+            "🚀 **VZOEL F**",
+            "🚀 **VZOEL FO**",
+            "🚀 **VZOEL FOX**",
+            "⚡ **VZOEL FOX\\'S**",
+            "✨ **VZOEL FOX\\'S A**",
+            "🌟 **VZOEL FOX\\'S ASS**",
+            """🔥 **VZOEL FOX\\'S ASSISTANT** 🔥
+
+╔══════════════════════════════╗
+   🚩 𝗩𝗭𝗢𝗘𝗟 𝗔𝗦𝗦𝗜𝗦𝗧𝗔𝗡𝗧 🚩
+╚══════════════════════════════╝
+
+⚡ **Dynamic Plugin System**
+🔥 **External Plugins Working**
+✨ **Created by Vzoel Fox\\'s**
+
+⚡ **Hak milik Vzoel Fox\\'s ©2025**"""
+        ]
+        
+        msg = await event.edit(animations[0])
+        for anim in animations[1:]:
+            await asyncio.sleep(1.2)
+            await msg.edit(anim)
+'''
+
         # Sample info plugin
         info_plugin = '''
 """Sample Info Plugin"""
@@ -227,21 +338,31 @@ async def setup(client):
         me = await client.get_me()
         if event.sender_id != me.id:
             return
+        
+        uptime = datetime.now() - datetime.now()  # This should be start_time
+        uptime_str = "Active"
             
-        await event.edit("""📊 **SYSTEM INFORMATION**
+        await event.edit(f"""📊 **SYSTEM INFORMATION**
 
-👤 **Name:** {}
-🆔 **ID:** `{}`
-📱 **Username:** @{}
+╔══════════════════════════════╗
+   📊 𝗦𝗬𝗦𝗧𝗘𝗠 𝗜𝗡𝗙𝗢 📊
+╚══════════════════════════════╝
+
+👤 **Name:** {me.first_name}
+🆔 **ID:** `{me.id}`
+📱 **Username:** @{me.username or 'None'}
+⚡ **Status:** {uptime_str}
 🔥 **Plugin System:** ✅ Active
 
-⚡ **Loaded from External Plugin!**""".format(
-            me.first_name, me.id, me.username or 'None'))
+⚡ **Loaded from External Plugin!**
+🔥 **Vzoel Fox\\'s Assistant**""")
 '''
 
         # Write sample plugins
         (self.plugins_dir / "alive.py").write_text(alive_plugin.strip())
-        (self.plugins_dir / "ping.py").write_text(ping_plugin.strip())  
+        (self.plugins_dir / "ping.py").write_text(ping_plugin.strip())
+        (self.plugins_dir / "gcast.py").write_text(gcast_plugin.strip())  # FIXED VERSION
+        (self.plugins_dir / "vzl.py").write_text(vzl_plugin.strip())
         (self.plugins_dir / "info.py").write_text(info_plugin.strip())
         
         logger.info("📝 Sample plugins created in plugins directory")
@@ -334,7 +455,7 @@ async def help_handler(event):
 
 🔧 **PLUGIN MANAGEMENT:**
 • `{COMMAND_PREFIX}plugins` - Show loaded plugins
-• `{COMMAND_PREFIX}reload <n>` - Reload plugin
+• `{COMMAND_PREFIX}reload <name>` - Reload plugin
 • `{COMMAND_PREFIX}loadall` - Reload all plugins
 
 📊 **SYSTEM:**
@@ -352,7 +473,14 @@ async def setup(client):
         await event.edit("Response")
 ```
 
-⚡ **Plugin Count:** `{len(plugin_manager.loaded_plugins)}`
+📊 **SAMPLE PLUGINS INCLUDED:**
+• alive.py - System status
+• ping.py - Response time
+• gcast.py - Global broadcast
+• vzl.py - Vzoel animation  
+• info.py - System info
+
+⚡ **Plugin Count:** `{len(plugin_manager.loaded_plugins) if 'plugin_manager' in globals() else 0}`
 🔥 **Created by Vzoel Fox's (LTPN)**
         """.strip()
         
@@ -383,16 +511,24 @@ async def send_startup_message():
 🔌 **Plugins:** `{plugin_count}` loaded
 ⏰ **Started:** `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
 
-🔥 **New Features:**
+🔥 **Features:**
 • Dynamic Plugin System ✅
 • External Plugin Loading ✅
 • Plugin Management Commands ✅
 • Hot-Reload Support ✅
+• Sample Plugins Included ✅
 
 💡 **Quick Start:**
 • `{COMMAND_PREFIX}help` - Show commands
 • `{COMMAND_PREFIX}plugins` - Show plugins
 • `{COMMAND_PREFIX}loadall` - Reload plugins
+
+🧪 **Try Sample Commands:**
+• `{COMMAND_PREFIX}alive` - System status
+• `{COMMAND_PREFIX}ping` - Response time
+• `{COMMAND_PREFIX}gcast Hello!` - Broadcast
+• `{COMMAND_PREFIX}vzl` - Animation
+• `{COMMAND_PREFIX}info` - System info
 
 🔌 **Plugin Directory:** `{PLUGINS_DIR}/`
 🔥 **Enhanced by Vzoel Fox's (LTPN)**
