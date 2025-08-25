@@ -1,6 +1,7 @@
 # plugins/gcast.py
 """
-Advanced Global Broadcast Plugin
+Advanced Global Broadcast Plugin (Fixed Version)
+Compatible with older Telethon versions
 Author: Vzoel Fox's (LTPN)
 """
 
@@ -12,7 +13,7 @@ from datetime import datetime
 async def setup(client):
     """Plugin initialization function"""
     
-    @client.on(events.NewMessage(pattern=rf'\.gcast\s+(.+)', flags=re.DOTALL))
+    @client.on(events.NewMessage(pattern=r'\.gcast (.+)'))
     async def gcast_handler(event):
         """Advanced Global Broadcast with animation"""
         # Check owner permission
@@ -20,9 +21,10 @@ async def setup(client):
         if event.sender_id != me.id:
             return
             
-        message_to_send = event.pattern_match.group(1).strip()
+        # Get message (including multiline)
+        message_to_send = event.raw_text[7:]  # Remove '.gcast ' prefix
         
-        if not message_to_send:
+        if not message_to_send.strip():
             await event.edit("❌ **Usage:** `.gcast <message>`")
             return
         
@@ -86,14 +88,13 @@ async def setup(client):
                     if i % 3 == 0 or i == total_chats:
                         progress = (i / total_chats) * 100
                         current_chat = chat.title[:25] if chat.title else "Unknown"
-                        await msg.edit(f"""
-🚀 **Global Broadcast in Progress...**
+                        progress_text = f"""🚀 **Global Broadcast in Progress...**
 
 📊 **Progress:** `{i}/{total_chats}` ({progress:.1f}%)
 ✅ **Success:** `{success_count}`
 ❌ **Failed:** `{failed_count}`
-⚡ **Current:** {current_chat}...
-                        """.strip())
+⚡ **Current:** {current_chat}..."""
+                        await msg.edit(progress_text)
                     
                     await asyncio.sleep(0.5)  # Rate limiting
                     
@@ -106,8 +107,8 @@ async def setup(client):
             await msg.edit(gcast_animations[7])
             
             await asyncio.sleep(2)
-            final_message = f"""
-✅ **GLOBAL BROADCAST COMPLETED!**
+            success_rate = (success_count/total_chats)*100 if total_chats > 0 else 0
+            final_message = f"""✅ **GLOBAL BROADCAST COMPLETED!**
 
 ╔═══════════════════════════════╗
     📡 𝗕𝗥𝗢𝗔𝗗𝗖𝗔𝗦𝗧 𝗥𝗘𝗣𝗢𝗥𝗧 📡
@@ -116,11 +117,10 @@ async def setup(client):
 📊 **Total Chats:** `{total_chats}`
 ✅ **Successful:** `{success_count}`
 ❌ **Failed:** `{failed_count}`
-📈 **Success Rate:** `{(success_count/total_chats)*100:.1f}%`
+📈 **Success Rate:** `{success_rate:.1f}%`
 
 🔥 **Message delivered successfully!**
-⚡ **Plugin by Vzoel Fox's (LTPN)**
-            """.strip()
+⚡ **Plugin by Vzoel Fox's (LTPN)**"""
             
             await msg.edit(final_message)
             
@@ -178,19 +178,69 @@ async def setup(client):
             return
             
         try:
-            test_message = "🧪 **GCAST TEST MESSAGE**\n\nThis is a test broadcast from Vzoel Assistant.\n⚡ Plugin working correctly!"
+            test_message = """🧪 **GCAST TEST MESSAGE**
+
+This is a test broadcast from Vzoel Assistant.
+⚡ Plugin working correctly!"""
             
             await client.send_message('me', test_message)
             
-            await event.edit("""
-✅ **GCAST TEST SUCCESSFUL!**
+            success_text = """✅ **GCAST TEST SUCCESSFUL!**
 
 📨 **Test message sent to Saved Messages**
 🔧 **Plugin Status:** Working
 ⚡ **Ready for global broadcast**
 
-Use `.gcast <message>` for actual broadcast.
-            """.strip())
+Use `.gcast <message>` for actual broadcast."""
+            
+            await event.edit(success_text)
             
         except Exception as e:
             await event.edit(f"❌ **Test Error:** {str(e)}")
+
+    @client.on(events.NewMessage(pattern=r'\.ghelp'))
+    async def gcast_help_handler(event):
+        """GCast plugin help"""
+        me = await client.get_me()
+        if event.sender_id != me.id:
+            return
+            
+        try:
+            help_text = """📡 **GCAST PLUGIN HELP**
+
+╔══════════════════════════════╗
+   🚀 𝗚𝗟𝗢𝗕𝗔𝗟 𝗕𝗥𝗢𝗔𝗗𝗖𝗔𝗦𝗧 🚀
+╚══════════════════════════════╝
+
+📋 **Available Commands:**
+• `.gcast <message>` - Broadcast to all chats
+• `.gcastlist` - Show available chats  
+• `.gcasttest` - Test broadcast function
+• `.ghelp` - Show this help
+
+💡 **Usage Examples:**
+```
+.gcast Hello everyone!
+.gcast This is a multiline
+broadcast message for testing
+.gcasttest
+```
+
+⚠️ **Important Notes:**
+• Only broadcasts to groups/channels you can post in
+• Includes rate limiting for safety
+• Progress tracking during broadcast
+• Automatic retry for failed sends
+
+🔒 **Safety Features:**
+• Owner-only commands
+• Rate limiting (0.5s delay between messages)
+• Error handling for failed sends
+• Progress monitoring
+
+⚡ **Plugin by Vzoel Fox's (LTPN)**"""
+            
+            await event.edit(help_text)
+            
+        except Exception as e:
+            await event.edit(f"❌ **Help Error:** {str(e)}")
