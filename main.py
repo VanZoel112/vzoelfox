@@ -303,7 +303,7 @@ async def alive_handler(event):
 [🚩]({LOGO_URL}) **𝚅𝚉𝙾𝙴𝙻 𝙰𝚂𝚂𝙸𝚂𝚃𝙰𝙽𝚃 IS ALIVE!**
 
 ╔══════════════════════════════════╗
-   {get_emoji('premium')} **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃** {get_emoji('premium')}
+   {get_emoji('🤩')} **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃** {get_emoji('🤩')}
 ╚══════════════════════════════════╝
 
 {get_emoji('user', '👤')} **Name:** {me.first_name or 'Vzoel Assistant'}
@@ -461,10 +461,10 @@ async def gcast_handler(event):
 {get_emoji('sparkles', '✨')} **Gcast kelar....**
 
 ╔══════════════════════════════════╗
-     **{get_emoji('premium')} 𝚅 𝚉 𝙾 𝙴 𝙻  𝙶 𝙲 𝙰 𝚂 𝚃 {get_emoji('premium')}**
+     **{get_emoji('premium',🤩')} 𝚅 𝚉 𝙾 𝙴 𝙻  𝙶 𝙲 𝙰 𝚂 𝚃 {get_emoji('premium','🤩')}**
 ╚══════════════════════════════════╝
 
-{get_emoji('globe', '🌍')} **Total Kandang:** `{total_channels}`
+{get_emoji('premium', '🤩')} **Total Kandang:** `{total_channels}`
 {get_emoji('check', '✅')} **Kandang yang berhasil:** `{success_count}`
 {get_emoji('warning', '⚠️')} **Kandang pelit.. alay.. dikit² mute:** `{failed_count}`
 {get_emoji('star', '⭐')} **Success Rate:** `{success_rate:.1f}%`
@@ -563,20 +563,20 @@ async def ping_handler(event):
             status_emoji = get_emoji('warning', '⚠️')
         
         ping_text_base = f"""
-{get_emoji('rocket', '📡')} **Tch....**
+{get_emoji('rocket', '📡')} Tch....
 
 ╔══════════════════════════════════╗
-   {get_emoji('premium')} **𝙿 𝙸 𝙽 𝙶  𝚁 𝙴 𝚂 𝚄 𝙻 𝚃** {get_emoji('premium')}
+   {get_emoji('premium','🤩')}  𝙿 𝙸 𝙽 𝙶  𝚁 𝙴 𝚂 𝚄 𝙻 𝚃  {get_emoji('premium','🤩')}
 ╚══════════════════════════════════╝
 
-{get_emoji('lightning', '⚡')} **Response Time:** `{ping_time:.2f}ms`
-{get_emoji('rocket', '🚀')} **Status:** Active
-{get_emoji('fire', '🔥')} **Server:** Online
-{status_emoji} **Connection:** Stable
-{get_emoji('globe', '📡')} **Latency:** {latency}
-{get_emoji('diamond', '💎')} **Premium:** {'Active ✓' if premium_status else 'Standard'}
+{get_emoji('lightning', '⚡')} Response Time: `{ping_time:.2f}ms`
+{get_emoji('rocket', '🚀')} Status: Active
+{get_emoji('fire', '🔥')} Server: Online
+{status_emoji} Connection: Stable
+{get_emoji('globe', '📡')} Latency: {latency}
+{get_emoji('diamond', '💎')}  Premium: {'Active ✓' if premium_status else 'Standard'}
 
-{get_emoji('zap', '⚡')} **pasti aman anti delay**
+{get_emoji('zap', '⚡')} pasti aman anti delay
         """.strip()
         
         if premium_status:
@@ -652,7 +652,7 @@ async def addbl_handler(event):
 🚫 **CHAT BLACKLISTED!**
 
 ╔══════════════════════════════════╗
-   🚫 **𝙶 𝙲 𝙰 𝚂 𝚃  𝙱 𝙻 𝙰 𝙲 𝙺 𝙻 𝙸 𝚂 𝚃** 🚫
+   🚫 𝙶 𝙲 𝙰 𝚂 𝚃  𝙱 𝙻 𝙰 𝙲 𝙺 𝙻 𝙸 𝚂 𝚃 🚫
 ╚══════════════════════════════════╝
 
 📍 **Chat:** {chat_title}
@@ -758,7 +758,7 @@ async def listbl_handler(event):
 📋 **GCAST BLACKLIST**
 
 ╔══════════════════════════════════╗
-   📋 **𝙱 𝙻 𝙰 𝙲 𝙺 𝙻 𝙸 𝚂 𝚃  𝙴 𝙼 𝙿 𝚃 𝚈** 📋
+   📋 𝙱 𝙻 𝙰 𝙲 𝙺 𝙻 𝙸 𝚂 𝚃  𝙴 𝙼 𝙿 𝚃 𝚈📋
 ╚══════════════════════════════════╝
 
 🔥 **No chats are blacklisted**
@@ -831,10 +831,10 @@ async def joinvc_handler(event):
 {get_emoji('crown', '👑')} **Panglima Pizol udah diatas**
 
 ╔══════════════════════════════════╗
-    **𝚅 𝙾 𝙸 𝙲 𝙴  𝙲 𝙷 𝙰 𝚃  𝙰 𝙲 𝚃 𝙸 𝚅 𝙴** {get_emoji('phone', '📞')}
+    𝚅 𝙾 𝙸 𝙲 𝙴  𝙲 𝙷 𝙰 𝚃  𝙰 𝙲 𝚃 𝙸 𝚅 𝙴 {get_emoji('phone', '📞')}
 ╚══════════════════════════════════╝
 
-{get_emoji('globe', '🌍')} **Kandang:** {chat.title[:30] if hasattr(chat, 'title') else 'Private'}
+{get_emoji('globe', '🌍')} Kandang: {chat.title[:30] if hasattr(chat, 'title') else 'Private'}
 {get_emoji('check', '✅')} **Status:** Connected
 {get_emoji('sparkles', '✨')} **Sound Horeg:** Ready
 {get_emoji('diamond', '💎')} **Kualitas:** HD
@@ -913,7 +913,7 @@ async def vzl_handler(event):
 [🔥]({VZOEL_LOGO}) **𝚅𝚉𝙾𝙴𝙻 𝙵𝙾𝚇'𝚂 𝙰𝚂𝚂𝙸𝚂𝚃𝙰𝙽𝚃** {get_emoji('fire', '🔥')}
 
 ╔══════════════════════════════════╗
-   {get_emoji('fire', '🚩')} **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃** {get_emoji('fire', '🚩')}
+   {get_emoji('fire', '🚩')}  **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃**  {get_emoji('fire', '🚩')}
 ╚══════════════════════════════════╝
 
 {get_emoji('lightning', '⚡')} **The most advanced Telegram userbot**
