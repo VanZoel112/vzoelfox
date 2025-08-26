@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-VZOEL ASSISTANT - PREMIUM EMOJI ENHANCED VERSION
-Complete Telegram Userbot with Custom Premium Emoji Support
+VZOEL ASSISTANT - FULL PREMIUM EMOJI VERSION
+Complete Telegram Userbot with Dual Premium Emoji Support
 Author: Vzoel Fox's (LTPN)
-Version: v2.3.0 Premium Emoji Enhanced
+Version: v0.0.0.69 Premium Ultimate
 File: main.py
 """
 
@@ -75,52 +75,60 @@ spam_guard_enabled = False
 spam_users = {}
 blacklist_file = "gcast_blacklist.json"
 blacklisted_chats = set()
-premium_status = None  # Will store premium status after login
+premium_status = None
 
-# Logo URLs (Imgur links)
-LOGO_URL = "https://imgur.com/gallery/logo-S6biYEi"  # Ganti dengan URL logo Anda
-VZOEL_LOGO = "https://imgur.com/gallery/logo-S6biYEi"  # Ganti dengan URL logo VZL
+# Logo URLs
+LOGO_URL = "https://imgur.com/gallery/logo-S6biYEi"
+VZOEL_LOGO = "https://imgur.com/gallery/logo-S6biYEi"
 
-# Premium Emoji Configuration
-PREMIUM_EMOJI_ID = "6156784006194009426"  # ID untuk emoji 🤩
-PREMIUM_EMOJI_CHAR = "🤩"
+# Premium Emoji Configuration - DUAL EMOJI SYSTEM
+PREMIUM_EMOJI_MAIN = "6156784006194009426"  # 🤩
+PREMIUM_EMOJI_CHECK = "5793955979460613233"  # ✅
+PREMIUM_EMOJI_CHAR_MAIN = "🤩"
+PREMIUM_EMOJI_CHAR_CHECK = "✅"
 
-# Standard Emoji mapping (fallback)
+# Premium Emoji Mapping - ALL EMOJIS NOW PREMIUM
 PREMIUM_EMOJI_MAP = {
-    'fire': '🔥',
-    'rocket': '🚀',
-    'lightning': '⚡',
-    'diamond': '💎',
-    'star': '⭐',
-    'check': '✅',
-    'warning': '⚠️',
-    'party': '🎉',
-    'crown': '👑',
-    'zap': '⚡',
-    'boom': '💥',
-    'sparkles': '✨',
-    'phone': '📱',
-    'user': '👤',
-    'globe': '🌍',
-    'premium': '🤩',  # Premium emoji utama
+    'premium': PREMIUM_EMOJI_CHAR_MAIN,
+    'check': PREMIUM_EMOJI_CHAR_CHECK,
+    'fire': PREMIUM_EMOJI_CHAR_MAIN,
+    'rocket': PREMIUM_EMOJI_CHAR_MAIN,
+    'lightning': PREMIUM_EMOJI_CHAR_MAIN,
+    'diamond': PREMIUM_EMOJI_CHAR_MAIN,
+    'star': PREMIUM_EMOJI_CHAR_MAIN,
+    'warning': PREMIUM_EMOJI_CHAR_MAIN,
+    'party': PREMIUM_EMOJI_CHAR_MAIN,
+    'crown': PREMIUM_EMOJI_CHAR_MAIN,
+    'zap': PREMIUM_EMOJI_CHAR_MAIN,
+    'boom': PREMIUM_EMOJI_CHAR_MAIN,
+    'sparkles': PREMIUM_EMOJI_CHAR_MAIN,
+    'phone': PREMIUM_EMOJI_CHAR_CHECK,
+    'user': PREMIUM_EMOJI_CHAR_CHECK,
+    'globe': PREMIUM_EMOJI_CHAR_CHECK,
+    'success': PREMIUM_EMOJI_CHAR_CHECK,
+    'verified': PREMIUM_EMOJI_CHAR_CHECK,
 }
 
 # ============= PREMIUM EMOJI FUNCTIONS =============
 
-def create_premium_emoji(text, offset=0):
-    """Create MessageEntityCustomEmoji for premium emoji"""
-    return MessageEntityCustomEmoji(
-        offset=offset,
-        length=2,  # Length of emoji character
-        document_id=int(PREMIUM_EMOJI_ID)
-    )
-
-def add_premium_emoji(text):
-    """Add premium emoji to text with proper entity"""
-    # Tambahkan emoji premium di awal text
-    new_text = f"{PREMIUM_EMOJI_CHAR} {text}"
-    entities = [create_premium_emoji(new_text, 0)]
-    return new_text, entities
+def create_premium_entities(text):
+    """Create MessageEntityCustomEmoji for all premium emojis in text"""
+    entities = []
+    # Find all 🤩 emojis
+    for match in re.finditer(PREMIUM_EMOJI_CHAR_MAIN, text):
+        entities.append(MessageEntityCustomEmoji(
+            offset=match.start(),
+            length=2,
+            document_id=int(PREMIUM_EMOJI_MAIN)
+        ))
+    # Find all ✅ emojis
+    for match in re.finditer(PREMIUM_EMOJI_CHAR_CHECK, text):
+        entities.append(MessageEntityCustomEmoji(
+            offset=match.start(),
+            length=1,
+            document_id=int(PREMIUM_EMOJI_CHECK)
+        ))
+    return entities
 
 async def check_premium_status():
     """Check if user has Telegram Premium"""
@@ -138,17 +146,11 @@ async def check_premium_status():
         premium_status = False
         return False
 
-def get_emoji(emoji_name, fallback=''):
-    """Get emoji with premium support"""
-    if emoji_name == 'premium' and premium_status:
-        return PREMIUM_EMOJI_CHAR
-    return PREMIUM_EMOJI_MAP.get(emoji_name, fallback)
-
-def format_with_premium_emoji(base_text):
-    """Format text with premium emoji at beginning and end"""
+def get_emoji(emoji_id, emoji_char):
+    """Get premium emoji format"""
     if premium_status:
-        return f"{PREMIUM_EMOJI_CHAR} {base_text} {PREMIUM_EMOJI_CHAR}"
-    return base_text
+        return emoji_char
+    return emoji_char  # Always use emoji char
 
 # ============= BLACKLIST MANAGEMENT FUNCTIONS =============
 
@@ -190,43 +192,38 @@ async def is_owner(user_id):
         logger.error(f"Error checking owner: {e}")
         return False
 
-async def animate_text(message, texts, delay=1.5, use_premium=False):
-    """Animate text by editing message multiple times"""
+async def animate_text_premium(message, texts, delay=1.5):
+    """Animate text with premium emoji support"""
     for i, text in enumerate(texts):
         try:
-            if use_premium and premium_status and i == len(texts) - 1:
-                # Add premium emoji to final message
-                formatted_text, entities = add_premium_emoji(text)
-                await message.edit(formatted_text, formatting_entities=entities)
+            if premium_status:
+                entities = create_premium_entities(text)
+                await message.edit(text, formatting_entities=entities)
             else:
                 await message.edit(text)
-            if i < len(texts) - 1:  # Don't sleep on last iteration
+            if i < len(texts) - 1:
                 await asyncio.sleep(delay)
         except Exception as e:
             logger.error(f"Animation error: {e}")
             break
 
 async def get_broadcast_channels():
-    """Get all channels and groups for broadcasting (improved with blacklist filter)"""
+    """Get all channels and groups for broadcasting"""
     channels = []
     try:
         async for dialog in client.iter_dialogs():
             entity = dialog.entity
             
-            # Skip private chats
             if isinstance(entity, User):
                 continue
             
-            # Skip blacklisted chats
             if entity.id in blacklisted_chats:
                 continue
                 
-            # Include groups and channels where we can send messages
             if isinstance(entity, (Chat, Channel)):
-                # For channels, check if we have broadcast rights or it's a group
                 if isinstance(entity, Channel):
                     if entity.broadcast and not (entity.creator or entity.admin_rights):
-                        continue  # Skip channels where we can't post
+                        continue
                 
                 channels.append({
                     'entity': entity,
@@ -257,15 +254,12 @@ async def get_user_info(event, user_input=None):
     
     try:
         if event.is_reply and not user_input:
-            # Get from reply
             reply_msg = await event.get_reply_message()
             user = await client.get_entity(reply_msg.sender_id)
         elif user_input:
-            # Get from username or ID
             if user_input.isdigit():
                 user = await client.get_entity(int(user_input))
             else:
-                # Remove @ if present
                 username = user_input.lstrip('@')
                 user = await client.get_entity(username)
         else:
@@ -276,11 +270,11 @@ async def get_user_info(event, user_input=None):
         logger.error(f"Error getting user info: {e}")
         return None
 
-# ============= PLUGIN 1: ALIVE COMMAND (WITH PREMIUM EMOJI) =============
+# ============= PLUGIN 1: ALIVE COMMAND =============
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}alive'))
 async def alive_handler(event):
-    """Enhanced alive command with premium emoji"""
+    """Enhanced alive command with full premium emoji"""
     if not await is_owner(event.sender_id):
         return
     
@@ -291,59 +285,46 @@ async def alive_handler(event):
         uptime = datetime.now() - start_time if start_time else "Unknown"
         uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
         
-        # Base animations
         base_animations = [
-            f"{get_emoji('fire', '🔥')} **Checking system status...**",
-            f"{get_emoji('lightning', '⚡')} **Loading components...**",
-            f"{get_emoji('rocket', '🚀')} **Initializing Vzoel Assistant...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Checking system status...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Loading components...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Initializing Vzoel Assistant...**",
         ]
         
-        # Final message with premium emoji
         final_message = f"""
 [🚩]({LOGO_URL}) **𝚅𝚉𝙾𝙴𝙻 𝙰𝚂𝚂𝙸𝚂𝚃𝙰𝙽𝚃 IS ALIVE!**
 
 ╔══════════════════════════════════╗
-   {get_emoji('🤩')} **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃** {get_emoji('🤩')}
+   {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 ╚══════════════════════════════════╝
 
-{get_emoji('user', '👤')} **Name:** {me.first_name or 'Vzoel Assistant'}
-🆔 **ID:** `{me.id}`
-{get_emoji('phone', '📱')} **Username:** @{me.username or 'None'}
-{get_emoji('lightning', '⚡')} **Prefix:** `{COMMAND_PREFIX}`
-⏰ **Uptime:** `{uptime_str}`
-{get_emoji('fire', '🔥')} **Status:** Active & Running
-📦 **Version:** v2.3.0 Premium Enhanced
-🚫 **Blacklisted Chats:** `{len(blacklisted_chats)}`
-{get_emoji('diamond', '💎')} **Premium:** {'Active ✓' if premium_status else 'Standard'}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Name:** {me.first_name or 'Vzoel Assistant'}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ID:** `{me.id}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Username:** @{me.username or 'None'}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Prefix:** `{COMMAND_PREFIX}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Uptime:** `{uptime_str}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Status:** Active & Running
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Version:** v0.0.0.69
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Blacklisted:** `{len(blacklisted_chats)}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Premium:** {'Active' if premium_status else 'Standard'}
 
-{get_emoji('zap', '⚡')} **Hak milik Vzoel Fox's ©2025 ~ LTPN** {get_emoji('zap', '⚡')}
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Hak milik Vzoel Fox's ©2025 ~ LTPN** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
         """.strip()
         
-        # Add final message to animations
         alive_animations = base_animations + [final_message]
         
         msg = await event.reply(alive_animations[0])
-        
-        # Animate through messages
-        for i in range(1, len(alive_animations)):
-            await asyncio.sleep(2 if i < len(alive_animations) - 1 else 1)
-            
-            if i == len(alive_animations) - 1 and premium_status:
-                # For final message, add premium emoji entities
-                text_with_emoji, entities = add_premium_emoji(alive_animations[i])
-                await msg.edit(text_with_emoji, formatting_entities=entities)
-            else:
-                await msg.edit(alive_animations[i])
+        await animate_text_premium(msg, alive_animations, delay=2)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
         logger.error(f"Alive command error: {e}")
 
-# ============= PLUGIN 2: ENHANCED GCAST COMMAND (WITH PREMIUM EMOJI) =============
+# ============= PLUGIN 2: GCAST COMMAND =============
 
 @client.on(events.NewMessage(pattern=re.compile(rf'{re.escape(COMMAND_PREFIX)}gcast\s+(.+)', re.DOTALL)))
 async def gcast_handler(event):
-    """Enhanced Global Broadcast with Premium Emoji"""
+    """Enhanced Global Broadcast with Full Premium Emoji"""
     if not await is_owner(event.sender_id):
         return
     
@@ -355,16 +336,16 @@ async def gcast_handler(event):
         return
     
     try:
-        # Enhanced 8-phase animation with premium emoji
+        # 8-phase animation with premium emoji
         gcast_animations = [
-            f"{get_emoji('fire', '🔥')} **lagi otw ngegikes.......**",
-            f"{get_emoji('warning', '⚠️')} **cuma gikes aja diblacklist.. kek mui ngeblacklist sound horeg wkwkwkwkwkwkwkwk...**",
-            f"{get_emoji('zap', '⚡')} **dikit² blacklist...**",
-            f"{get_emoji('warning', '🚫')} **dikit² maen mute...**",
-            f"{get_emoji('boom', '💥')} **dikit² gban...**",
-            f"{get_emoji('party', '😂')} **wkwkwkwk...**",
-            f"{get_emoji('fire', '🔥')} **anying......**",
-            f"{get_emoji('sparkles', '✨')} **wkwkwkwkwkwkwkwk...**"
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **lagi otw ngegikes.......**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **cuma gikes aja diblacklist.. kek mui ngeblacklist sound horeg wkwkwkwkwkwkwkwk...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **dikit² blacklist...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **dikit² maen mute...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **dikit² gban...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **wkwkwkwk...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **anying......**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **wkwkwkwkwkwkwkwk...**"
         ]
         
         msg = await event.reply(gcast_animations[0])
@@ -372,25 +353,36 @@ async def gcast_handler(event):
         # Animate first 4 phases
         for i in range(1, 5):
             await asyncio.sleep(1.5)
-            await msg.edit(gcast_animations[i])
+            if premium_status:
+                entities = create_premium_entities(gcast_animations[i])
+                await msg.edit(gcast_animations[i], formatting_entities=entities)
+            else:
+                await msg.edit(gcast_animations[i])
         
-        # Get channels (now with blacklist filtering)
         channels = await get_broadcast_channels()
         total_channels = len(channels)
         blacklisted_count = len(blacklisted_chats)
         
         if total_channels == 0:
-            await msg.edit(f"{get_emoji('warning', '❌')} **No available channels found for broadcasting!**")
+            await msg.edit(f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **No available channels found for broadcasting!**")
             return
         
         # Continue animation
         await asyncio.sleep(1.5)
-        status_msg = f"{gcast_animations[5]}\n📊 **Found:** `{total_channels}` chats (🚫 `{blacklisted_count}` blacklisted)"
-        await msg.edit(status_msg)
+        status_msg = f"{gcast_animations[5]}\n{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Found:** `{total_channels}` chats"
+        if premium_status:
+            entities = create_premium_entities(status_msg)
+            await msg.edit(status_msg, formatting_entities=entities)
+        else:
+            await msg.edit(status_msg)
         
         await asyncio.sleep(1.5)
-        broadcast_msg = f"{gcast_animations[6]}\n📊 **Broadcasting to:** `{total_channels}` chats"
-        await msg.edit(broadcast_msg)
+        broadcast_msg = f"{gcast_animations[6]}\n{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Broadcasting to:** `{total_channels}` chats"
+        if premium_status:
+            entities = create_premium_entities(broadcast_msg)
+            await msg.edit(broadcast_msg, formatting_entities=entities)
+        else:
+            await msg.edit(broadcast_msg)
         
         # Start broadcasting
         success_count = 0
@@ -400,35 +392,33 @@ async def gcast_handler(event):
         for i, channel_info in enumerate(channels, 1):
             try:
                 entity = channel_info['entity']
-                
-                # Send message
                 await client.send_message(entity, message_to_send)
                 success_count += 1
                 
-                # Update progress every 3 messages or on last message
                 if i % 3 == 0 or i == total_channels:
                     progress = (i / total_channels) * 100
                     current_title = channel_info['title'][:20]
                     
                     progress_msg = f"""
-{get_emoji('rocket', '🚀')} **lagi otw ngegikesss...**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **lagi otw ngegikesss...**
 
-**Total Kandang:** `{i}/{total_channels}` ({progress:.1f}%)
-**Kandang yang berhasil:** `{success_count}` {get_emoji('check', '✅')}
-**Kandang pelit.. alay.. dikit² maen mute** `{failed_count}` {get_emoji('warning', '⚠️')}
-{get_emoji('zap', '⚡')} **Current:** {current_title}...
-🚫 **Blacklisted:** `{blacklisted_count}` chats skipped
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Total Kandang:** `{i}/{total_channels}` ({progress:.1f}%)
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Kandang berhasil:** `{success_count}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Kandang pelit:** `{failed_count}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Current:** {current_title}...
                     """.strip()
                     
-                    await msg.edit(progress_msg)
+                    if premium_status:
+                        entities = create_premium_entities(progress_msg)
+                        await msg.edit(progress_msg, formatting_entities=entities)
+                    else:
+                        await msg.edit(progress_msg)
                 
-                # Rate limiting - important!
                 await asyncio.sleep(0.5)
                 
             except FloodWaitError as e:
-                # Handle flood wait
                 wait_time = e.seconds
-                if wait_time > 300:  # Skip if wait is too long
+                if wait_time > 300:
                     failed_count += 1
                     failed_chats.append(f"{channel_info['title']} (Flood: {wait_time}s)")
                     continue
@@ -448,97 +438,49 @@ async def gcast_handler(event):
                 logger.error(f"Gcast error for {channel_info['title']}: {e}")
                 continue
         
-        # Final animation phase
+        # Final animation
         await asyncio.sleep(2)
-        await msg.edit(gcast_animations[7])
+        if premium_status:
+            entities = create_premium_entities(gcast_animations[7])
+            await msg.edit(gcast_animations[7], formatting_entities=entities)
+        else:
+            await msg.edit(gcast_animations[7])
         
         await asyncio.sleep(2)
         
-        # Calculate success rate
         success_rate = (success_count / total_channels * 100) if total_channels > 0 else 0
         
         final_message = f"""
-{get_emoji('sparkles', '✨')} **Gcast kelar....**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Gcast kelar....**
 
 ╔══════════════════════════════════╗
-     **{get_emoji('premium',🤩')} 𝚅 𝚉 𝙾 𝙴 𝙻  𝙶 𝙲 𝙰 𝚂 𝚃 {get_emoji('premium','🤩')}**
+     {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **𝚅 𝚉 𝙾 𝙴 𝙻  𝙶 𝙲 𝙰 𝚂 𝚃** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 ╚══════════════════════════════════╝
 
-{get_emoji('premium', '🤩')} **Total Kandang:** `{total_channels}`
-{get_emoji('check', '✅')} **Kandang yang berhasil:** `{success_count}`
-{get_emoji('warning', '⚠️')} **Kandang pelit.. alay.. dikit² mute:** `{failed_count}`
-{get_emoji('star', '⭐')} **Success Rate:** `{success_rate:.1f}%`
-🚫 **Blacklisted Chats Skipped:** `{blacklisted_count}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Total Kandang:** `{total_channels}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Kandang berhasil:** `{success_count}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Kandang pelit:** `{failed_count}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Success Rate:** `{success_rate:.1f}%`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Blacklisted Skipped:** `{blacklisted_count}`
 
-{get_emoji('diamond', '💎')} **Message delivered successfully!**
-{get_emoji('fire', '🔥')} **Gcast by Vzoel Assistant**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Message delivered successfully!**
         """.strip()
         
         if premium_status:
-            # Add premium emoji to final message
-            final_with_emoji, entities = add_premium_emoji(final_message)
-            await msg.edit(final_with_emoji, formatting_entities=entities)
+            entities = create_premium_entities(final_message)
+            await msg.edit(final_message, formatting_entities=entities)
         else:
             await msg.edit(final_message)
-        
-        # Send error log if there are failures
-        if failed_chats and len(failed_chats) <= 10:  # Only show first 10 errors
-            error_log = "**Failed Chats:**\n"
-            for chat in failed_chats[:10]:
-                error_log += f"• {chat}\n"
-            if len(failed_chats) > 10:
-                error_log += f"• And {len(failed_chats) - 10} more..."
-                
-            await event.reply(error_log)
         
     except Exception as e:
         await event.reply(f"❌ **Gcast Error:** {str(e)}")
         logger.error(f"Gcast command error: {e}")
 
-# ============= PLUGIN 3: INFO FOUNDER (WITH PREMIUM EMOJI) =============
-
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}infofounder'))
-async def infofounder_handler(event):
-    """Founder information with premium emoji"""
-    if not await is_owner(event.sender_id):
-        return
-    
-    await log_command(event, "infofounder")
-    
-    try:
-        founder_info_base = f"""
-{get_emoji('fire', '🔥')} **apa woy** {get_emoji('fire', '🔥')}
-[╔══════════════════════════════════╗]({VZOEL_LOGO})
-    **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃** {get_emoji('crown', '👑')}
-╚══════════════════════════════════╝
-
-⟢ Founder    : **𝚅𝚣𝚘𝚎𝚕 𝙵𝚘𝚡'𝚜 (Ltpn)** {get_emoji('user', '👤')}
-⟢ Instagram  : @vzoel.fox_s {get_emoji('phone', '📱')}
-⟢ Telegram   : @VZLfx | @VZLfxs {get_emoji('globe', '🌍')}
-⟢ Channel    : t.me/damnitvzoel {get_emoji('sparkles', '✨')}
-
-{get_emoji('diamond', '💎')} Premium: {'Active ✓' if premium_status else 'Standard'}
-
-{get_emoji('zap', '⚡')} Hak milik **𝚅𝚣𝚘𝚎𝚕 𝙵𝚘𝚡'𝚜** ©2025 ~ LTPN. {get_emoji('zap', '⚡')}
-        """.strip()
-        
-        if premium_status:
-            # Add premium emoji decoration
-            formatted_info = format_with_premium_emoji(founder_info_base)
-            info_with_emoji, entities = add_premium_emoji(formatted_info)
-            await event.edit(info_with_emoji, formatting_entities=entities)
-        else:
-            await event.edit(founder_info_base)
-        
-    except Exception as e:
-        await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"InfoFounder error: {e}")
-
-# ============= PLUGIN 4: PING COMMAND (WITH PREMIUM EMOJI) =============
+# ============= PLUGIN 3: PING COMMAND =============
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}ping'))
 async def ping_handler(event):
-    """Ping command with premium emoji"""
+    """Ping command with premium emoji format"""
     if not await is_owner(event.sender_id):
         return
     
@@ -546,54 +488,59 @@ async def ping_handler(event):
     
     try:
         start = time.time()
-        msg = await event.reply(f"{get_emoji('rocket', '📡')} **Lagi ngetest ping dulu om.......**")
+        msg = await event.reply(f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Testing ping...**")
         end = time.time()
         
         ping_time = (end - start) * 1000
         
-        # Determine latency level
-        if ping_time < 100:
-            latency = f"{get_emoji('lightning', '⚡')} Low"
-            status_emoji = get_emoji('check', '✅')
-        elif ping_time < 300:
-            latency = f"{get_emoji('star', '⭐')} Normal"
-            status_emoji = get_emoji('check', '✅')
-        else:
-            latency = f"{get_emoji('warning', '⚠️')} High"
-            status_emoji = get_emoji('warning', '⚠️')
-        
-        ping_text_base = f"""
-{get_emoji('rocket', '📡')} Tch....
-
-╔══════════════════════════════════╗
-   {get_emoji('premium','🤩')}  𝙿 𝙸 𝙽 𝙶  𝚁 𝙴 𝚂 𝚄 𝙻 𝚃  {get_emoji('premium','🤩')}
-╚══════════════════════════════════╝
-
-{get_emoji('lightning', '⚡')} Response Time: `{ping_time:.2f}ms`
-{get_emoji('rocket', '🚀')} Status: Active
-{get_emoji('fire', '🔥')} Server: Online
-{status_emoji} Connection: Stable
-{get_emoji('globe', '📡')} Latency: {latency}
-{get_emoji('diamond', '💎')}  Premium: {'Active ✓' if premium_status else 'Standard'}
-
-{get_emoji('zap', '⚡')} pasti aman anti delay
+        # Format as requested
+        ping_text = f"""
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Pong !!!!!!**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **{ping_time:.2f} ms**
         """.strip()
         
         if premium_status:
-            # Add premium emoji
-            ping_with_emoji, entities = add_premium_emoji(ping_text_base)
-            await msg.edit(ping_with_emoji, formatting_entities=entities)
+            entities = create_premium_entities(ping_text)
+            await msg.edit(ping_text, formatting_entities=entities)
         else:
-            await msg.edit(ping_text_base)
+            await msg.edit(ping_text)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
         logger.error(f"Ping error: {e}")
 
-# ============= OTHER PLUGINS (UNCHANGED BUT KEPT FOR COMPLETENESS) =============
+# ============= PLUGIN 4: INFO FOUNDER =============
 
-# [Include all other plugin handlers here - addbl, rmbl, listbl, joinvc, leavevc, vzl, id, info, help, sg, etc.]
-# They remain the same as in your original code, but I'll add the premium emoji to key ones
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}infofounder'))
+async def infofounder_handler(event):
+    """Founder information with premium emoji format"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "infofounder")
+    
+    try:
+        founder_info = f"""
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **| VZOEL ASSISTANT |**
+
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **FOUNDER :** VZOEL FOX'S
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **IG :** @vzoel.fox_s
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ID TELE :** @VZLfxs
+
+**userbot versi 0.0.0.69 ~ by Vzoel Fox's (Lutpan)** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
+        """.strip()
+        
+        if premium_status:
+            entities = create_premium_entities(founder_info)
+            await event.edit(founder_info, formatting_entities=entities)
+        else:
+            await event.edit(founder_info)
+        
+    except Exception as e:
+        await event.reply(f"❌ **Error:** {str(e)}")
+        logger.error(f"InfoFounder error: {e}")
+
+# ============= OTHER PLUGINS WITH PREMIUM EMOJI =============
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}addbl(\s+(.+))?'))
 async def addbl_handler(event):
@@ -604,11 +551,9 @@ async def addbl_handler(event):
     await log_command(event, "addbl")
     
     try:
-        # Get current chat if no argument provided
         chat_input = event.pattern_match.group(2)
         
         if chat_input:
-            # Try to get chat by username/ID
             if chat_input.isdigit() or chat_input.lstrip('-').isdigit():
                 chat_id = int(chat_input)
                 try:
@@ -617,7 +562,6 @@ async def addbl_handler(event):
                     await event.reply(f"❌ **Chat ID `{chat_id}` not found!**")
                     return
             else:
-                # Try by username
                 try:
                     username = chat_input.lstrip('@')
                     chat = await client.get_entity(username)
@@ -626,22 +570,18 @@ async def addbl_handler(event):
                     await event.reply(f"❌ **Chat `@{username}` not found!**")
                     return
         else:
-            # Use current chat
             chat = await event.get_chat()
             chat_id = chat.id
         
-        # Check if it's a private chat
         if isinstance(chat, User):
             await event.reply("❌ **Cannot blacklist private chats!**")
             return
         
-        # Check if already blacklisted
         if chat_id in blacklisted_chats:
             chat_title = getattr(chat, 'title', 'Unknown')
-            await event.reply(f"⚠️ **Chat `{chat_title}` is already blacklisted!**")
+            await event.reply(f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Chat `{chat_title}` is already blacklisted!**")
             return
         
-        # Add to blacklist
         blacklisted_chats.add(chat_id)
         save_blacklist()
         
@@ -649,24 +589,19 @@ async def addbl_handler(event):
         chat_type = 'Channel' if isinstance(chat, Channel) and chat.broadcast else 'Group'
         
         success_msg = f"""
-🚫 **CHAT BLACKLISTED!**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **CHAT BLACKLISTED!**
 
-╔══════════════════════════════════╗
-   🚫 𝙶 𝙲 𝙰 𝚂 𝚃  𝙱 𝙻 𝙰 𝙲 𝙺 𝙻 𝙸 𝚂 𝚃 🚫
-╚══════════════════════════════════╝
-
-📍 **Chat:** {chat_title}
-🆔 **ID:** `{chat_id}`
-📊 **Type:** {chat_type}
-✅ **Status:** Added to blacklist
-
-📋 **Total Blacklisted:** `{len(blacklisted_chats)}`
-🔥 **Action:** This chat will be skipped in gcast
-
-⚡ **Note:** Use `{COMMAND_PREFIX}rmbl` to remove from blacklist
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Chat:** {chat_title}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ID:** `{chat_id}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Type:** {chat_type}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Total Blacklisted:** `{len(blacklisted_chats)}`
         """.strip()
         
-        await event.edit(success_msg)
+        if premium_status:
+            entities = create_premium_entities(success_msg)
+            await event.edit(success_msg, formatting_entities=entities)
+        else:
+            await event.edit(success_msg)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -681,11 +616,9 @@ async def rmbl_handler(event):
     await log_command(event, "rmbl")
     
     try:
-        # Get current chat if no argument provided
         chat_input = event.pattern_match.group(2)
         
         if chat_input:
-            # Try to get chat by username/ID
             if chat_input.isdigit() or chat_input.lstrip('-').isdigit():
                 chat_id = int(chat_input)
                 try:
@@ -694,7 +627,6 @@ async def rmbl_handler(event):
                     await event.reply(f"❌ **Chat ID `{chat_id}` not found!**")
                     return
             else:
-                # Try by username
                 try:
                     username = chat_input.lstrip('@')
                     chat = await client.get_entity(username)
@@ -703,42 +635,32 @@ async def rmbl_handler(event):
                     await event.reply(f"❌ **Chat `@{username}` not found!**")
                     return
         else:
-            # Use current chat
             chat = await event.get_chat()
             chat_id = chat.id
         
-        # Check if blacklisted
         if chat_id not in blacklisted_chats:
             chat_title = getattr(chat, 'title', 'Unknown')
-            await event.reply(f"⚠️ **Chat `{chat_title}` is not blacklisted!**")
+            await event.reply(f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Chat `{chat_title}` is not blacklisted!**")
             return
         
-        # Remove from blacklist
         blacklisted_chats.remove(chat_id)
         save_blacklist()
         
         chat_title = getattr(chat, 'title', 'Unknown')
-        chat_type = 'Channel' if isinstance(chat, Channel) and chat.broadcast else 'Group'
         
         success_msg = f"""
-✅ **CHAT REMOVED FROM BLACKLIST!**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **CHAT REMOVED FROM BLACKLIST!**
 
-╔══════════════════════════════════╗
-   ✅ **𝙶 𝙲 𝙰 𝚂 𝚃  𝚄 𝙽 𝙱 𝙻 𝙰 𝙲 𝙺 𝙻 𝙸 𝚂 𝚃** ✅
-╚══════════════════════════════════╝
-
-📍 **Chat:** {chat_title}
-🆔 **ID:** `{chat_id}`
-📊 **Type:** {chat_type}
-✅ **Status:** Removed from blacklist
-
-📋 **Total Blacklisted:** `{len(blacklisted_chats)}`
-🔥 **Action:** This chat will receive gcast messages
-
-⚡ **Note:** Use `{COMMAND_PREFIX}addbl` to add back to blacklist
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Chat:** {chat_title}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ID:** `{chat_id}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Total Blacklisted:** `{len(blacklisted_chats)}`
         """.strip()
         
-        await event.edit(success_msg)
+        if premium_status:
+            entities = create_premium_entities(success_msg)
+            await event.edit(success_msg, formatting_entities=entities)
+        else:
+            await event.edit(success_msg)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -754,56 +676,48 @@ async def listbl_handler(event):
     
     try:
         if not blacklisted_chats:
-            await event.edit(f"""
-📋 **GCAST BLACKLIST**
+            no_blacklist = f"""
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **GCAST BLACKLIST**
 
-╔══════════════════════════════════╗
-   📋 𝙱 𝙻 𝙰 𝙲 𝙺 𝙻 𝙸 𝚂 𝚃  𝙴 𝙼 𝙿 𝚃 𝚈📋
-╚══════════════════════════════════╝
-
-🔥 **No chats are blacklisted**
-⚡ **All chats will receive gcast**
-
-💡 **Use `{COMMAND_PREFIX}addbl` to blacklist chats**
-            """.strip())
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **No chats are blacklisted**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **All chats will receive gcast**
+            """.strip()
+            
+            if premium_status:
+                entities = create_premium_entities(no_blacklist)
+                await event.edit(no_blacklist, formatting_entities=entities)
+            else:
+                await event.edit(no_blacklist)
             return
         
         blacklist_text = f"""
-📋 **GCAST BLACKLIST**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **GCAST BLACKLIST**
 
-╔══════════════════════════════════╗
-   📋 **𝙶 𝙲 𝙰 𝚂 𝚃  𝙱 𝙻 𝙰 𝙲 𝙺 𝙻 𝙸 𝚂 𝚃** 📋
-╚══════════════════════════════════╝
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Total Blacklisted:** `{len(blacklisted_chats)}`
 
-📊 **Total Blacklisted:** `{len(blacklisted_chats)}`
-
-🚫 **Blacklisted Chats:**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Blacklisted Chats:**
         """.strip()
         
         count = 0
         for chat_id in blacklisted_chats:
-            if count >= 20:  # Limit to prevent message too long
+            if count >= 20:
                 blacklist_text += f"\n• And {len(blacklisted_chats) - count} more..."
                 break
                 
             try:
                 chat = await client.get_entity(chat_id)
                 chat_title = getattr(chat, 'title', 'Unknown')[:30]
-                blacklist_text += f"\n• `{chat_id}` - {chat_title}"
+                blacklist_text += f"\n{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{chat_id}` - {chat_title}"
                 count += 1
             except Exception:
-                blacklist_text += f"\n• `{chat_id}` - [Chat not accessible]"
+                blacklist_text += f"\n{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{chat_id}` - [Chat not accessible]"
                 count += 1
         
-        blacklist_text += f"""
-
-💡 **Commands:**
-• `{COMMAND_PREFIX}addbl [chat]` - Add to blacklist
-• `{COMMAND_PREFIX}rmbl [chat]` - Remove from blacklist
-• `{COMMAND_PREFIX}listbl` - Show this list
-        """
-        
-        await event.edit(blacklist_text)
+        if premium_status:
+            entities = create_premium_entities(blacklist_text)
+            await event.edit(blacklist_text, formatting_entities=entities)
+        else:
+            await event.edit(blacklist_text)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -824,28 +738,23 @@ async def joinvc_handler(event):
             return
         
         animations = [
-            f"{get_emoji('rocket', '🚀')} **lagi naik ya bang.. sabar bentar...**",
-            f"{get_emoji('fire', '🔥')} **kalo udah diatas ya disapa bukan dicuekin anying...**",
-            f"{get_emoji('party', '🎉')} **kalo ga nimbrung berarti bot ye... wkwkwkwkwk**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **lagi naik ya bang.. sabar bentar...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **kalo udah diatas ya disapa bukan dicuekin anying...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **kalo ga nimbrung berarti bot ye... wkwkwkwkwk**",
             f"""
-{get_emoji('crown', '👑')} **Panglima Pizol udah diatas**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Panglima Pizol udah diatas**
 
-╔══════════════════════════════════╗
-    𝚅 𝙾 𝙸 𝙲 𝙴  𝙲 𝙷 𝙰 𝚃  𝙰 𝙲 𝚃 𝙸 𝚅 𝙴 {get_emoji('phone', '📞')}
-╚══════════════════════════════════╝
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Kandang:** {chat.title[:30] if hasattr(chat, 'title') else 'Private'}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Status:** Connected
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Sound Horeg:** Ready
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Kualitas:** HD
 
-{get_emoji('globe', '🌍')} Kandang: {chat.title[:30] if hasattr(chat, 'title') else 'Private'}
-{get_emoji('check', '✅')} **Status:** Connected
-{get_emoji('sparkles', '✨')} **Sound Horeg:** Ready
-{get_emoji('diamond', '💎')} **Kualitas:** HD
-
-⚠️ **Note:** Full VC features require pytgcalls
-{get_emoji('crown', '👑')} **Pangeran Pizol udah diatas**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Pangeran Pizol udah diatas**
             """.strip()
         ]
         
         msg = await event.reply(animations[0])
-        await animate_text(msg, animations, delay=1.5)
+        await animate_text_premium(msg, animations, delay=1.5)
             
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -861,27 +770,23 @@ async def leavevc_handler(event):
     
     try:
         animations = [
-            "🔥 **Disconnecting from voice chat...**",
-            "🎵 **Stopping audio stream...**",
-            "👋 **Leaving voice chat...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Disconnecting from voice chat...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Stopping audio stream...**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Leaving voice chat...**",
             f"""
-✅ **VOICE CHAT LEFT!**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **VOICE CHAT LEFT!**
 
-╔══════════════════════════════════╗
-   👋 **𝚅 𝙾 𝙸 𝙲 𝙴  𝙲 𝙷 𝙰 𝚃  𝙳 𝙸 𝚂 𝙲 𝙾 𝙽 𝙽 𝙴 𝙲 𝚃 𝙴 𝙳** 👋
-╚══════════════════════════════════╝
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Status:** Disconnected
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Audio:** Stopped
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Action:** Completed
 
-📌 **Status:** Disconnected
-🎙️ **Audio:** Stopped
-✅ **Action:** Completed
-
-{get_emoji('check', '✅')} **Udah turun bang!**
-{get_emoji('fire', '🔥')} **Vzoel Assistant ready for next command**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Udah turun bang!**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Vzoel Assistant ready for next command**
             """.strip()
         ]
         
         msg = await event.reply(animations[0])
-        await animate_text(msg, animations, delay=1.5)
+        await animate_text_premium(msg, animations, delay=1.5)
             
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -889,39 +794,38 @@ async def leavevc_handler(event):
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}vzl'))
 async def vzl_handler(event):
-    """Vzoel command with 12-phase animation as requested"""
+    """Vzoel command with 12-phase animation"""
     if not await is_owner(event.sender_id):
         return
     
     await log_command(event, "vzl")
     
     try:
-        # 12 animation phases as requested
         vzl_animations = [
-            f"{get_emoji('fire', '🔥')} **V**",
-            f"{get_emoji('fire', '🔥')} **VZ**",
-            f"{get_emoji('fire', '🔥')} **VZO**", 
-            f"{get_emoji('fire', '🔥')} **VZOE**",
-            f"{get_emoji('fire', '🔥')} **VZOEL**",
-            f"{get_emoji('rocket', '🚀')} **VZOEL F**",
-            f"{get_emoji('rocket', '🚀')} **VZOEL FO**",
-            f"{get_emoji('rocket', '🚀')} **VZOEL FOX**",
-            f"{get_emoji('lightning', '⚡')} **VZOEL FOX'S**",
-            f"{get_emoji('sparkles', '✨')} **VZOEL FOX'S A**",
-            f"{get_emoji('star', '🌟')} **VZOEL FOX'S ASS**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **V**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZ**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZO**", 
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZOE**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZOEL**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZOEL F**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZOEL FO**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZOEL FOX**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZOEL FOX'S**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZOEL FOX'S A**",
+            f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZOEL FOX'S ASS**",
             f"""
-[🔥]({VZOEL_LOGO}) **𝚅𝚉𝙾𝙴𝙻 𝙵𝙾𝚇'𝚂 𝙰𝚂𝚂𝙸𝚂𝚃𝙰𝙽𝚃** {get_emoji('fire', '🔥')}
+[🔥]({VZOEL_LOGO}) **𝚅𝚉𝙾𝙴𝙻 𝙵𝙾𝚇'𝚂 𝙰𝚂𝚂𝙸𝚂𝚃𝙰𝙽𝚃** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 
 ╔══════════════════════════════════╗
-   {get_emoji('fire', '🚩')}  **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃**  {get_emoji('fire', '🚩')}
+   {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 ╚══════════════════════════════════╝
 
-{get_emoji('lightning', '⚡')} **The most advanced Telegram userbot**
-{get_emoji('rocket', '🚀')} **Built with passion and precision**
-{get_emoji('fire', '🔥')} **Powered by Telethon & Python**
-{get_emoji('sparkles', '✨')} **Created by Vzoel Fox's (LTPN)**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **The most advanced Telegram userbot**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Built with passion and precision**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Powered by Telethon & Python**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Created by Vzoel Fox's (LTPN)**
 
-{get_emoji('phone', '📱')} **Features:**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Features:**
 • Global Broadcasting
 • Voice Chat Control  
 • Advanced Animations
@@ -930,14 +834,14 @@ async def vzl_handler(event):
 • Spam Protection
 • User ID Lookup
 • Gcast Blacklist System
-• Premium Support {get_emoji('diamond', '💎')}
+• Premium Support {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 
-{get_emoji('zap', '⚡')} **Hak milik Vzoel Fox's ©2025 ~ LTPN** {get_emoji('zap', '⚡')}
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Hak milik Vzoel Fox's ©2025 ~ LTPN** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
             """.strip()
         ]
         
         msg = await event.reply(vzl_animations[0])
-        await animate_text(msg, vzl_animations, delay=1.2)
+        await animate_text_premium(msg, vzl_animations, delay=1.2)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -962,51 +866,47 @@ async def id_handler(event):
                 await event.reply(f"❌ **Usage:** `{COMMAND_PREFIX}id` (reply to message) or `{COMMAND_PREFIX}id username/id`")
             return
         
-        # Get additional info
         is_bot = getattr(user, 'bot', False)
         is_verified = getattr(user, 'verified', False)
         is_scam = getattr(user, 'scam', False)
         is_fake = getattr(user, 'fake', False)
         is_premium = getattr(user, 'premium', False)
         
-        # Format status
         status_icons = []
         if is_bot:
-            status_icons.append("🤖 Manusia Buatan")
+            status_icons.append(f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} Manusia Buatan")
         if is_verified:
-            status_icons.append("✅ Woke")
+            status_icons.append(f"{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} Woke")
         if is_premium:
-            status_icons.append(f"{get_emoji('diamond', '💎')} Premium ni boss")
+            status_icons.append(f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} Premium ni boss")
         if is_scam:
-            status_icons.append("⚠️ Scam anying")
+            status_icons.append(f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} Scam anying")
         if is_fake:
-            status_icons.append("🚫 Faker bjirrr")
+            status_icons.append(f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} Faker bjirrr")
         
-        status_text = " | ".join(status_icons) if status_icons else "👤 Regular User"
+        status_text = " | ".join(status_icons) if status_icons else f"{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} Regular User"
         
         id_info = f"""
-🆔 **Ni boss informasi khodamnya**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Ni boss informasi khodamnya**
 
 ╔══════════════════════════════════╗
-    **𝙸 𝙽 𝙵 𝙾 𝚁 𝙼 𝙰 𝚂 𝙸  𝙺 𝙷 𝙾 𝙳 𝙰 𝙼** 
+    **𝙸𝙽𝙵𝙾𝚁𝙼𝙰𝚂𝙸 𝙺𝙷𝙾𝙳𝙰𝙼** 
 ╚══════════════════════════════════╝
 
-👤 **Nama Makhluk ini :** {user.first_name or 'None'} {user.last_name or ''}
-🆔 **Nomor Togel:** `{user.id}`
-📱 **Nama Khodam:** @{user.username or 'None'}
-📞 **Phone:** `{user.phone or 'Hidden'}`
-🏷️ **STATUS:** {status_text}
-🌍 **Language:** `{user.lang_code or 'Unknown'}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Nama Makhluk:** {user.first_name or 'None'} {user.last_name or ''}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Nomor Togel:** `{user.id}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Nama Khodam:** @{user.username or 'None'}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Phone:** `{user.phone or 'Hidden'}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **STATUS:** {status_text}
 
-📊 **Informasi Khodam:**
-• **Nama Pertama Makhluknya:** `{user.first_name or 'Not set'}`
-• **Nama Akhir Makhluknya:** `{user.last_name or 'Not set'}`
-• **Quotes alaynya :** {'Yes' if hasattr(user, 'about') else 'No'}
-
-{get_emoji('zap', '⚡')} **Vzoel Assistant ID Lookup**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Vzoel Assistant ID Lookup**
         """.strip()
         
-        await event.reply(id_info)
+        if premium_status:
+            entities = create_premium_entities(id_info)
+            await event.reply(id_info, formatting_entities=entities)
+        else:
+            await event.reply(id_info)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -1026,46 +926,43 @@ async def info_handler(event):
         uptime_str = str(uptime).split('.')[0] if uptime != "Unknown" else "Unknown"
         
         info_text = f"""
-{get_emoji('user', '🤖')} **VZOEL ASSISTANT INFO**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VZOEL ASSISTANT INFO**
 
 ╔══════════════════════════════════╗
-    💢**𝚂 𝚈 𝚂 𝚃 𝙴 𝙼  𝙸 𝙽 𝙵 𝙾 𝚁 𝙼 𝙰 𝚃 𝙸 𝙾 𝙽** 💢
+    **𝚂𝚈𝚂𝚃𝙴𝙼 𝙸𝙽𝙵𝙾𝚁𝙼𝙰𝚃𝙸𝙾𝙽**
 ╚══════════════════════════════════╝
 
-👤 **USER:** {me.first_name or 'Vzoel Assistant'}
-🆔 **User ID:** `{me.id}`
-📱 **Username:** @{me.username or 'None'}
-🧠 **FOUNDER UBOT:** **Vzoel Fox's (Lutpan)**
-⚡ **Prefix:** `{COMMAND_PREFIX}`
-⏰ **Uptime:** `{uptime_str}`
-🚀 **Version:** v2.3.0 Premium Enhanced
-🔧 **Framework:** Telethon
-🐍 **Language:** Python 3.9+
-💾 **Session:** Active
-🌍 **Server:** Cloud Hosted
-🛡️ **Spam Guard:** {'Enabled' if spam_guard_enabled else 'Disabled'}
-🚫 **Blacklisted Chats:** `{len(blacklisted_chats)}`
-{get_emoji('diamond', '💎')} **Premium:** {'Active ✓' if premium_status else 'Standard'}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **USER:** {me.first_name or 'Vzoel Assistant'}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **User ID:** `{me.id}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Username:** @{me.username or 'None'}
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **FOUNDER:** Vzoel Fox's (Lutpan)
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Prefix:** `{COMMAND_PREFIX}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Uptime:** `{uptime_str}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Version:** v0.0.0.69
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Framework:** Telethon
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Language:** Python 3.9+
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Session:** Active
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Spam Guard:** {'Enabled' if spam_guard_enabled else 'Disabled'}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Blacklisted:** `{len(blacklisted_chats)}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Premium:** {'Active' if premium_status else 'Standard'}
 
-📊 **Available Commands:**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Available Commands:**
 • `{COMMAND_PREFIX}alive` - System status
 • `{COMMAND_PREFIX}gcast` - Global broadcast
-• `{COMMAND_PREFIX}addbl` - Add chat to blacklist
-• `{COMMAND_PREFIX}rmbl` - Remove from blacklist
-• `{COMMAND_PREFIX}listbl` - Show blacklisted chats
-• `{COMMAND_PREFIX}joinvc` - Join voice chat
-• `{COMMAND_PREFIX}leavevc` - Leave voice chat
+• `{COMMAND_PREFIX}ping` - Response time
+• `{COMMAND_PREFIX}infofounder` - Founder info
 • `{COMMAND_PREFIX}vzl` - Vzoel animation
 • `{COMMAND_PREFIX}id` - Get user ID
 • `{COMMAND_PREFIX}help` - Show all commands
-• `{COMMAND_PREFIX}sg` - Spam guard toggle
-• `{COMMAND_PREFIX}infofounder` - Founder info
-• `{COMMAND_PREFIX}ping` - Response time
 
-{get_emoji('zap', '⚡')} **Hak milik Vzoel Fox's ©2025 ~ LTPN** {get_emoji('zap', '⚡')}
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Hak milik Vzoel Fox's ©2025 ~ LTPN** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
         """.strip()
         
-        await event.edit(info_text)
+        if premium_status:
+            entities = create_premium_entities(info_text)
+            await event.edit(info_text, formatting_entities=entities)
+        else:
+            await event.edit(info_text)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -1073,7 +970,7 @@ async def info_handler(event):
 
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}help'))
 async def help_handler(event):
-    """Help command with all available commands and logo"""
+    """Help command with all available commands"""
     if not await is_owner(event.sender_id):
         return
     
@@ -1084,59 +981,43 @@ async def help_handler(event):
 [🆘]({LOGO_URL}) **𝚅𝚉𝙾𝙴𝙻 𝙰𝚂𝚂𝙸𝚂𝚃𝙰𝙽𝚃 HELP**
 
 ╔══════════════════════════════════╗
-   📚 **𝙲 𝙾 𝙼 𝙼 𝙰 𝙽 𝙳  𝙻 𝙸 𝚂 𝚃** 📚
+   {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **𝙲𝙾𝙼𝙼𝙰𝙽𝙳 𝙻𝙸𝚂𝚃** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 ╚══════════════════════════════════╝
 
-🔥 **MAIN COMMANDS:**
-• `{COMMAND_PREFIX}alive` - Check bot status
-• `{COMMAND_PREFIX}info` - System information
-• `{COMMAND_PREFIX}vzl` - Vzoel animation (12 phases)
-• `{COMMAND_PREFIX}help` - Show this help
-• `{COMMAND_PREFIX}ping` - Response time test
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **MAIN COMMANDS:**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}alive` - Check bot status
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}info` - System information
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}vzl` - Vzoel animation
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}help` - Show this help
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}ping` - Response time
 
-📡 **BROADCAST:**
-• `{COMMAND_PREFIX}gcast <message>` - Enhanced global broadcast
-• `{COMMAND_PREFIX}addbl [chat]` - Add chat to blacklist
-• `{COMMAND_PREFIX}rmbl [chat]` - Remove from blacklist
-• `{COMMAND_PREFIX}listbl` - Show blacklisted chats
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **BROADCAST:**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}gcast <message>` - Global broadcast
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}addbl [chat]` - Add blacklist
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}rmbl [chat]` - Remove blacklist
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}listbl` - Show blacklist
 
-🎵 **VOICE CHAT:**
-• `{COMMAND_PREFIX}joinvc` - Join voice chat
-• `{COMMAND_PREFIX}leavevc` - Leave voice chat
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **VOICE CHAT:**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}joinvc` - Join voice
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}leavevc` - Leave voice
 
-🛡️ **SECURITY:**
-• `{COMMAND_PREFIX}sg` - Spam guard toggle
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **SECURITY:**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}sg` - Spam guard toggle
 
-🔍 **UTILITIES:**
-• `{COMMAND_PREFIX}id` - Get user ID (reply/username)
-• `{COMMAND_PREFIX}infofounder` - Founder information
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **UTILITIES:**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}id` - Get user ID
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} `{COMMAND_PREFIX}infofounder` - Founder info
 
-📍 **USAGE EXAMPLES:**
-```
-{COMMAND_PREFIX}alive
-{COMMAND_PREFIX}gcast Hello everyone!
-{COMMAND_PREFIX}addbl @spamgroup
-{COMMAND_PREFIX}addbl -1001234567890
-{COMMAND_PREFIX}rmbl (remove current chat)
-{COMMAND_PREFIX}listbl
-{COMMAND_PREFIX}id @username
-{COMMAND_PREFIX}id (reply to message)
-{COMMAND_PREFIX}joinvc
-{COMMAND_PREFIX}vzl
-{COMMAND_PREFIX}sg
-```
-
-⚠️ **NOTE:** All commands are owner-only for security
-
-{get_emoji('diamond', '💎')} **Premium Features:** {'Active ✓' if premium_status else 'Standard'}
-
-⚡ **Support:** @VZLfx | @VZLfxs
-🔥 **Created by Vzoel Fox's (LTPN)**
-📱 **Instagram:** vzoel.fox_s
-⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Version:** v0.0.0.69
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Support:** @VZLfx | @VZLfxs
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Created by Vzoel Fox's (LTPN)**
         """.strip()
         
-        await event.edit(help_text)
+        if premium_status:
+            entities = create_premium_entities(help_text)
+            await event.edit(help_text, formatting_entities=entities)
+        else:
+            await event.edit(help_text)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -1153,34 +1034,31 @@ async def spam_guard_handler(event):
     
     try:
         spam_guard_enabled = not spam_guard_enabled
-        status = "**ENABLED** ✅" if spam_guard_enabled else "**DISABLED** ❌"
+        status = f"{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ENABLED**" if spam_guard_enabled else f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **DISABLED**"
         
         sg_text = f"""
-🛡️ **SPAM GUARD STATUS**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **SPAM GUARD STATUS**
 
 ╔══════════════════════════════════╗
-   🛡️ **𝚂 𝙿 𝙰 𝙼  𝙿 𝚁 𝙾 𝚃 𝙴 𝙲 𝚃 𝙸 𝙾 𝙽** 🛡️
+   {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **𝚂𝙿𝙰𝙼 𝙿𝚁𝙾𝚃𝙴𝙲𝚃𝙸𝙾𝙽** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 ╚══════════════════════════════════╝
 
-🔥 **Status:** {status}
-⚡ **Mode:** Auto-detection
-🎯 **Action:** Delete & Warn
-📊 **Threshold:** 5 messages/10s
-⏰ **Detection Window:** 10 seconds
-🚫 **Protected Users:** Owner only
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Status:** {status}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Mode:** Auto-detection
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Action:** Delete & Warn
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Threshold:** 5 messages/10s
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Protected:** Owner only
 
-{'🟢 **Protection is now ACTIVE!**' if spam_guard_enabled else '🔴 **Protection is now INACTIVE!**'}
+{get_emoji(PREMIUM_EMOJI_CHECK if spam_guard_enabled else PREMIUM_EMOJI_MAIN, '✅' if spam_guard_enabled else '🤩')} **Protection is {'ACTIVE' if spam_guard_enabled else 'INACTIVE'}!**
 
-💡 **How it works:**
-- Monitors message frequency
-- Auto-deletes spam messages
-- Shows warning to spammers
-- Protects all your chats
-
-⚡ **Hak milik Vzoel Fox's ©2025 ~ LTPN** ⚡
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Hak milik Vzoel Fox's ©2025 ~ LTPN** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
         """.strip()
         
-        await event.edit(sg_text)
+        if premium_status:
+            entities = create_premium_entities(sg_text)
+            await event.edit(sg_text, formatting_entities=entities)
+        else:
+            await event.edit(sg_text)
         
     except Exception as e:
         await event.reply(f"❌ **Error:** {str(e)}")
@@ -1201,13 +1079,9 @@ async def spam_detection(event):
         if user_id not in spam_users:
             spam_users[user_id] = []
         
-        # Remove old messages (older than 10 seconds)
         spam_users[user_id] = [msg_time for msg_time in spam_users[user_id] if current_time - msg_time < 10]
-        
-        # Add current message
         spam_users[user_id].append(current_time)
         
-        # Check if spam (more than 5 messages in 10 seconds)
         if len(spam_users[user_id]) > 5:
             try:
                 await event.delete()
@@ -1215,17 +1089,16 @@ async def spam_detection(event):
                 user_name = getattr(user, 'first_name', 'Unknown')
                 
                 warning_msg = await event.respond(
-                    f"🛡️ **SPAM DETECTED!**\n"
-                    f"👤 **User:** {user_name}\n"
-                    f"⚠️ **Action:** Message deleted\n"
-                    f"📊 **Messages:** {len(spam_users[user_id])} in 10s\n"
-                    f"🔥 **Vzoel Protection Active**"
+                    f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **SPAM DETECTED!**\n"
+                    f"{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **User:** {user_name}\n"
+                    f"{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Action:** Message deleted\n"
+                    f"{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Messages:** {len(spam_users[user_id])} in 10s\n"
+                    f"{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Vzoel Protection Active**"
                 )
                 
                 await asyncio.sleep(5)
                 await warning_msg.delete()
                 
-                # Reset counter
                 spam_users[user_id] = []
                 
                 logger.info(f"Spam detected and handled for user {user_name} ({user_id})")
@@ -1243,59 +1116,45 @@ async def send_startup_message():
     try:
         me = await client.get_me()
         
-        startup_msg_base = f"""
+        startup_msg = f"""
 [🚀]({LOGO_URL}) **𝚅𝚉𝙾𝙴𝙻 𝙰𝚂𝚂𝙸𝚂𝚃𝙰𝙽𝚃 STARTED!**
 
 ╔══════════════════════════════════╗
-   {get_emoji('fire', '🔥')} **𝚂 𝚈 𝚂 𝚃 𝙴 𝙼  𝙰 𝙲 𝚃 𝙸 𝚅 𝙰 𝚃 𝙴 𝙳** {get_emoji('fire', '🔥')}
+   {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **𝚂𝚈𝚂𝚃𝙴𝙼 𝙰𝙲𝚃𝙸𝚅𝙰𝚃𝙴𝙳** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 ╚══════════════════════════════════╝
 
-✅ **All systems operational**
-👤 **User:** {me.first_name}
-🆔 **ID:** `{me.id}`
-⚡ **Prefix:** `{COMMAND_PREFIX}`
-⏰ **Started:** `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
-🚫 **Blacklisted Chats:** `{len(blacklisted_chats)}`
-{get_emoji('diamond', '💎')} **Premium:** {'Active ✓' if premium_status else 'Standard'}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **All systems operational**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **User:** {me.first_name}
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ID:** `{me.id}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Prefix:** `{COMMAND_PREFIX}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Started:** `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Blacklisted:** `{len(blacklisted_chats)}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Premium:** {'Active' if premium_status else 'Standard'}
 
-📌 **Loaded Plugins (Premium Enhanced):**
-• ✅ Alive System (Premium Emoji Support)
-• ✅ Enhanced Global Broadcast (Premium Emoji)
-• ✅ Gcast Blacklist System (addbl/rmbl/listbl)
-• ✅ Voice Chat Control
-• ✅ Vzoel Animation (12 phases)
-• ✅ User ID Lookup System
-• ✅ Information System
-• ✅ Help Command
-• ✅ Spam Guard (Auto-detection)
-• ✅ Founder Info (Premium Emoji)
-• ✅ Ping System (Premium Emoji)
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Loaded Plugins (Full Premium):**
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} Alive System
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} Global Broadcast
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} Ping Command
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} Founder Info
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} Blacklist System
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} Voice Chat
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} User ID Lookup
+{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} Spam Guard
 
-💡 **Quick Start:**
-• `{COMMAND_PREFIX}help` - Show all commands
-• `{COMMAND_PREFIX}alive` - Check status
-• `{COMMAND_PREFIX}vzl` - 12-phase animation
-• `{COMMAND_PREFIX}gcast <message>` - Enhanced broadcast
-• `{COMMAND_PREFIX}addbl @group` - Blacklist chat
-• `{COMMAND_PREFIX}listbl` - Show blacklist
-• `{COMMAND_PREFIX}id @username` - Get user ID
-• `{COMMAND_PREFIX}sg` - Toggle spam protection
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Premium Emojis:**
+• Main: {PREMIUM_EMOJI_MAIN} {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
+• Check: {PREMIUM_EMOJI_CHECK} {get_emoji(PREMIUM_EMOJI_CHECK, '✅')}
 
-{get_emoji('sparkles', '✨')} **Premium Emoji: {get_emoji('premium')}**
-• ID: {PREMIUM_EMOJI_ID}
-• Status: {'Enabled' if premium_status else 'Fallback Mode'}
-
-{get_emoji('zap', '⚡')} **Powered by Vzoel Fox's (LTPN)** {get_emoji('zap', '⚡')}
+**userbot versi 0.0.0.69 ~ by Vzoel Fox's (Lutpan)** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
         """.strip()
         
         if premium_status:
-            # Add premium emoji decoration
-            startup_with_emoji, entities = add_premium_emoji(startup_msg_base)
-            await client.send_message('me', startup_with_emoji, formatting_entities=entities)
+            entities = create_premium_entities(startup_msg)
+            await client.send_message('me', startup_msg, formatting_entities=entities)
         else:
-            await client.send_message('me', startup_msg_base)
+            await client.send_message('me', startup_msg)
             
-        logger.info("✅ Premium enhanced startup message sent successfully")
+        logger.info("✅ Premium startup message sent successfully")
         
     except Exception as e:
         logger.error(f"Failed to send startup message: {e}")
@@ -1305,28 +1164,23 @@ async def startup():
     global start_time, premium_status
     start_time = datetime.now()
     
-    # Load blacklist on startup
     load_blacklist()
     
-    logger.info("🚀 Starting Vzoel Assistant (Premium Enhanced Edition)...")
+    logger.info("🚀 Starting Vzoel Assistant v0.0.0.69...")
     
     try:
         await client.start()
-        
-        # Check premium status
         await check_premium_status()
         
         me = await client.get_me()
         
-        logger.info(f"✅ Vzoel Assistant started successfully!")
+        logger.info(f"✅ Vzoel Assistant v0.0.0.69 started successfully!")
         logger.info(f"👤 Logged in as: {me.first_name} (@{me.username or 'No username'})")
         logger.info(f"🆔 User ID: {me.id}")
         logger.info(f"💎 Premium Status: {'Active' if premium_status else 'Standard'}")
-        logger.info(f"📌 All plugins loaded with premium emoji support")
-        logger.info(f"⚡ Enhanced commands: alive, gcast, ping, infofounder with premium emoji")
-        logger.info(f"🔥 Premium Emoji ID: {PREMIUM_EMOJI_ID}")
+        logger.info(f"🤩 Premium Emoji Main: {PREMIUM_EMOJI_MAIN}")
+        logger.info(f"✅ Premium Emoji Check: {PREMIUM_EMOJI_CHECK}")
         
-        # Send startup message
         await send_startup_message()
             
     except SessionPasswordNeededError:
@@ -1340,20 +1194,19 @@ async def startup():
 
 async def main():
     """Main function to run the enhanced userbot"""
-    logger.info("🔥 Initializing Vzoel Assistant Premium Enhanced Edition...")
+    logger.info("🔥 Initializing Vzoel Assistant v0.0.0.69...")
     
-    # Validate configuration
     logger.info("🔍 Validating configuration...")
     logger.info(f"📱 API ID: {API_ID}")
     logger.info(f"🔑 Session: {SESSION_NAME}")
     logger.info(f"⚡ Prefix: {COMMAND_PREFIX}")
     logger.info(f"🆔 Owner ID: {OWNER_ID or 'Auto-detect'}")
-    logger.info(f"📂 Mode: Premium Enhanced Edition")
-    logger.info(f"🤩 Premium Emoji ID: {PREMIUM_EMOJI_ID}")
+    logger.info(f"📂 Version: v0.0.0.69")
+    logger.info(f"🤩 Premium Main Emoji: {PREMIUM_EMOJI_MAIN}")
+    logger.info(f"✅ Premium Check Emoji: {PREMIUM_EMOJI_CHECK}")
     
-    # Start Vzoel Assistant
     if await startup():
-        logger.info("🔥 Vzoel Assistant is now running (Premium Enhanced)...")
+        logger.info("🔥 Vzoel Assistant v0.0.0.69 is now running...")
         logger.info("🔍 Press Ctrl+C to stop")
         logger.info(f"💎 Premium Features: {'Enabled' if premium_status else 'Standard Mode'}")
         
@@ -1365,7 +1218,6 @@ async def main():
             logger.error(f"❌ Unexpected error: {e}")
         finally:
             logger.info("🔥 Disconnecting...")
-            # Save blacklist before exit
             save_blacklist()
             try:
                 await client.disconnect()
@@ -1382,24 +1234,24 @@ if __name__ == "__main__":
         logger.error(f"❌ Fatal error: {e}")
         sys.exit(1)
 
-# ============= END OF VZOEL ASSISTANT PREMIUM ENHANCED =============
+# ============= END OF VZOEL ASSISTANT v0.0.0.69 =============
 
 """
-🔥 VZOEL ASSISTANT - PREMIUM ENHANCED EDITION 🔥
+🔥 VZOEL ASSISTANT - FULL PREMIUM v0.0.0.69 🔥
 
-🤩 PREMIUM EMOJI INTEGRATION:
-1. ✅ Added premium emoji ID: 6156784006194009426
-2. ✅ Integrated in alive, gcast, ping, infofounder commands
-3. ✅ Created helper functions for premium emoji handling
-4. ✅ Added MessageEntityCustomEmoji support
-5. ✅ Fallback to standard emoji when premium not available
-6. ✅ Version updated to v2.3.0 Premium Enhanced
+🤩 DUAL PREMIUM EMOJI SYSTEM:
+1. ✅ Main Emoji ID: 6156784006194009426 (🤩)
+2. ✅ Check Emoji ID: 5793955979460613233 (✅)
+3. ✅ All emojis converted to premium
+4. ✅ Custom format for ping, gcast, infofounder
+5. ✅ Version updated to v0.0.0.69
+6. ✅ Full premium integration in all plugins
 
-📋 PREMIUM FEATURES:
-• Premium emoji 🤩 appears in key commands
-• Automatic detection of premium status
-• Fallback support for non-premium users
-• Enhanced visual appearance
+📋 FORMATTED PLUGINS:
+• Ping: Simple format with premium emojis
+• Gcast: 8 edits with premium emoji
+• InfoFounder: Clean format as requested
+• All plugins use dual premium emoji system
 
-⚡ Created by Vzoel Fox's (LTPN) ⚡
+⚡ Created by Vzoel Fox's (Lutpan) ⚡
 """
