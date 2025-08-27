@@ -94,7 +94,7 @@ PREMIUM_EMOJIS = {
     'adder3': {'id': '5321412209992033736', 'char': '👽'},
     'adder4': {'id': '5793973133559993740', 'char': '️✈️'},
     'adder5': {'id': '5357404860566235955', 'char': '😈'},
-    'adder6': {'id': '5794323465452394551', 'char': '🎚️'}
+    '': {'id': '5794323465452394551', 'char': '🎚️'}
 }
 
 # Unicode Fonts for styling (replacing ** markdown)
@@ -282,14 +282,14 @@ async def setemoji_handler(event):
 {get_emoji('check')} {convert_font('Usage:', 'bold')} `{COMMAND_PREFIX}setemoji <type> <emoji_id><char>`
 
 {get_emoji('main')} {convert_font('Available Types:', 'bold')}
-{get_emoji('check')} `main` - Main emoji (ping atas, gcast, alive, joinvc)
+{get_emoji('main')} `main` - Main emoji (ping atas, gcast, alive, joinvc)
 {get_emoji('check')} `check` - Check emoji (ping bawah/ms, progress)
-{get_emoji('check')} `adder1` - Extra emoji 1
-{get_emoji('check')} `adder2` - Extra emoji 2
-{get_emoji('check')} `adder3` - Extra emoji 3
-{get_emoji('check')} `adder4` - Extra emoji 4
-{get_emoji('check')} `adder5` - Extra emoji 5
-{get_emoji('check')} `adder6` - Extra emoji 6
+{get_emoji('adder1')} `adder1` - Extra emoji 1
+{get_emoji('adder2')} `adder2` - Extra emoji 2
+{get_emoji('adder3')} `adder3` - Extra emoji 3
+{get_emoji('adder4')} `adder4` - Extra emoji 4
+{get_emoji('adder5')} `adder5` - Extra emoji 5
+{get_emoji('adder6')} `adder6` - Extra emoji 6
 
 {get_emoji('main')} {convert_font('Example:', 'bold')}
 `{COMMAND_PREFIX}setemoji main 6156784006194009426`
@@ -335,8 +335,8 @@ async def setemoji_handler(event):
         # Fallback emoji characters
         if not emoji_char:
             emoji_fallbacks = {
-                'main': '🤩', 'check': '⛈', 'adder1': '⭐', 'adder2': '👽',
-                'adder3': '😈', 'adder4': '✈️', 'adder5': '😈', 'adder6': '⚙️'
+                'main': '🤩', 'check': '⚙️', 'adder1': '⛈', 'adder2': '✅',
+                'adder3': '👽', 'adder4': '✈️️', 'adder5': '😈', 'adder6': '🎚️️'
             }
             emoji_char = emoji_fallbacks.get(emoji_type, '🤩')
         
@@ -850,7 +850,7 @@ async def ping_handler(event):
         # Fixed format: main emoji with Pong, check emoji with ms
         ping_text = f"""
 {get_emoji('main')} {convert_font('Pong !!!!!!', 'bold')}
-{get_emoji('adder1')} {convert_font(f'{ping_time:.2f} ms', 'bold')}
+{get_emoji('adder5')} {convert_font(f'{ping_time:.2f} ms', 'bold')}
         """.strip()
         
         await safe_edit_message(msg, ping_text)
