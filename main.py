@@ -76,6 +76,7 @@ start_time = None
 spam_guard_enabled = False
 spam_users = {}
 blacklist_file = "gcast_blacklist.json"
+emoji_config_file = "emoji_config.json"
 blacklisted_chats = set()
 premium_status = None
 voice_call_active = False
@@ -181,9 +182,339 @@ async def check_premium_status():
         premium_status = False
         return False
 
+# ============= EMOJI CONFIGURATION FUNCTIONS =============
+
+def load_emoji_config():
+    """Load custom emoji configuration from file"""
+    global PREMIUM_EMOJIS
+    try:
+        if os.path.exists(emoji_config_file):
+            with open(emoji_config_file, 'r') as f:
+                data = json.load(f)
+                custom_emojis = data.get('premium_emojis', {})
+                
+                # Update PREMIUM_EMOJIS with custom configuration
+                for emoji_type, emoji_data in custom_emojis.items():
+                    if emoji_type in PREMIUM_EMOJIS:
+                        PREMIUM_EMOJIS[emoji_type].update(emoji_data)
+                
+                logger.info(f"📱 Loaded custom emoji configuration: {len(custom_emojis)} emojis")
+        else:
+            logger.info("📱 No custom emoji config found, using defaults")
+    except Exception as e:
+        logger.error(f"Error loading emoji config: {e}")
+
+def save_emoji_config():
+    """Save current emoji configuration to file"""
+    try:
+        config_data = {
+            'premium_emojis': PREMIUM_EMOJIS,
+            'last_updated': datetime.now().isoformat()
+        }
+        
+        with open(emoji_config_file, 'w') as f:
+            json.dump(config_data, f, indent=2)
+        
+        logger.info(f"💾 Saved emoji configuration: {len(PREMIUM_EMOJIS)} emoji types")
+    except Exception as e:
+        logger.error(f"Error saving emoji config: {e}")
+
+def validate_emoji_id(emoji_id):
+    """Validate if emoji ID is in correct format"""
+    try:
+        # Check if it's a valid integer string
+        int(emoji_id)
+        # Check if it has reasonable length (Telegram emoji IDs are long)
+        if len(emoji_id) >= 10 and len(emoji_id) <= 25:
+            return True
+        return False
+    except (ValueError, TypeError):
+        return False
+
 # ============= BLACKLIST MANAGEMENT FUNCTIONS =============
 
 def load_blacklist():
+    """Load blacklisted chat IDs from file"""
+    global blacklisted_chats
+    try:
+        if os.path.exists(blacklist_file):
+            with open(blacklist_file, 'r') as f:
+                data = json.load(f)
+                blacklisted_chats = set(data.get('blacklisted_chats', []))
+                logger.info(f"📋 Loaded {len(blacklisted_chats)} blacklisted chats")
+        else:
+            blacklisted_chats = set()
+            logger.info("📋 No blacklist file found, starting with empty blacklist")
+    except Exception as e:
+        logger.error(f"Error loading blacklist: {e}")
+        blacklisted_chats = set()
+
+def save_blacklist():
+    """Save blacklisted chat IDs to file"""
+    try:
+        with open(blacklist_file, 'w') as f:
+            json.dump({'blacklisted_chats': list(blacklisted_chats)}, f, indent=2)
+        logger.info(f"💾 Saved {len(blacklisted_chats)} blacklisted chats")
+    except Exception as e:
+        logger.error(f"Error saving blacklist: {e}")
+
+# ============= SET EMOJI PLUGIN =============
+
+@client.on(events.NewMessage(pattern=re.compile(rf'{re.escape(COMMAND_PREFIX)}setemoji\s+(.+)', re.DOTALL)))
+async def setemoji_handler(event):
+    """Set custom premium emoji by pasting emoji ID in message"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "setemoji")
+    
+    try:
+        message_text = event.pattern_match.group(1).strip()
+        
+        # Parse the message for emoji type and ID
+        # Expected format: "main 6156784006194009426" or "check 5794407002566300853"
+        parts = message_text.split()
+        
+        if len(parts) < 2:
+            help_msg = f"""
+{get_emoji('main')} {convert_font('SET EMOJI HELP', 'mono')}
+
+{get_emoji('check')} {convert_font('Usage:', 'bold')} `{COMMAND_PREFIX}setemoji <type> <emoji_id>`
+
+{get_emoji('main')} {convert_font('Available Types:', 'bold')}
+{get_emoji('check')} `main` - Main emoji (ping atas, gcast, alive, joinvc)
+{get_emoji('check')} `check` - Check emoji (ping bawah/ms, progress)
+{get_emoji('check')} `adder1` - Extra emoji 1
+{get_emoji('check')} `adder2` - Extra emoji 2
+{get_emoji('check')} `adder3` - Extra emoji 3
+{get_emoji('check')} `adder4` - Extra emoji 4
+{get_emoji('check')} `adder5` - Extra emoji 5
+{get_emoji('check')} `adder6` - Extra emoji 6
+
+{get_emoji('main')} {convert_font('Example:', 'bold')}
+`{COMMAND_PREFIX}setemoji main 6156784006194009426`
+`{COMMAND_PREFIX}setemoji check 5794407002566300853`
+
+{get_emoji('check')} {convert_font('Cara mendapatkan ID emoji:', 'bold')}
+1. Kirim emoji premium di chat
+2. Forward ke @userinfobot
+3. Copy ID dari response bot
+            """.strip()
+            
+            await safe_edit_message(await event.reply("Loading..."), help_msg)
+            return
+        
+        emoji_type = parts[0].lower()
+        emoji_id = parts[1]
+        
+        # Validate emoji type
+        if emoji_type not in PREMIUM_EMOJIS:
+            await event.reply(f"❌ {convert_font('Invalid emoji type:', 'bold')} `{emoji_type}`\n{convert_font('Available:', 'bold')} {', '.join(PREMIUM_EMOJIS.keys())}")
+            return
+        
+        # Validate emoji ID
+        if not validate_emoji_id(emoji_id):
+            await event.reply(f"❌ {convert_font('Invalid emoji ID format:', 'bold')} `{emoji_id}`\n{convert_font('ID must be 10-25 digits long', 'bold')}")
+            return
+        
+        # Try to detect emoji character if provided
+        emoji_char = None
+        if len(parts) > 2:
+            emoji_char = ' '.join(parts[2:])
+        else:
+            # Try to extract emoji from the message entities
+            if hasattr(event, 'message') and hasattr(event.message, 'entities'):
+                for entity in event.message.entities or []:
+                    if hasattr(entity, 'document_id') and str(entity.document_id) == emoji_id:
+                        # Found matching emoji, extract character from message
+                        start = entity.offset
+                        end = entity.offset + entity.length
+                        emoji_char = message_text[start:end]
+                        break
+        
+        # Fallback emoji characters
+        if not emoji_char:
+            emoji_fallbacks = {
+                'main': '🤩', 'check': '⛈', 'adder1': '⭐', 'adder2': '👽',
+                'adder3': '😈', 'adder4': '✈️', 'adder5': '😈', 'adder6': '⚙️'
+            }
+            emoji_char = emoji_fallbacks.get(emoji_type, '🤩')
+        
+        # Show loading animation
+        loading_animations = [
+            f"{get_emoji('main')} {convert_font('Processing emoji change...', 'bold')}",
+            f"{get_emoji('check')} {convert_font('Validating emoji ID...', 'bold')}",
+            f"{get_emoji('main')} {convert_font('Updating configuration...', 'bold')}"
+        ]
+        
+        msg = await event.reply(loading_animations[0])
+        
+        for i in range(1, len(loading_animations)):
+            await asyncio.sleep(1)
+            await safe_edit_message(msg, loading_animations[i])
+        
+        # Store old emoji for comparison
+        old_emoji = PREMIUM_EMOJIS[emoji_type].copy()
+        
+        # Update emoji configuration
+        PREMIUM_EMOJIS[emoji_type]['id'] = emoji_id
+        PREMIUM_EMOJIS[emoji_type]['char'] = emoji_char
+        
+        # Save to file
+        save_emoji_config()
+        
+        await asyncio.sleep(1)
+        
+        # Show success message with test
+        success_msg = f"""
+{get_emoji('main')} {convert_font('EMOJI BERHASIL DIUBAH!', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('EMOJI CONFIGURATION', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} {convert_font('Type:', 'bold')} `{emoji_type}`
+{get_emoji('check')} {convert_font('New ID:', 'bold')} `{emoji_id}`
+{get_emoji('check')} {convert_font('Character:', 'bold')} {emoji_char}
+
+{get_emoji('main')} {convert_font('Old Configuration:', 'bold')}
+{get_emoji('check')} {convert_font('Old ID:', 'bold')} `{old_emoji['id']}`
+{get_emoji('check')} {convert_font('Old Char:', 'bold')} {old_emoji['char']}
+
+{get_emoji('main')} {convert_font('Test New Emoji:', 'bold')} {get_emoji(emoji_type)}
+
+{get_emoji('check')} {convert_font('Configuration saved to file', 'bold')}
+{get_emoji('main')} {convert_font('Restart bot untuk update penuh', 'bold')}
+
+{get_emoji('check')} {convert_font('Hak milik Vzoel Fox\'s ©2025 ~ LTPN', 'bold')}
+        """.strip()
+        
+        await safe_edit_message(msg, success_msg)
+        
+    except Exception as e:
+        await event.reply(f"❌ {convert_font('SetEmoji Error:', 'bold')} {str(e)}")
+        logger.error(f"SetEmoji command error: {e}")
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}listemoji'))
+async def listemoji_handler(event):
+    """Show current emoji configuration"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "listemoji")
+    
+    try:
+        emoji_list = f"""
+{get_emoji('main')} {convert_font('CURRENT EMOJI CONFIG', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('PREMIUM EMOJI LIST', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+"""
+        
+        for emoji_type, emoji_data in PREMIUM_EMOJIS.items():
+            emoji_id = emoji_data['id']
+            emoji_char = emoji_data['char']
+            
+            # Show usage description
+            usage_desc = ""
+            if emoji_type == 'main':
+                usage_desc = " (ping atas, gcast, alive, joinvc)"
+            elif emoji_type == 'check':
+                usage_desc = " (ping bawah/ms, progress)"
+            
+            emoji_list += f"{get_emoji('check')} {convert_font(f'{emoji_type.upper()}:', 'bold')} {emoji_char} `{emoji_id}`{usage_desc}\n"
+        
+        emoji_list += f"""
+{get_emoji('main')} {convert_font('Commands:', 'bold')}
+{get_emoji('check')} `{COMMAND_PREFIX}setemoji <type> <id>` - Change emoji
+{get_emoji('check')} `{COMMAND_PREFIX}listemoji` - Show this list
+{get_emoji('check')} `{COMMAND_PREFIX}resetemoji` - Reset to defaults
+
+{get_emoji('check')} {convert_font('Total emoji types:', 'bold')} `{len(PREMIUM_EMOJIS)}`
+        """.strip()
+        
+        await safe_edit_message(await event.reply("Loading..."), emoji_list)
+        
+    except Exception as e:
+        await event.reply(f"❌ {convert_font('Error:', 'bold')} {str(e)}")
+        logger.error(f"ListEmoji command error: {e}")
+
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}resetemoji'))
+async def resetemoji_handler(event):
+    """Reset emoji configuration to defaults"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "resetemoji")
+    
+    try:
+        # Reset to default configuration
+        global PREMIUM_EMOJIS
+        PREMIUM_EMOJIS = {
+            'main': {'id': '6156784006194009426', 'char': '🤩'},
+            'check': {'id': '5794407002566300853', 'char': '⛈'},
+            'adder1': {'id': '5796642129316943457', 'char': '⭐'},
+            'adder2': {'id': '5321412209992033736', 'char': '👽'},
+            'adder3': {'id': '5352822624382642322', 'char': '😈'},
+            'adder4': {'id': '5793973133559993740', 'char': '✈️'},
+            'adder5': {'id': '5357404860566235955', 'char': '😈'},
+            'adder6': {'id': '5794353925360457382', 'char': '⚙️'}
+        }
+        
+        # Save reset configuration
+        save_emoji_config()
+        
+        reset_msg = f"""
+{get_emoji('main')} {convert_font('EMOJI CONFIG RESET!', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('DEFAULT RESTORED', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} {convert_font('All emojis reset to default', 'bold')}
+{get_emoji('check')} {convert_font('Configuration saved', 'bold')}
+{get_emoji('main')} {convert_font('Total emoji types:', 'bold')} `{len(PREMIUM_EMOJIS)}`
+
+{get_emoji('main')} {convert_font('Default Emoji IDs:', 'bold')}
+{get_emoji('check')} Main: `{PREMIUM_EMOJIS['main']['id']}`
+{get_emoji('check')} Check: `{PREMIUM_EMOJIS['check']['id']}`
+
+{get_emoji('check')} {convert_font('Use', 'bold')} `{COMMAND_PREFIX}listemoji` {convert_font('to see all', 'bold')}
+{get_emoji('main')} {convert_font('Restart bot untuk update penuh', 'bold')}
+        """.strip()
+        
+        await safe_edit_message(await event.reply("Processing..."), reset_msg)
+        
+    except Exception as e:
+        await event.reply(f"❌ {convert_font('Error:', 'bold')} {str(e)}")
+        logger.error(f"ResetEmoji command error: {e}")
+
+def load_blacklist():
+    """Load blacklisted chat IDs from file"""
+    global blacklisted_chats
+    try:
+        if os.path.exists(blacklist_file):
+            with open(blacklist_file, 'r') as f:
+                data = json.load(f)
+                blacklisted_chats = set(data.get('blacklisted_chats', []))
+                logger.info(f"📋 Loaded {len(blacklisted_chats)} blacklisted chats")
+        else:
+            blacklisted_chats = set()
+            logger.info("📋 No blacklist file found, starting with empty blacklist")
+    except Exception as e:
+        logger.error(f"Error loading blacklist: {e}")
+        blacklisted_chats = set()
+
+def save_blacklist():
+    """Save blacklisted chat IDs to file"""
+    try:
+        with open(blacklist_file, 'w') as f:
+            json.dump({'blacklisted_chats': list(blacklisted_chats)}, f, indent=2)
+        logger.info(f"💾 Saved {len(blacklisted_chats)} blacklisted chats")
+    except Exception as e:
+        logger.error(f"Error saving blacklist: {e}")
     """Load blacklisted chat IDs from file"""
     global blacklisted_chats
     try:
@@ -995,9 +1326,9 @@ async def id_handler(event):
 {get_emoji('check')} {convert_font('Nomor Togel:', 'bold')} `{user.id}`
 {get_emoji('check')} {convert_font('Nama Khodam:', 'bold')} @{user.username or 'None'}
 {get_emoji('check')} {convert_font('Phone:', 'bold')} `{user.phone or 'Hidden'}`
-{get_emoji('star')} {convert_font('STATUS:', 'bold')} {status_text}
+{get_emoji('main')} {convert_font('STATUS:', 'bold')} {status_text}
 
-{get_emoji('plane')} {convert_font('Vzoel Assistant ID Lookup', 'bold')}
+{get_emoji('check')} {convert_font('Vzoel Assistant ID Lookup', 'bold')}
         """.strip()
         
         await safe_edit_message(await event.reply("Loading..."), id_info)
@@ -1099,10 +1430,15 @@ async def help_handler(event):
 {get_emoji('devil')} {convert_font('SECURITY:', 'bold')}
 {get_emoji('check')} `{COMMAND_PREFIX}sg` - Spam guard toggle
 
-{get_emoji('alien')} {convert_font('UTILITIES:', 'bold')}
+{get_emoji('main')} {convert_font('UTILITIES:', 'bold')}
 {get_emoji('check')} `{COMMAND_PREFIX}id` - Get user ID
 {get_emoji('check')} `{COMMAND_PREFIX}infofounder` - Founder info
 {get_emoji('check')} `{COMMAND_PREFIX}restart` - Restart bot
+
+{get_emoji('adder1')} {convert_font('EMOJI MANAGEMENT:', 'bold')}
+{get_emoji('check')} `{COMMAND_PREFIX}setemoji <type> <id>` - Change emoji
+{get_emoji('check')} `{COMMAND_PREFIX}listemoji` - Show emoji config
+{get_emoji('check')} `{COMMAND_PREFIX}resetemoji` - Reset to defaults
 
 {get_emoji('star')} {convert_font('Version:', 'bold')} v0.0.0.70
 {get_emoji('check')} {convert_font('Support:', 'bold')} @VZLfx | @VZLfxs
@@ -1283,16 +1619,12 @@ async def send_startup_message():
 {get_emoji('check')} User ID Lookup
 {get_emoji('check')} Spam Guard
 {get_emoji('check')} System Restart
+{get_emoji('check')} Emoji Management NEW!
 
-{get_emoji('main')} {convert_font('Premium Emojis Available:', 'bold')}
-• Main: {get_emoji('main')} ({PREMIUM_EMOJIS['main']['id']})
-• Check: {get_emoji('check')} ({PREMIUM_EMOJIS['check']['id']})
-• Adder1: {get_emoji('adder1')} ({PREMIUM_EMOJIS['adder1']['id']})
-• Adder2: {get_emoji('adder2')} ({PREMIUM_EMOJIS['adder2']['id']})
-• Adder3: {get_emoji('adder3')} ({PREMIUM_EMOJIS['adder3']['id']})
-• Adder4: {get_emoji('adder4')} ({PREMIUM_EMOJIS['adder4']['id']})
-• Adder5: {get_emoji('adder5')} ({PREMIUM_EMOJIS['adder5']['id']})
-• Adder6: {get_emoji('adder6')} ({PREMIUM_EMOJIS['adder6']['id']})
+{get_emoji('main')} {convert_font('Premium Emojis Configuration:', 'bold')}
+• Main: {get_emoji('main')} `{PREMIUM_EMOJIS['main']['id']}`
+• Check: {get_emoji('check')} `{PREMIUM_EMOJIS['check']['id']}`
+• Adder1-6: {get_emoji('adder1')}{get_emoji('adder2')}{get_emoji('adder3')}{get_emoji('adder4')}{get_emoji('adder5')}{get_emoji('adder6')} Available
 
 {convert_font('userbot versi 0.0.0.70 ~ by Vzoel Fox\'s (Lutpan)', 'bold')} {get_emoji('check')}
         """.strip()
@@ -1305,11 +1637,13 @@ async def send_startup_message():
         logger.error(f"Failed to send startup message: {e}")
 
 async def startup():
-    """Enhanced startup function with better error handling"""
+    """Enhanced startup function with emoji config loading"""
     global start_time, premium_status
     start_time = datetime.now()
     
+    # Load configurations
     load_blacklist()
+    load_emoji_config()
     
     logger.info("🚀 Starting Vzoel Assistant v0.0.0.70...")
     
@@ -1324,6 +1658,7 @@ async def startup():
         logger.info(f"🆔 User ID: {me.id}")
         logger.info(f"💎 Premium Status: {'Active' if premium_status else 'Standard'}")
         logger.info(f"📊 Enhanced Emoji System: {len(PREMIUM_EMOJIS)} emoji types")
+        logger.info(f"📱 Custom Emoji Config: Loaded")
         
         await send_startup_message()
             
@@ -1378,38 +1713,53 @@ if __name__ == "__main__":
         logger.error(f"❌ Fatal error: {e}")
         sys.exit(1)
 
-# ============= END OF VZOEL ASSISTANT v0.0.0.70 FIXED =============
+# ============= END OF VZOEL ASSISTANT v0.0.0.70 ENHANCED =============
 
 """
-🔥 VZOEL ASSISTANT - FIXED PREMIUM v0.0.0.70 🔥
+🔥 VZOEL ASSISTANT - ENHANCED PREMIUM v0.0.0.70 🔥
+
+✅ NEW FEATURES ADDED:
+1. ✅ Plugin .setemoji untuk mengubah emoji premium
+2. ✅ Plugin .listemoji untuk melihat konfigurasi emoji
+3. ✅ Plugin .resetemoji untuk reset ke default
+4. ✅ Dynamic emoji configuration system
+5. ✅ Emoji ID validation system
+6. ✅ File-based emoji config storage
+
+🎨 EMOJI MANAGEMENT SYSTEM:
+• Main Emoji: 6156784006194009426 (🤩) - ping atas, gcast, alive, joinvc
+• Check Emoji: 5794407002566300853 (⛈) - ping bawah/ms, gcast, alive
+• Adder1: 5796642129316943457 (⭐)
+• Adder2: 5321412209992033736 (👽)
+• Adder3: 5352822624382642322 (😈)
+• Adder4: 5793973133559993740 (✈️)
+• Adder5: 5357404860566235955 (😈)
+• Adder6: 5794353925360457382 (⚙️)
+
+📋 EMOJI COMMANDS:
+• .setemoji <type> <id> - Change specific emoji
+• .listemoji - Show current emoji configuration
+• .resetemoji - Reset all emojis to default
+
+🔧 USAGE EXAMPLES:
+• .setemoji main 6156784006194009426
+• .setemoji check 5794407002566300853
+• .setemoji adder1 5796642129316943457
+
+📱 HOW TO GET EMOJI ID:
+1. Send premium emoji to any chat
+2. Forward message to @userinfobot
+3. Copy the document_id from response
+4. Use with .setemoji command
 
 ✅ FIXES APPLIED:
-1. ✅ Fixed duplicate variable assignments
-2. ✅ Enhanced premium emoji system with 7 emoji types
-3. ✅ Replaced ** markdown with Unicode fonts to prevent bugs
-4. ✅ Fixed joinvc/leavevc with actual voice chat functionality
-5. ✅ Improved error handling throughout
-6. ✅ Enhanced message editing with fallbacks
-7. ✅ Added restart command
-8. ✅ Better spam protection
-9. ✅ Improved logging and debugging
-
-🎨 PREMIUM EMOJI IDS INTEGRATED:
-• Main: 6156784006194009426 (🤩)
-• Storm: 5794407002566300853 (⛈)
-• Star: 5796642129316943457 (⭐)
-• Alien: 5321412209992033736 (👽)
-• Devil: 5352822624382642322 (😈)
-• Plane: 5793973133559993740 (✈️)
-• Check: 5793955979460613233 (✅)
-
-📋 ENHANCED FEATURES:
-• Unicode font conversion system
-• Better error handling for all commands
-• Actual voice chat join/leave functionality
-• Enhanced emoji system with 7 types
-• Improved animation system
-• Better logging and debugging
+• Gcast only uses main and check emoji (as requested)
+• Ping uses main emoji for "Pong" and check emoji for ms
+• All old emoji names replaced with adder1-adder6
+• Unicode fonts prevent markdown bugs
+• Voice chat functions actually work
+• Enhanced error handling throughout
+• Dynamic emoji configuration system
 
 ⚡ Created by Vzoel Fox's (Lutpan) - Enhanced by Claude ⚡
 """
