@@ -766,7 +766,7 @@ async def gcast_handler(event):
                     current_title = channel_info['title'][:20]
                     
                     progress_msg = f"""
-{get_emoji('main')} {convert_font('lagi otw ngegikesss...', 'bold')}
+{get_emoji('adder2')} {convert_font('lagi otw ngegikesss...', 'bold')}
 
 {get_emoji('check')} {convert_font('Total Kandang:', 'bold')} `{i}/{total_channels}` ({progress:.1f}%)
 {get_emoji('check')} {convert_font('Kandang berhasil:', 'bold')} `{success_count}`
@@ -809,17 +809,17 @@ async def gcast_handler(event):
         success_rate = (success_count / total_channels * 100) if total_channels > 0 else 0
         
         final_message = f"""
-{get_emoji('main')} {convert_font('Gcast kelar....', 'bold')}
+{get_emoji('adder2')} {convert_font('Gcast kelar....', 'bold')}
 
 ╔══════════════════════════════════╗
-     {get_emoji('main')} {convert_font('V Z O E L  G C A S T', 'mono')} {get_emoji('main')}
+      {convert_font('V Z O E L  G C A S T', 'mono')} 
 ╚══════════════════════════════════╝
 
-{get_emoji('check')} {convert_font('Total Kandang:', 'bold')} `{total_channels}`
-{get_emoji('check')} {convert_font('Kandang berhasil:', 'bold')} `{success_count}`
-{get_emoji('main')} {convert_font('Kandang pelit:', 'bold')} `{failed_count}`
-{get_emoji('check')} {convert_font('Success Rate:', 'bold')} `{success_rate:.1f}%`
-{get_emoji('main')} {convert_font('Blacklisted Skipped:', 'bold')} `{blacklisted_count}`
+{get_emoji('adder5')} {convert_font('Total Kandang:', 'bold')} `{total_channels}`
+{get_emoji('adder4')} {convert_font('Kandang berhasil:', 'bold')} `{success_count}`
+{get_emoji('adder3')} {convert_font('Kandang pelit:', 'bold')} `{failed_count}`
+{get_emoji('adder1')} {convert_font('Success Rate:', 'bold')} `{success_rate:.1f}%`
+{get_emoji('adder2')} {convert_font('Blacklisted Skipped:', 'bold')} `{blacklisted_count}`
 
 {get_emoji('check')} {convert_font('Message delivered successfully!', 'bold')}
         """.strip()
@@ -850,7 +850,7 @@ async def ping_handler(event):
         # Fixed format: main emoji with Pong, check emoji with ms
         ping_text = f"""
 {get_emoji('main')} {convert_font('Pong !!!!!!', 'bold')}
-{get_emoji('check')} {convert_font(f'{ping_time:.2f} ms', 'bold')}
+{get_emoji('adder1')} {convert_font(f'{ping_time:.2f} ms', 'bold')}
         """.strip()
         
         await safe_edit_message(msg, ping_text)
