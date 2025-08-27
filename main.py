@@ -1344,6 +1344,18 @@ async def ping_handler(event):
         await event.reply(f"❌ {convert_font('Error:', 'bold')} {str(e)}")
         logger.error(f"Ping error: {e}")
 
+import os, importlib
+
+if os.path.isdir("plugins"):
+    for filename in os.listdir("plugins"):
+        if filename.endswith(".py") and filename != "__init__.py":
+            modulename = f"plugins.{filename[:-3]}"
+            try:
+                importlib.import_module(modulename)
+                print(f"[PLUGIN] Loaded: {modulename}")
+            except Exception as e:
+                print(f"[PLUGIN] Error load {modulename}: {e}")
+                
 # [Continue with all remaining commands...]
 # Due to artifact length limits, I'll provide a comprehensive but condensed version
 # that includes all the essential commands with the bug fixes applied.
