@@ -83,14 +83,14 @@ VZOEL_LOGO = "https://imgur.com/gallery/logo-S6biYEi"
 
 # Premium Emoji Configuration - DUAL EMOJI SYSTEM
 PREMIUM_EMOJI_MAIN = "6156784006194009426"  # 🤩
-PREMIUM_EMOJI_CHECK = "5793955979460613233"  # ✅
+PREMIUM_EMOJI_CHAR_MAIN= "5793955979460613233"  # ✅
 PREMIUM_EMOJI_CHAR_MAIN = "🤩"
-PREMIUM_EMOJI_CHAR_CHECK = "✅"
+PREMIUM_EMOJI_CHAR_MAIN = "✅"
 
 # Premium Emoji Mapping - ALL EMOJIS NOW PREMIUM
 PREMIUM_EMOJI_MAP = {
     'premium': PREMIUM_EMOJI_CHAR_MAIN,
-    'check': PREMIUM_EMOJI_CHAR_CHECK,
+    'check': PREMIUM_EMOJI_CHAR_MAIN,
     'fire': PREMIUM_EMOJI_CHAR_MAIN,
     'rocket': PREMIUM_EMOJI_CHAR_MAIN,
     'lightning': PREMIUM_EMOJI_CHAR_MAIN,
@@ -102,11 +102,11 @@ PREMIUM_EMOJI_MAP = {
     'zap': PREMIUM_EMOJI_CHAR_MAIN,
     'boom': PREMIUM_EMOJI_CHAR_MAIN,
     'sparkles': PREMIUM_EMOJI_CHAR_MAIN,
-    'phone': PREMIUM_EMOJI_CHAR_CHECK,
-    'user': PREMIUM_EMOJI_CHAR_CHECK,
-    'globe': PREMIUM_EMOJI_CHAR_CHECK,
-    'success': PREMIUM_EMOJI_CHAR_CHECK,
-    'verified': PREMIUM_EMOJI_CHAR_CHECK,
+    'phone': PREMIUM_EMOJI_CHAR_MAIN,
+    'user': PREMIUM_EMOJI_CHAR_MAIN,
+    'globe': PREMIUM_EMOJI_CHAR_MAIN,
+    'success': PREMIUM_EMOJI_CHAR_MAIN,
+    'verified': PREMIUM_EMOJI_CHAR_MAIN,
 }
 
 # ============= PREMIUM EMOJI FUNCTIONS =============
@@ -298,14 +298,14 @@ async def alive_handler(event):
    {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **𝚅 𝚉 𝙾 𝙴 𝙻  𝙰 𝚂 𝚂 𝙸 𝚂 𝚃 𝙰 𝙽 𝚃** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 ╚══════════════════════════════════╝
 
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Name:** {me.first_name or 'Vzoel Assistant'}
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ID:** `{me.id}`
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Username:** @{me.username or 'None'}
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Prefix:** `{COMMAND_PREFIX}`
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Uptime:** `{uptime_str}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Name:** {me.first_name or 'Vzoel Assistant'}
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **ID:** `{me.id}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Username:** @{me.username or 'None'}
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Prefix:** `{COMMAND_PREFIX}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Uptime:** `{uptime_str}`
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Status:** Active & Running
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Version:** v0.0.0.69
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Blacklisted:** `{len(blacklisted_chats)}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Blacklisted:** `{len(blacklisted_chats)}`
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Premium:** {'Active' if premium_status else 'Standard'}
 
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Hak milik Vzoel Fox's ©2025 ~ LTPN** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
@@ -402,10 +402,10 @@ async def gcast_handler(event):
                     progress_msg = f"""
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **lagi otw ngegikesss...**
 
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Total Kandang:** `{i}/{total_channels}` ({progress:.1f}%)
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Kandang berhasil:** `{success_count}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Total Kandang:** `{i}/{total_channels}` ({progress:.1f}%)
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Kandang berhasil:** `{success_count}`
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Kandang pelit:** `{failed_count}`
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Current:** {current_title}...
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Current:** {current_title}...
                     """.strip()
                     
                     if premium_status:
@@ -457,10 +457,10 @@ async def gcast_handler(event):
      {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **𝚅 𝚉 𝙾 𝙴 𝙻  𝙶 𝙲 𝙰 𝚂 𝚃** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
 ╚══════════════════════════════════╝
 
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Total Kandang:** `{total_channels}`
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Kandang berhasil:** `{success_count}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Total Kandang:** `{total_channels}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Kandang berhasil:** `{success_count}`
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Kandang pelit:** `{failed_count}`
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Success Rate:** `{success_rate:.1f}%`
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Success Rate:** `{success_rate:.1f}%`
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Blacklisted Skipped:** `{blacklisted_count}`
 
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Message delivered successfully!**
@@ -496,7 +496,7 @@ async def ping_handler(event):
         # Format as requested
         ping_text = f"""
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Pong !!!!!!**
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **{ping_time:.2f} ms**
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **{ping_time:.2f} ms**
         """.strip()
         
         if premium_status:
@@ -523,9 +523,9 @@ async def infofounder_handler(event):
         founder_info = f"""
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **| VZOEL ASSISTANT |**
 
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **FOUNDER :** VZOEL FOX'S
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **IG :** @vzoel.fox_s
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ID TELE :** @VZLfxs
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **FOUNDER :** VZOEL FOX'S
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **IG :** @vzoel.fox_s
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **ID TELE :** @VZLfxs
 
 **userbot versi 0.0.0.69 ~ by Vzoel Fox's (Lutpan)** {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')}
         """.strip()
@@ -591,10 +591,10 @@ async def addbl_handler(event):
         success_msg = f"""
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **CHAT BLACKLISTED!**
 
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Chat:** {chat_title}
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ID:** `{chat_id}`
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Type:** {chat_type}
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Total Blacklisted:** `{len(blacklisted_chats)}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Chat:** {chat_title}
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **ID:** `{chat_id}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Type:** {chat_type}
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Total Blacklisted:** `{len(blacklisted_chats)}`
         """.strip()
         
         if premium_status:
@@ -649,10 +649,10 @@ async def rmbl_handler(event):
         chat_title = getattr(chat, 'title', 'Unknown')
         
         success_msg = f"""
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **CHAT REMOVED FROM BLACKLIST!**
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **CHAT REMOVED FROM BLACKLIST!**
 
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **Chat:** {chat_title}
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **ID:** `{chat_id}`
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **Chat:** {chat_title}
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **ID:** `{chat_id}`
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Total Blacklisted:** `{len(blacklisted_chats)}`
         """.strip()
         
@@ -679,7 +679,7 @@ async def listbl_handler(event):
             no_blacklist = f"""
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **GCAST BLACKLIST**
 
-{get_emoji(PREMIUM_EMOJI_CHECK, '✅')} **No chats are blacklisted**
+{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **No chats are blacklisted**
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **All chats will receive gcast**
             """.strip()
             
