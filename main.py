@@ -88,13 +88,13 @@ VZOEL_LOGO = "https://imgur.com/gallery/logo-S6biYEi"
 # Premium Emoji Configuration - Updated System
 PREMIUM_EMOJIS = {
     'main': {'id': '6156784006194009426', 'char': '🤩'},
-    'check': {'id': '5794407002566300853', 'char': '⛈'},
-    'adder1': {'id': '5796642129316943457', 'char': '⭐'},
-    'adder2': {'id': '5321412209992033736', 'char': '👽'},
-    'adder3': {'id': '5352822624382642322', 'char': '😈'},
-    'adder4': {'id': '5793973133559993740', 'char': '✈️'},
+    'check': {'id': '5794353925360457382', 'char': '⚙️'},
+    'adder1': {'id': '5794407002566300853', 'char': '⛈'},
+    'adder2': {'id': '5793913811471700779', 'char': '✅'},
+    'adder3': {'id': '5321412209992033736', 'char': '👽'},
+    'adder4': {'id': '5793973133559993740', 'char': '️✈️'},
     'adder5': {'id': '5357404860566235955', 'char': '😈'},
-    'adder6': {'id': '5794353925360457382', 'char': '⚙️'}
+    'adder6': {'id': '5794323465452394551', 'char': '🎚️'}
 }
 
 # Unicode Fonts for styling (replacing ** markdown)
