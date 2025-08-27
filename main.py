@@ -498,7 +498,7 @@ async def ping_handler(event):
         # Format as requested
         ping_text = f"""
 {get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **Pong !!!!!!**
-{get_emoji(PREMIUM_EMOJI_MAIN, '✅')} **{ping_time:.2f} ms**
+{get_emoji(PREMIUM_EMOJI_MAIN, '🤩')} **{ping_time:.2f} ms**
         """.strip()
         
         if premium_status:
