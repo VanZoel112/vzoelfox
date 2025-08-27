@@ -279,7 +279,7 @@ async def setemoji_handler(event):
             help_msg = f"""
 {get_emoji('main')} {convert_font('SET EMOJI HELP', 'mono')}
 
-{get_emoji('check')} {convert_font('Usage:', 'bold')} `{COMMAND_PREFIX}setemoji <type> <emoji_id>`
+{get_emoji('check')} {convert_font('Usage:', 'bold')} `{COMMAND_PREFIX}setemoji <type> <emoji_id><char>`
 
 {get_emoji('main')} {convert_font('Available Types:', 'bold')}
 {get_emoji('check')} `main` - Main emoji (ping atas, gcast, alive, joinvc)
