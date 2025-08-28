@@ -888,7 +888,7 @@ async def alive_handler(event):
         final_message = f"""
     {title}
         {get_emoji('main')} {convert_font('V Z O E L  A S S I S T A N T', 'mono')} {get_emoji('main')}
-{get_emoji('main')} {convert_font('Founder Userbot:', 'bold')} Vzoel Fox\'s
+{get_emoji('main')} {convert_font('Founder Userbot:', 'bold')} Vzoel 
 {get_emoji('check')} {convert_font('Name:', 'bold')} {me.first_name or 'Vzoel Assistant'}
 {get_emoji('check')} {convert_font('ID:', 'bold')} `{me.id}`
 {get_emoji('check')} {convert_font('Username:', 'bold')} @{me.username or 'None'}
