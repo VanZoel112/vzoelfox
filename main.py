@@ -31,6 +31,9 @@ from telethon.tl.functions.messages import SendMessageRequest, GetCustomEmojiDoc
 from telethon.tl.functions.phone import JoinGroupCallRequest, LeaveGroupCallRequest
 from telethon.tl.functions.channels import GetFullChannelRequest
 from dotenv import load_dotenv
+from plugin_loader import setup_plugins, PluginLoader
+
+
 
 # Load environment variables
 load_dotenv()
@@ -81,8 +84,10 @@ try:
 except Exception as e:
     logger.error(f"❌ Failed to initialize client: {e}")
     sys.exit(1)
+    
 
 # ============= GLOBAL VARIABLES - ENHANCED =============
+plugin_loader: PluginLoader = None
 start_time = None
 spam_guard_enabled = False
 spam_users = {}
@@ -1344,18 +1349,6 @@ async def ping_handler(event):
         await event.reply(f"❌ {convert_font('Error:', 'bold')} {str(e)}")
         logger.error(f"Ping error: {e}")
 
-import os, importlib
-
-if os.path.isdir("plugins"):
-    for filename in os.listdir("plugins"):
-        if filename.endswith(".py") and filename != "__init__.py":
-            modulename = f"plugins.{filename[:-3]}"
-            try:
-                importlib.import_module(modulename)
-                print(f"[PLUGIN] Loaded: {modulename}")
-            except Exception as e:
-                print(f"[PLUGIN] Error load {modulename}: {e}")
-                
 # [Continue with all remaining commands...]
 # Due to artifact length limits, I'll provide a comprehensive but condensed version
 # that includes all the essential commands with the bug fixes applied.
@@ -1454,6 +1447,19 @@ async def startup():
         return False
 
 async def main():
+	global plugin_loader
+    
+    # ... kode existing untuk start client ...
+    # await app.start()  # <- kode existing
+    
+    # TAMBAHKAN INI SETELAH app.start():
+    try:
+        print("Loading plugins...")
+        plugin_loader = setup_plugins(app, "plugins")
+        print(f"✅ {plugin_loader.get_status()['total_loaded']} plugins loaded")
+    except Exception as e:
+        print(f"⚠️ Plugin loading error: {e}")
+    
     """Main function with enhanced error handling"""
     logger.info("🔥 Initializing VZOEL ASSISTANT v0.1.0.75 Enhanced...")
     
