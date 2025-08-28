@@ -1449,13 +1449,30 @@ async def startup():
 async def main():
     global plugin_loader
     
-    # Plugin loading section - FIXED INDENTATION
+    # PERBAIKAN: Gunakan 'client' bukan 'app'
     try:
         print("Loading plugins...")
-        plugin_loader = setup_plugins(app, "plugins")
-        print(f"✅ {plugin_loader.get_status()['total_loaded']} plugins loaded")
+        # Pastikan client sudah di-start sebelum load plugins
+        if not client.is_connected():
+            await client.start()
+        
+        # Setup plugins dengan client yang sudah initialized
+        plugin_loader = setup_plugins(client, "plugins")
+        
+        # Get status dengan method yang benar
+        status = plugin_loader.get_status()
+        print(f"✅ {status['total_loaded']}/{status['total_plugins']} plugins loaded successfully")
+        
+        # Show failed plugins if any
+        if status['total_failed'] > 0:
+            plugin_list = plugin_loader.list_plugins()
+            if plugin_list['failed']:
+                print(f"⚠️ Failed to load: {', '.join(plugin_list['failed'])}")
+    
     except Exception as e:
         print(f"⚠️ Plugin loading error: {e}")
+        # Set plugin_loader to empty instance to avoid None errors
+        plugin_loader = PluginLoader(client=client)
     
     # Main function with enhanced error handling
     logger.info("🔥 Initializing VZOEL ASSISTANT v0.1.0.75 Enhanced...")
@@ -1463,7 +1480,7 @@ async def main():
     if await startup():
         logger.info("🔥 VZOEL ASSISTANT Enhanced is now running...")
         logger.info("🔍 Press Ctrl+C to stop")
-        logger.info(f"🚀 All enhanced features active and bug fixes applied!")
+        logger.info("🚀 All enhanced features active and bug fixes applied!")
         
         try:
             await client.run_until_disconnected()
@@ -1482,6 +1499,46 @@ async def main():
             logger.info("✅ VZOEL ASSISTANT stopped successfully!")
     else:
         logger.error("❌ Failed to start VZOEL ASSISTANT!")
+
+# Alternatif: Plugin command untuk testing
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}plugins'))
+async def plugins_handler(event):
+    """Command untuk menampilkan status plugins"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "plugins")
+    
+    try:
+        if plugin_loader is None:
+            await event.reply("❌ Plugin system not initialized")
+            return
+        
+        status = plugin_loader.get_status()
+        plugin_list = plugin_loader.list_plugins()
+        
+        plugin_text = f"""
+🔌 PLUGIN SYSTEM STATUS
+
+📊 Statistics:
+• Total Found: {status['total_plugins']}
+• Successfully Loaded: {status['total_loaded']}
+• Failed to Load: {status['total_failed']}
+
+✅ Loaded Plugins:
+{chr(10).join(f'• {plugin}' for plugin in plugin_list['loaded']) if plugin_list['loaded'] else '• None'}
+
+❌ Failed Plugins:
+{chr(10).join(f'• {plugin}' for plugin in plugin_list['failed']) if plugin_list['failed'] else '• None'}
+
+💡 Plugin Directory: plugins/
+        """.strip()
+        
+        await event.reply(plugin_text)
+        
+    except Exception as e:
+        await event.reply(f"❌ Plugin status error: {str(e)}")
+        logger.error(f"Plugin status command error: {e}")
 
 if __name__ == "__main__":
     try:

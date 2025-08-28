@@ -1,255 +1,152 @@
-# plugin_loader.py
-"""
-Plugin Loader System untuk Userbot
-Memuat semua plugin dari folder plugins secara otomatis
-"""
+# plugin_loader.py - Implementation yang benar
 
 import os
 import sys
-import importlib.util
-import traceback
-from pathlib import Path
-from typing import Dict, List, Optional, Any
+import importlib
 import logging
+from typing import Dict, List, Optional, Any
 
-# Setup logger
 logger = logging.getLogger(__name__)
 
 class PluginLoader:
-    def __init__(self, client, plugins_dir: str = "plugins"):
-        """
-        Initialize Plugin Loader
-        
-        Args:
-            client: Instance dari Pyrogram Client
-            plugins_dir: Direktori tempat plugins disimpan
-        """
+    def __init__(self, client=None):
         self.client = client
-        self.plugins_dir = Path(plugins_dir)
-        self.loaded_plugins: Dict[str, Any] = {}
-        self.failed_plugins: Dict[str, str] = {}
-        
-        # Buat folder plugins jika belum ada
-        self.plugins_dir.mkdir(exist_ok=True)
-        
-        # Buat __init__.py jika belum ada
-        init_file = self.plugins_dir / "__init__.py"
-        if not init_file.exists():
-            init_file.touch()
+        self.plugins = {}
+        self.loaded_plugins = []
+        self.failed_plugins = []
+        self.plugins_dir = None
     
-    def load_plugin(self, plugin_path: Path) -> bool:
-        """
-        Load single plugin dari file
-        
-        Args:
-            plugin_path: Path ke file plugin
-            
-        Returns:
-            bool: True jika berhasil, False jika gagal
-        """
-        try:
-            # Skip __init__.py dan file yang bukan .py
-            if plugin_path.name == "__init__.py" or not plugin_path.suffix == ".py":
-                return False
-            
-            plugin_name = plugin_path.stem
-            
-            # Skip jika sudah dimuat
-            if plugin_name in self.loaded_plugins:
-                logger.info(f"Plugin {plugin_name} sudah dimuat, skip...")
-                return True
-            
-            # Load module secara dinamis
-            spec = importlib.util.spec_from_file_location(
-                f"plugins.{plugin_name}", 
-                plugin_path
-            )
-            
-            if spec and spec.loader:
-                module = importlib.util.module_from_spec(spec)
-                sys.modules[f"plugins.{plugin_name}"] = module
-                
-                # Execute module
-                spec.loader.exec_module(module)
-                
-                # Cek apakah ada fungsi setup_plugin (opsional)
-                if hasattr(module, 'setup_plugin'):
-                    module.setup_plugin(self.client)
-                
-                # Simpan referensi module
-                self.loaded_plugins[plugin_name] = module
-                
-                logger.info(f"✅ Plugin '{plugin_name}' berhasil dimuat")
-                return True
-            
-        except Exception as e:
-            error_msg = f"Error loading {plugin_name}: {str(e)}\n{traceback.format_exc()}"
-            self.failed_plugins[plugin_name] = error_msg
-            logger.error(f"❌ Gagal memuat plugin '{plugin_name}': {e}")
-            return False
-        
-        return False
-    
-    def load_all_plugins(self) -> Dict[str, Any]:
-        """
-        Load semua plugins dari folder plugins
-        
-        Returns:
-            Dict berisi info plugins yang dimuat
-        """
-        logger.info(f"🔍 Mencari plugins di: {self.plugins_dir}")
-        
-        # List semua file .py di folder plugins
-        plugin_files = list(self.plugins_dir.glob("*.py"))
-        
-        if not plugin_files:
-            logger.warning("Tidak ada plugin ditemukan")
-            return self.get_status()
-        
-        logger.info(f"📦 Ditemukan {len(plugin_files)} file plugin")
-        
-        # Load setiap plugin
-        for plugin_file in sorted(plugin_files):
-            self.load_plugin(plugin_file)
-        
-        return self.get_status()
-    
-    def reload_plugin(self, plugin_name: str) -> bool:
-        """
-        Reload plugin yang sudah dimuat
-        
-        Args:
-            plugin_name: Nama plugin (tanpa .py)
-            
-        Returns:
-            bool: True jika berhasil
-        """
-        try:
-            # Unload dulu jika ada
-            if plugin_name in self.loaded_plugins:
-                self.unload_plugin(plugin_name)
-            
-            # Load ulang
-            plugin_path = self.plugins_dir / f"{plugin_name}.py"
-            if plugin_path.exists():
-                return self.load_plugin(plugin_path)
-            else:
-                logger.error(f"Plugin {plugin_name} tidak ditemukan")
-                return False
-                
-        except Exception as e:
-            logger.error(f"Error reloading {plugin_name}: {e}")
-            return False
-    
-    def unload_plugin(self, plugin_name: str) -> bool:
-        """
-        Unload plugin dari memory
-        
-        Args:
-            plugin_name: Nama plugin
-            
-        Returns:
-            bool: True jika berhasil
-        """
-        try:
-            if plugin_name in self.loaded_plugins:
-                # Panggil fungsi cleanup jika ada
-                module = self.loaded_plugins[plugin_name]
-                if hasattr(module, 'cleanup_plugin'):
-                    module.cleanup_plugin(self.client)
-                
-                # Hapus dari loaded plugins
-                del self.loaded_plugins[plugin_name]
-                
-                # Hapus dari sys.modules
-                module_name = f"plugins.{plugin_name}"
-                if module_name in sys.modules:
-                    del sys.modules[module_name]
-                
-                logger.info(f"Plugin {plugin_name} berhasil di-unload")
-                return True
-            
-            return False
-            
-        except Exception as e:
-            logger.error(f"Error unloading {plugin_name}: {e}")
-            return False
-    
-    def get_status(self) -> Dict[str, Any]:
-        """
-        Get status semua plugins
-        
-        Returns:
-            Dict berisi info status plugins
-        """
+    def get_status(self) -> Dict[str, int]:
+        """Return plugin loading status"""
         return {
-            "loaded": list(self.loaded_plugins.keys()),
-            "failed": list(self.failed_plugins.keys()),
-            "total_loaded": len(self.loaded_plugins),
-            "total_failed": len(self.failed_plugins),
-            "plugins_dir": str(self.plugins_dir.absolute())
+            'total_plugins': len(self.plugins),
+            'total_loaded': len(self.loaded_plugins),
+            'total_failed': len(self.failed_plugins)
         }
     
-    def get_plugin_info(self, plugin_name: str) -> Optional[Dict[str, Any]]:
-        """
-        Get info detail tentang plugin
+    def load_plugin(self, plugin_name: str, plugin_path: str) -> bool:
+        """Load individual plugin"""
+        try:
+            # Import plugin module
+            spec = importlib.util.spec_from_file_location(plugin_name, plugin_path)
+            if spec is None:
+                raise ImportError(f"Could not load spec for {plugin_name}")
+            
+            module = importlib.util.module_from_spec(spec)
+            
+            # Set up plugin environment
+            if self.client:
+                module.client = self.client
+            
+            spec.loader.exec_module(module)
+            
+            # Store plugin
+            self.plugins[plugin_name] = module
+            self.loaded_plugins.append(plugin_name)
+            
+            logger.info(f"Plugin loaded: {plugin_name}")
+            return True
+            
+        except Exception as e:
+            self.failed_plugins.append(plugin_name)
+            logger.error(f"Failed to load plugin {plugin_name}: {e}")
+            return False
+    
+    def load_all_plugins(self, plugins_dir: str) -> Dict[str, Any]:
+        """Load all plugins from directory"""
+        self.plugins_dir = plugins_dir
+        results = {
+            'loaded': [],
+            'failed': [],
+            'total': 0
+        }
         
-        Args:
-            plugin_name: Nama plugin
-            
-        Returns:
-            Dict info plugin atau None
-        """
-        if plugin_name in self.loaded_plugins:
-            module = self.loaded_plugins[plugin_name]
-            info = {
-                "name": plugin_name,
-                "status": "loaded",
-                "path": str(self.plugins_dir / f"{plugin_name}.py"),
-                "has_setup": hasattr(module, 'setup_plugin'),
-                "has_cleanup": hasattr(module, 'cleanup_plugin'),
-            }
-            
-            # Tambah info dari module jika ada
-            if hasattr(module, '__version__'):
-                info['version'] = module.__version__
-            if hasattr(module, '__description__'):
-                info['description'] = module.__description__
-            if hasattr(module, '__author__'):
-                info['author'] = module.__author__
-                
-            return info
-            
-        elif plugin_name in self.failed_plugins:
-            return {
-                "name": plugin_name,
-                "status": "failed",
-                "error": self.failed_plugins[plugin_name]
-            }
+        if not os.path.exists(plugins_dir):
+            os.makedirs(plugins_dir)
+            logger.info(f"Created plugins directory: {plugins_dir}")
+            return results
         
-        return None
+        # Find all Python files in plugins directory
+        plugin_files = []
+        for file in os.listdir(plugins_dir):
+            if file.endswith('.py') and not file.startswith('__'):
+                plugin_files.append(file)
+        
+        results['total'] = len(plugin_files)
+        
+        # Load each plugin
+        for plugin_file in plugin_files:
+            plugin_name = plugin_file[:-3]  # Remove .py extension
+            plugin_path = os.path.join(plugins_dir, plugin_file)
+            
+            if self.load_plugin(plugin_name, plugin_path):
+                results['loaded'].append(plugin_name)
+            else:
+                results['failed'].append(plugin_name)
+        
+        logger.info(f"Plugin loading complete: {len(results['loaded'])}/{results['total']} loaded")
+        return results
+    
+    def unload_plugin(self, plugin_name: str) -> bool:
+        """Unload specific plugin"""
+        try:
+            if plugin_name in self.plugins:
+                del self.plugins[plugin_name]
+                if plugin_name in self.loaded_plugins:
+                    self.loaded_plugins.remove(plugin_name)
+                logger.info(f"Plugin unloaded: {plugin_name}")
+                return True
+            return False
+        except Exception as e:
+            logger.error(f"Error unloading plugin {plugin_name}: {e}")
+            return False
+    
+    def reload_plugin(self, plugin_name: str) -> bool:
+        """Reload specific plugin"""
+        if plugin_name in self.plugins:
+            plugin_path = os.path.join(self.plugins_dir, f"{plugin_name}.py")
+            self.unload_plugin(plugin_name)
+            return self.load_plugin(plugin_name, plugin_path)
+        return False
+    
+    def get_plugin(self, plugin_name: str):
+        """Get loaded plugin by name"""
+        return self.plugins.get(plugin_name)
+    
+    def list_plugins(self) -> Dict[str, List[str]]:
+        """List all plugins by status"""
+        return {
+            'loaded': self.loaded_plugins.copy(),
+            'failed': self.failed_plugins.copy(),
+            'all': list(self.plugins.keys())
+        }
 
-# Fungsi helper untuk integrasi mudah
 def setup_plugins(client, plugins_dir: str = "plugins") -> PluginLoader:
     """
-    Setup dan load semua plugins
+    Setup and initialize plugin system
     
     Args:
-        client: Pyrogram Client instance
-        plugins_dir: Direktori plugins
-        
+        client: Telegram client instance (not 'app')
+        plugins_dir: Directory containing plugin files
+    
     Returns:
         PluginLoader instance
     """
-    loader = PluginLoader(client, plugins_dir)
-    status = loader.load_all_plugins()
-    
-    # Log status
-    logger.info("=" * 50)
-    logger.info(f"📊 Plugin Loading Summary:")
-    logger.info(f"✅ Loaded: {status['total_loaded']} plugins")
-    if status['total_failed'] > 0:
-        logger.info(f"❌ Failed: {status['total_failed']} plugins")
-    logger.info("=" * 50)
-    
-    return loader
+    try:
+        loader = PluginLoader(client=client)
+        results = loader.load_all_plugins(plugins_dir)
+        
+        logger.info(f"Plugin system initialized:")
+        logger.info(f"  - Total plugins found: {results['total']}")
+        logger.info(f"  - Successfully loaded: {len(results['loaded'])}")
+        logger.info(f"  - Failed to load: {len(results['failed'])}")
+        
+        if results['failed']:
+            logger.warning(f"Failed plugins: {', '.join(results['failed'])}")
+        
+        return loader
+        
+    except Exception as e:
+        logger.error(f"Plugin system initialization failed: {e}")
+        # Return empty loader instead of crashing
+        return PluginLoader(client=client)
