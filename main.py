@@ -886,21 +886,18 @@ async def alive_handler(event):
         ]
         
         final_message = f"""
-[🚩]({LOGO_URL}) {title}
-
-╔══════════════════════════════════╗
-   {get_emoji('main')} {convert_font('V Z O E L  A S S I S T A N T', 'mono')} {get_emoji('main')}
-╚══════════════════════════════════╝
-
+    {title}
+        {get_emoji('main')} {convert_font('V Z O E L  A S S I S T A N T', 'mono')} {get_emoji('main')}
+{get_emoji('main')} {convert_font('Founder Userbot:', 'bold')} Vzoel Fox's (Lutpan)
 {get_emoji('check')} {convert_font('Name:', 'bold')} {me.first_name or 'Vzoel Assistant'}
 {get_emoji('check')} {convert_font('ID:', 'bold')} `{me.id}`
 {get_emoji('check')} {convert_font('Username:', 'bold')} @{me.username or 'None'}
 {get_emoji('check')} {convert_font('Prefix:', 'bold')} `{COMMAND_PREFIX}`
 {get_emoji('check')} {convert_font('Uptime:', 'bold')} `{uptime_str}`
-{get_emoji('main')} {convert_font('Version:', 'bold')} v0.1.0.75 Enhanced
+{get_emoji('main')} {convert_font('Version:', 'bold')} v0.0.0.0.69
 {get_emoji('check')} {convert_font('Status:', 'bold')} Active & Running
 {get_emoji('adder2')} {convert_font('Premium:', 'bold')} {'Active' if premium_status else 'Standard'}
-
+{get_emoji('adder1')}{get_emoji('adder1')}{get_emoji('adder1')}{get_emoji('adder1')}
 {get_emoji('adder3')} {convert_font('Statistics:', 'bold')}
 {get_emoji('check')} Commands: `{stats['commands_executed']}`
 {get_emoji('check')} Gcast Sent: `{stats['gcast_sent']}`  
@@ -1324,10 +1321,7 @@ async def ping_handler(event):
         
         ping_text = f"""
 {get_emoji('main')} {convert_font('PING RESULTS', 'mono')}
-
-╔══════════════════════════════════╗
    {get_emoji('main')} {convert_font('RESPONSE TIME ANALYSIS', 'mono')} {get_emoji('main')}
-╚══════════════════════════════════╝
 
 {get_emoji('check')} {convert_font('Response Time:', 'bold')} `{ping_time:.2f}ms`
 {latency_emoji} {convert_font('Latency Status:', 'bold')} {latency_status}
@@ -1339,7 +1333,7 @@ async def ping_handler(event):
 {get_emoji('check')} Commands Executed: `{stats['commands_executed']}`
 {get_emoji('check')} Gcast Sent: `{stats['gcast_sent']}`
 {get_emoji('check')} Voice Chat: {'Active' if voice_call_active else 'Inactive'}`
-
+{get_emoji('main')} {convert_font('Userbot by. VzoelFox's (Lutpan)', 'bold')}{get_emoji('main')}
 {get_emoji('check')} {convert_font('Bot performance optimal!', 'bold')}
         """.strip()
         
