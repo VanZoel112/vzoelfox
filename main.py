@@ -1447,17 +1447,12 @@ async def startup():
         return False
 
 async def main():
-	global plugin_loader
-    
-    # ... kode existing untuk start client ...
-    # await app.start()  # <- kode existing
-    
-    # TAMBAHKAN INI SETELAH app.start():
-        try:
+    global plugin_loader
+    try:
             print("Loading plugins...")
             plugin_loader = setup_plugins(app, "plugins")
             print(f"✅ {plugin_loader.get_status()['total_loaded']} plugins loaded")
-        except Exception as e:
+    except Exception as e:
             print(f"⚠️ Plugin loading error: {e}")
     
             """Main function with enhanced error handling"""
