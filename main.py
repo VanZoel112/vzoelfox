@@ -1448,43 +1448,45 @@ async def startup():
 
 async def main():
     global plugin_loader
-    try:
-            print("Loading plugins...")
-            plugin_loader = setup_plugins(app, "plugins")
-            print(f"✅ {plugin_loader.get_status()['total_loaded']} plugins loaded")
-    except Exception as e:
-            print(f"⚠️ Plugin loading error: {e}")
     
-            """Main function with enhanced error handling"""
-            logger.info("🔥 Initializing VZOEL ASSISTANT v0.1.0.75 Enhanced...")
+    # Plugin loading section - FIXED INDENTATION
+    try:
+        print("Loading plugins...")
+        plugin_loader = setup_plugins(app, "plugins")
+        print(f"✅ {plugin_loader.get_status()['total_loaded']} plugins loaded")
+    except Exception as e:
+        print(f"⚠️ Plugin loading error: {e}")
+    
+    # Main function with enhanced error handling
+    logger.info("🔥 Initializing VZOEL ASSISTANT v0.1.0.75 Enhanced...")
     
     if await startup():
-            logger.info("🔥 VZOEL ASSISTANT Enhanced is now running...")
-            logger.info("🔍 Press Ctrl+C to stop")
-            logger.info(f"🚀 All enhanced features active and bug fixes applied!")
+        logger.info("🔥 VZOEL ASSISTANT Enhanced is now running...")
+        logger.info("🔍 Press Ctrl+C to stop")
+        logger.info(f"🚀 All enhanced features active and bug fixes applied!")
         
-    try:
+        try:
             await client.run_until_disconnected()
-    except KeyboardInterrupt:
+        except KeyboardInterrupt:
             logger.info("👋 VZOEL ASSISTANT stopped by user")
-    except Exception as e:
+        except Exception as e:
             logger.error(f"❌ Unexpected error: {e}")
-    finally:
+        finally:
             logger.info("🔥 Shutting down gracefully...")
             save_blacklist()
             save_emoji_config()
-         try:
+            try:
                 await client.disconnect()
-        except Exception as e:
+            except Exception as e:
                 logger.error(f"Error during disconnect: {e}")
             logger.info("✅ VZOEL ASSISTANT stopped successfully!")
-        else:
+    else:
         logger.error("❌ Failed to start VZOEL ASSISTANT!")
 
 if __name__ == "__main__":
-         try: 
+    try:
         asyncio.run(main())
-         except Exception as e:
+    except Exception as e:
         logger.error(f"❌ Fatal error: {e}")
         sys.exit(1)
 
