@@ -32,7 +32,7 @@ from telethon.tl.functions.messages import SendMessageRequest, GetCustomEmojiDoc
 from telethon.tl.functions.phone import JoinGroupCallRequest, LeaveGroupCallRequest
 from telethon.tl.functions.channels import GetFullChannelRequest
 from dotenv import load_dotenv
-from plugin_loader import setup_plugins, EnhancedPluginLoader
+from plugin_loader import setup_plugins
 
 # Load environment variables
 load_dotenv()
