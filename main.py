@@ -32,7 +32,7 @@ from telethon.tl.functions.messages import SendMessageRequest, GetCustomEmojiDoc
 from telethon.tl.functions.phone import JoinGroupCallRequest, LeaveGroupCallRequest
 from telethon.tl.functions.channels import GetFullChannelRequest
 from dotenv import load_dotenv
-from plugin_loader import setup_plugins, PluginLoader
+from plugin_loader import setup_plugins, EnhancedPluginLoader
 
 # Load environment variables
 load_dotenv()
@@ -85,7 +85,7 @@ except Exception as e:
     sys.exit(1)
 
 # ============= GLOBAL VARIABLES - ENHANCED =============
-plugin_loader: PluginLoader = None
+plugin_loader: EnhancedPluginLoader = None
 start_time = None
 spam_guard_enabled = False
 spam_users = {}
@@ -998,10 +998,333 @@ async def ping_handler(event):
     except Exception as e:
         await event.reply(f"❌ {convert_font('Error:', 'bold')} {str(e)}")
         logger.error(f"Ping error: {e}")
+# =============================================================================
+# TAMBAHKAN COMMANDS INI KE MAIN.PY SETELAH COMMAND LAINNYA
+# =============================================================================
+
+# PLUGIN DEBUG COMMAND - COMPREHENSIVE
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}plugindebug'))
+async def plugin_debug_handler(event):
+    """Comprehensive plugin debugging command"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "plugindebug")
+    
+    try:
+        if plugin_loader is None:
+            await event.reply(f"❌ {convert_font('Plugin system not initialized', 'bold')}")
+            return
+        
+        # Get detailed status
+        status = plugin_loader.get_detailed_status()
+        diagnosis = plugin_loader.diagnose_plugin_issues()
+        
+        debug_text = f"""
+{get_emoji('main')} {convert_font('PLUGIN DEBUG REPORT', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('adder1')} {convert_font('SYSTEM OVERVIEW', 'mono')} {get_emoji('adder1')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} {convert_font('Total Plugins:', 'bold')} {status['summary']['total_plugins']}
+{get_emoji('adder2')} {convert_font('Loaded:', 'bold')} {status['summary']['loaded_plugins']}
+{get_emoji('adder3')} {convert_font('Failed:', 'bold')} {status['summary']['failed_plugins']}
+{get_emoji('adder4')} {convert_font('Success Rate:', 'bold')} {status['summary']['success_rate']}
+{get_emoji('adder5')} {convert_font('Client Status:', 'bold')} {status['client_status']}
+
+╔══════════════════════════════════╗
+   {get_emoji('adder2')} {convert_font('SYSTEM CHECKS', 'mono')} {get_emoji('adder2')}
+╚══════════════════════════════════╝
+
+{get_emoji('check' if diagnosis['system_check']['client_available'] else 'adder3')} Client Available: {diagnosis['system_check']['client_available']}
+{get_emoji('check' if diagnosis['system_check']['plugins_dir_exists'] else 'adder3')} Plugins Directory: {diagnosis['system_check']['plugins_dir_exists']}
+{get_emoji('check')} Python Version: {'.'.join(map(str, diagnosis['system_check']['python_version']))}
+{get_emoji('check')} Plugin Files: {diagnosis['system_check']['plugin_files_found']}
+        """.strip()
+        
+        # Add loaded plugins
+        if status['loaded']:
+            debug_text += f"""
+
+╔══════════════════════════════════╗
+   {get_emoji('adder2')} {convert_font('LOADED PLUGINS', 'mono')} {get_emoji('adder2')}
+╚══════════════════════════════════╝
+
+"""
+            for plugin in status['loaded']:
+                metadata = status['metadata'].get(plugin, {})
+                version = metadata.get('version', 'Unknown')
+                debug_text += f"{get_emoji('check')} {plugin} (v{version})\n"
+        
+        # Add failed plugins with error details
+        if status['failed']:
+            debug_text += f"""
+
+╔══════════════════════════════════╗
+   {get_emoji('adder3')} {convert_font('FAILED PLUGINS', 'mono')} {get_emoji('adder3')}
+╚══════════════════════════════════╝
+
+"""
+            for plugin in status['failed'][:5]:  # Show first 5
+                error_info = status['errors'].get(plugin, {})
+                error_type = error_info.get('error_type', 'Unknown')
+                error_msg = error_info.get('error_message', 'No details')[:50]
+                debug_text += f"{get_emoji('adder3')} {plugin}: {error_type}\n"
+                debug_text += f"   └─ {error_msg}{'...' if len(error_msg) >= 50 else ''}\n"
+        
+        # Add common issues and fixes
+        if diagnosis['common_issues']:
+            debug_text += f"""
+
+╔══════════════════════════════════╗
+   {get_emoji('adder5')} {convert_font('COMMON ISSUES', 'mono')} {get_emoji('adder5')}
+╚══════════════════════════════════╝
+
+"""
+            for issue in diagnosis['common_issues']:
+                debug_text += f"{get_emoji('adder3')} {issue}\n"
+        
+        if diagnosis['fixes']:
+            debug_text += f"""
+
+╔══════════════════════════════════╗
+   {get_emoji('check')} {convert_font('RECOMMENDED FIXES', 'mono')} {get_emoji('check')}
+╚══════════════════════════════════╝
+
+"""
+            for fix in diagnosis['fixes']:
+                debug_text += f"{get_emoji('check')} {fix}\n"
+        
+        debug_text += f"""
+
+{get_emoji('adder1')} Use `{COMMAND_PREFIX}plugindetail <name>` for specific plugin errors
+{get_emoji('main')} Use `{COMMAND_PREFIX}pluginreload <name>` to retry loading
+        """
+        
+        await safe_send_with_entities(event, debug_text.strip())
+        
+    except Exception as e:
+        await event.reply(f"❌ {convert_font('Debug error:', 'bold')} {str(e)}")
+        logger.error(f"Plugin debug command error: {e}")
+
+# PLUGIN DETAIL COMMAND
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}plugindetail(\s+(.+))?'))
+async def plugin_detail_handler(event):
+    """Show detailed error information for specific plugin"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "plugindetail")
+    
+    try:
+        plugin_name = event.pattern_match.group(2)
+        if not plugin_name:
+            await event.reply(f"{get_emoji('adder3')} Usage: `{COMMAND_PREFIX}plugindetail <plugin_name>`")
+            return
+        
+        plugin_name = plugin_name.strip()
+        
+        if plugin_loader is None:
+            await event.reply(f"❌ {convert_font('Plugin system not initialized', 'bold')}")
+            return
+        
+        error_details = plugin_loader.get_plugin_error_details(plugin_name)
+        
+        if not error_details:
+            await event.reply(f"{get_emoji('check')} {convert_font('No error details found for plugin:', 'bold')} `{plugin_name}`")
+            return
+        
+        detail_text = f"""
+{get_emoji('adder3')} {convert_font('PLUGIN ERROR DETAILS', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font(plugin_name.upper(), 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('adder1')} {convert_font('Error Type:', 'bold')} {error_details.get('error_type', 'Unknown')}
+{get_emoji('adder2')} {convert_font('Error Message:', 'bold')}
+```
+{error_details.get('error_message', 'No message available')}
+```
+
+{get_emoji('adder3')} {convert_font('Error Details:', 'bold')}
+"""
+        
+        # Add specific error details
+        details = error_details.get('error_details', {})
+        if 'missing_imports' in details:
+            detail_text += f"\n{get_emoji('adder4')} Missing Imports: {', '.join(details['missing_imports'])}"
+        
+        if 'syntax_errors' in details:
+            detail_text += f"\n{get_emoji('adder5')} Syntax Errors: {', '.join(details['syntax_errors'])}"
+        
+        if 'traceback' in details:
+            # Show last few lines of traceback
+            traceback_lines = details['traceback'].split('\n')
+            relevant_lines = [line for line in traceback_lines[-5:] if line.strip()]
+            if relevant_lines:
+                detail_text += f"""
+
+{get_emoji('adder6')} {convert_font('Traceback (last few lines):', 'bold')}
+```
+{chr(10).join(relevant_lines)}
+```"""
+        
+        detail_text += f"""
+
+{get_emoji('main')} {convert_font('Suggested Actions:', 'bold')}
+{get_emoji('check')} Check plugin syntax and imports
+{get_emoji('check')} Verify all dependencies are installed
+{get_emoji('check')} Use `{COMMAND_PREFIX}pluginreload {plugin_name}` to retry
+        """.strip()
+        
+        await safe_send_with_entities(event, detail_text)
+        
+    except Exception as e:
+        await event.reply(f"❌ {convert_font('Detail error:', 'bold')} {str(e)}")
+        logger.error(f"Plugin detail command error: {e}")
+
+# PLUGIN RELOAD COMMAND  
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}pluginreload(\s+(.+))?'))
+async def plugin_reload_handler(event):
+    """Reload specific plugin"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "pluginreload")
+    
+    try:
+        plugin_name = event.pattern_match.group(2)
+        if not plugin_name:
+            await event.reply(f"{get_emoji('adder3')} Usage: `{COMMAND_PREFIX}pluginreload <plugin_name>`")
+            return
+        
+        plugin_name = plugin_name.strip()
+        
+        if plugin_loader is None:
+            await event.reply(f"❌ {convert_font('Plugin system not initialized', 'bold')}")
+            return
+        
+        # Show loading message
+        loading_msg = await event.reply(f"{get_emoji('main')} {convert_font('Reloading plugin:', 'bold')} `{plugin_name}`...")
+        
+        # Attempt reload
+        success = plugin_loader.reload_plugin(plugin_name)
+        
+        if success:
+            # Get updated status
+            status = plugin_loader.get_detailed_status()
+            metadata = status['metadata'].get(plugin_name, {})
+            
+            reload_text = f"""
+{get_emoji('adder2')} {convert_font('PLUGIN RELOAD SUCCESS', 'mono')}
+
+{get_emoji('check')} {convert_font('Plugin:', 'bold')} `{plugin_name}`
+{get_emoji('check')} {convert_font('Status:', 'bold')} Loaded Successfully
+{get_emoji('adder1')} {convert_font('Version:', 'bold')} {metadata.get('version', 'Unknown')}
+{get_emoji('adder2')} {convert_font('Commands:', 'bold')} {len(metadata.get('commands', []))}
+
+{get_emoji('main')} Plugin is now active and ready to use!
+            """.strip()
+            
+            await safe_edit_message(loading_msg, reload_text)
+        else:
+            # Show error details
+            error_details = plugin_loader.get_plugin_error_details(plugin_name)
+            
+            fail_text = f"""
+{get_emoji('adder3')} {convert_font('PLUGIN RELOAD FAILED', 'mono')}
+
+{get_emoji('adder1')} {convert_font('Plugin:', 'bold')} `{plugin_name}`
+{get_emoji('adder3')} {convert_font('Status:', 'bold')} Load Failed
+{get_emoji('adder5')} {convert_font('Error:', 'bold')} {error_details.get('error_type', 'Unknown')}
+
+{get_emoji('check')} Use `{COMMAND_PREFIX}plugindetail {plugin_name}` for full error details
+            """.strip()
+            
+            await safe_edit_message(loading_msg, fail_text)
+        
+    except Exception as e:
+        await event.reply(f"❌ {convert_font('Reload error:', 'bold')} {str(e)}")
+        logger.error(f"Plugin reload command error: {e}")
+
+# ENHANCED PLUGINS COMMAND - UPDATED
+@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}plugins'))
+async def enhanced_plugins_handler(event):
+    """Enhanced command untuk menampilkan status plugins dengan detail"""
+    if not await is_owner(event.sender_id):
+        return
+    
+    await log_command(event, "plugins")
+    
+    try:
+        if plugin_loader is None:
+            await event.reply("❌ Plugin system not initialized")
+            return
+        
+        status = plugin_loader.get_detailed_status()
+        
+        plugins_text = f"""
+{get_emoji('main')} {convert_font('ENHANCED PLUGIN SYSTEM v2.0', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('adder6')} {convert_font('SYSTEM STATUS', 'mono')} {get_emoji('adder6')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} {convert_font('Total Found:', 'bold')} {status['summary']['total_plugins']}
+{get_emoji('adder2')} {convert_font('Successfully Loaded:', 'bold')} {status['summary']['loaded_plugins']}
+{get_emoji('adder3')} {convert_font('Failed to Load:', 'bold')} {status['summary']['failed_plugins']}
+{get_emoji('adder1')} {convert_font('Success Rate:', 'bold')} {status['summary']['success_rate']}
+{get_emoji('main')} {convert_font('Client Status:', 'bold')} {status['client_status']}
+
+╔══════════════════════════════════╗
+   {get_emoji('adder2')} {convert_font('LOADED PLUGINS', 'mono')} {get_emoji('adder2')}
+╚══════════════════════════════════╝
+
+"""
+        
+        if status['loaded']:
+            for plugin in status['loaded']:
+                metadata = status['metadata'].get(plugin, {})
+                version = metadata.get('version', '?')
+                commands = len(metadata.get('commands', []))
+                plugins_text += f"{get_emoji('check')} {plugin} v{version} ({commands} cmd)\n"
+        else:
+            plugins_text += f"{get_emoji('adder3')} No plugins loaded\n"
+        
+        if status['failed']:
+            plugins_text += f"""
+
+╔══════════════════════════════════╗
+   {get_emoji('adder3')} {convert_font('FAILED PLUGINS', 'mono')} {get_emoji('adder3')}
+╚══════════════════════════════════╝
+
+"""
+            for plugin in status['failed']:
+                error_info = status['errors'].get(plugin, {})
+                error_type = error_info.get('error_type', 'Unknown')
+                plugins_text += f"{get_emoji('adder3')} {plugin} ({error_type})\n"
+        
+        plugins_text += f"""
+
+{get_emoji('adder4')} {convert_font('Debug Commands:', 'bold')}
+{get_emoji('check')} `{COMMAND_PREFIX}plugindebug` - Comprehensive analysis
+{get_emoji('check')} `{COMMAND_PREFIX}plugindetail <name>` - Error details
+{get_emoji('check')} `{COMMAND_PREFIX}pluginreload <name>` - Reload plugin
+
+{get_emoji('main')} Plugin Directory: plugins/
+        """.strip()
+        
+        await safe_send_with_entities(event, plugins_text)
+        
+    except Exception as e:
+        await event.reply(f"❌ Plugin status error: {str(e)}")
+        logger.error(f"Enhanced plugins command error: {e}")
 
 # ============= STARTUP AND MAIN FUNCTIONS =============
 
-async def send_startup_message():
+async def send_enhanced_startup_message():
     """Enhanced startup notification with plugin info"""
     try:
         me = await client.get_me()
@@ -1077,7 +1400,7 @@ async def startup():
         logger.info(f"💎 Premium Status: {'Active' if premium_status else 'Standard'}")
         logger.info(f"🔧 Plugin System: Initializing...")
         
-        await send_startup_message()
+        await send_enhanced_startup_message()
         return True
             
     except SessionPasswordNeededError:
@@ -1087,65 +1410,67 @@ async def startup():
         logger.error(f"❌ Error starting VZOEL ASSISTANT: {e}")
         return False
 
+# =============================================================================
+# GANTI FUNGSI main() YANG LAMA DENGAN INI
+# =============================================================================
+
 async def main():
-    """Main function with enhanced plugin system compatibility"""
+    """Enhanced main function with robust plugin loading"""
     global plugin_loader
     
-    # Initialize main system first
+    logger.info("🚀 Initializing VZOEL ASSISTANT v0.1.0.75 Enhanced...")
+    
+    # Initialize systems first
     if not await startup():
-        logger.error("❌ Failed to start main system!")
+        logger.error("❌ Failed to start VZOEL ASSISTANT!")
         return
     
-    # Setup plugins dengan shared functions
+    # Load plugins SETELAH client berhasil start
     try:
-        logger.info("🔌 Initializing plugin system...")
+        logger.info("🔌 Initializing Enhanced Plugin System v2.0...")
         
         # Pastikan client sudah connected
         if not client.is_connected():
-            await client.connect()
+            logger.info("🔄 Starting Telegram client for plugin system...")
+            await client.start()
         
-        # Setup plugins dengan client yang sudah initialized
+        # Setup enhanced plugin loader
         plugin_loader = setup_plugins(client, "plugins")
         
-        # Add shared functions yang bisa digunakan oleh plugins
-        shared_functions = {
-            'convert_font': convert_font,
-            'get_emoji': get_emoji,
-            'create_premium_entities': create_premium_entities,
-            'safe_send_with_entities': safe_send_with_entities,
-            'is_owner': is_owner,
-            'apply_rate_limit': apply_rate_limit,
-            'safe_edit_message': safe_edit_message,
-            'check_premium_status': check_premium_status
-        }
+        # Get comprehensive status
+        status = plugin_loader.get_detailed_status()
         
-        for name, func in shared_functions.items():
-            plugin_loader.add_shared_function(name, func)
+        # Log detailed results
+        logger.info(f"✅ Plugin system initialized successfully:")
+        logger.info(f"   📊 Success Rate: {status['summary']['success_rate']}")
+        logger.info(f"   ✅ Loaded: {status['summary']['loaded_plugins']} plugins")
+        logger.info(f"   ❌ Failed: {status['summary']['failed_plugins']} plugins")
         
-        # Get plugin status
-        status = plugin_loader.get_status()
-        logger.info(f"✅ Plugin system initialized: {status['total_loaded']}/{status['total_plugins']} plugins loaded")
+        if status['loaded']:
+            logger.info(f"   🎯 Active plugins: {', '.join(status['loaded'])}")
         
-        # Show loaded plugins
-        if status['total_loaded'] > 0:
-            plugin_list = plugin_loader.list_plugins()
-            logger.info(f"🎯 Loaded plugins: {', '.join(plugin_list['loaded'])}")
-        
-        # Show failed plugins if any
-        if status['total_failed'] > 0:
-            plugin_list = plugin_loader.list_plugins()
-            if plugin_list['failed']:
-                logger.warning(f"⚠️ Failed plugins: {', '.join(plugin_list['failed'])}")
+        if status['failed']:
+            logger.warning(f"   ⚠️  Failed plugins: {', '.join(status['failed'])}")
+            logger.info("   💡 Use .plugindebug command for detailed error analysis")
+            
+            # Show quick diagnosis
+            diagnosis = plugin_loader.diagnose_plugin_issues()
+            if diagnosis['common_issues']:
+                logger.info("   🔍 Common issues detected:")
+                for issue in diagnosis['common_issues'][:3]:  # Show top 3
+                    logger.info(f"      • {issue}")
     
     except Exception as e:
-        logger.error(f"⚠️ Plugin system error: {e}")
-        # Continue without plugins
-        plugin_loader = PluginLoader(client=client)
+        logger.error(f"⚠️ Plugin system initialization error: {e}")
+        logger.error(f"   Traceback: {traceback.format_exc()}")
+        # Create empty plugin loader to prevent crashes
+        plugin_loader = EnhancedPluginLoader(client=client)
+        logger.warning("   🔄 Created minimal plugin loader - some features may be unavailable")
     
-    # Main run loop
-    logger.info("🔥 VZOEL ASSISTANT Plugin Compatible is now running...")
+    # Continue with main execution
+    logger.info("🔥 VZOEL ASSISTANT Enhanced is now running...")
     logger.info("🔍 Press Ctrl+C to stop")
-    logger.info("🚀 All features active with plugin compatibility!")
+    logger.info("🚀 All enhanced features active with robust plugin system!")
     
     try:
         await client.run_until_disconnected()
@@ -1156,12 +1481,21 @@ async def main():
     finally:
         logger.info("🔥 Shutting down gracefully...")
         
-        # Cleanup plugins
+        # Plugin cleanup
         if plugin_loader:
             try:
-                plugin_loader.cleanup_all_plugins()
-            except Exception as cleanup_error:
-                logger.error(f"Error cleaning up plugins: {cleanup_error}")
+                # Call cleanup on loaded plugins if they have it
+                for plugin_name in plugin_loader.loaded_plugins:
+                    plugin_module = plugin_loader.get_plugin(plugin_name)
+                    if plugin_module and hasattr(plugin_module, 'cleanup_plugin'):
+                        try:
+                            if callable(plugin_module.cleanup_plugin):
+                                plugin_module.cleanup_plugin()
+                            logger.debug(f"Cleaned up plugin: {plugin_name}")
+                        except Exception as cleanup_error:
+                            logger.error(f"Cleanup error for {plugin_name}: {cleanup_error}")
+            except Exception as e:
+                logger.error(f"Plugin cleanup error: {e}")
         
         # Save configurations
         save_blacklist()
@@ -1171,14 +1505,71 @@ async def main():
             await client.disconnect()
         except Exception as e:
             logger.error(f"Error during disconnect: {e}")
-        
+            
         logger.info("✅ VZOEL ASSISTANT stopped successfully!")
 
-if __name__ == "__main__":
+# =============================================================================
+# UPDATE STARTUP MESSAGE (opsional - untuk informasi plugin)
+# =============================================================================
+
+async def send_enhanced_startup_message():
+    """Enhanced startup notification with plugin info"""
     try:
-        asyncio.run(main())
+        me = await client.get_me()
+        
+        # Get plugin status if available
+        plugin_info = ""
+        if plugin_loader:
+            status = plugin_loader.get_detailed_status()
+            plugin_info = f"""
+{get_emoji('adder1')} {convert_font('Plugin System Status:', 'bold')}
+{get_emoji('check')} Loaded: {status['summary']['loaded_plugins']} plugins
+{get_emoji('adder3')} Failed: {status['summary']['failed_plugins']} plugins
+{get_emoji('main')} Success Rate: {status['summary']['success_rate']}
+"""
+        
+        startup_msg = f"""
+[🚀]({LOGO_URL}) {convert_font('VZOEL ASSISTANT v0.1.0.75 STARTED!', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('ENHANCED SYSTEM ACTIVATED', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} {convert_font('All systems operational', 'bold')}
+{get_emoji('check')} {convert_font('User:', 'bold')} {me.first_name}
+{get_emoji('check')} {convert_font('ID:', 'bold')} `{me.id}`
+{get_emoji('check')} {convert_font('Started:', 'bold')} `{start_time.strftime("%Y-%m-%d %H:%M:%S")}`
+{get_emoji('main')} {convert_font('Premium:', 'bold')} {'Active' if premium_status else 'Standard'}
+{plugin_info}
+{get_emoji('adder2')} {convert_font('NEW ENHANCED FEATURES:', 'bold')}
+{get_emoji('check')} Enhanced Plugin System v2.0
+{get_emoji('check')} Comprehensive error handling & debugging
+{get_emoji('check')} Reply-based Gcast with entity preservation
+{get_emoji('check')} Auto premium emoji extraction
+{get_emoji('check')} Advanced UTF-16 entity handling
+{get_emoji('check')} Database integration & statistics
+{get_emoji('check')} Concurrent broadcasting system
+{get_emoji('check')} Smart rate limiting per operation
+
+{get_emoji('adder3')} {convert_font('PLUGIN DEBUG COMMANDS:', 'bold')}
+{get_emoji('check')} `{COMMAND_PREFIX}plugindebug` - Comprehensive analysis
+{get_emoji('check')} `{COMMAND_PREFIX}plugindetail <name>` - Error details
+{get_emoji('check')} `{COMMAND_PREFIX}pluginreload <name>` - Reload plugin
+
+{get_emoji('adder4')} {convert_font('Quick Commands:', 'bold')}
+{get_emoji('check')} `{COMMAND_PREFIX}gcast <text>` atau reply + `{COMMAND_PREFIX}gcast`
+{get_emoji('check')} Reply to emoji message + `{COMMAND_PREFIX}setemoji`
+{get_emoji('check')} `{COMMAND_PREFIX}alive` untuk status lengkap
+{get_emoji('check')} `{COMMAND_PREFIX}help` untuk semua commands
+
+{get_emoji('main')} {convert_font('Ready for production use with robust plugin system!', 'bold')}
+{convert_font('userbot v0.1.0.75 ~ by Vzoel Fox\'s (Enhanced by Morgan)', 'bold')} {get_emoji('check')}
+        """.strip()
+        
+        await client.send_message('me', startup_msg)
+        logger.info("✅ Enhanced startup message sent successfully")
+        
     except Exception as e:
-        logger.error(f"❌ Fatal error: {e}")
-        sys.exit(1)
+        logger.error(f"Failed to send startup message: {e}")
 
 # ============= END OF VZOEL ASSISTANT v0.1.0.75 PLUGIN COMPATIBLE =============
