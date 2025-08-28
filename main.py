@@ -1453,20 +1453,20 @@ async def main():
     # await app.start()  # <- kode existing
     
     # TAMBAHKAN INI SETELAH app.start():
-    try:
-        print("Loading plugins...")
-        plugin_loader = setup_plugins(app, "plugins")
-        print(f"✅ {plugin_loader.get_status()['total_loaded']} plugins loaded")
-    except Exception as e:
-        print(f"⚠️ Plugin loading error: {e}")
+        try:
+            print("Loading plugins...")
+            plugin_loader = setup_plugins(app, "plugins")
+            print(f"✅ {plugin_loader.get_status()['total_loaded']} plugins loaded")
+        except Exception as e:
+            print(f"⚠️ Plugin loading error: {e}")
     
-    """Main function with enhanced error handling"""
-    logger.info("🔥 Initializing VZOEL ASSISTANT v0.1.0.75 Enhanced...")
+            """Main function with enhanced error handling"""
+            logger.info("🔥 Initializing VZOEL ASSISTANT v0.1.0.75 Enhanced...")
     
-    if await startup():
-        logger.info("🔥 VZOEL ASSISTANT Enhanced is now running...")
-        logger.info("🔍 Press Ctrl+C to stop")
-        logger.info(f"🚀 All enhanced features active and bug fixes applied!")
+        if await startup():
+            logger.info("🔥 VZOEL ASSISTANT Enhanced is now running...")
+            logger.info("🔍 Press Ctrl+C to stop")
+            logger.info(f"🚀 All enhanced features active and bug fixes applied!")
         
         try:
             await client.run_until_disconnected()
