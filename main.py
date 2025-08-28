@@ -1333,7 +1333,7 @@ async def ping_handler(event):
 {get_emoji('check')} Commands Executed: `{stats['commands_executed']}`
 {get_emoji('check')} Gcast Sent: `{stats['gcast_sent']}`
 {get_emoji('check')} Voice Chat: {'Active' if voice_call_active else 'Inactive'}`
-{get_emoji('main')} {convert_font('Userbot by. VzoelFox's (Lutpan)', 'bold')}{get_emoji('main')}
+{get_emoji('main')} {convert_font('Userbot by. VzoelFox\'s (\Lutpan) ', 'bold')}{get_emoji('main')}
 {get_emoji('check')} {convert_font('Bot performance optimal!', 'bold')}
         """.strip()
         
