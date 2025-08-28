@@ -1478,13 +1478,13 @@ async def main():
             except Exception as e:
                 logger.error(f"Error during disconnect: {e}")
             logger.info("✅ VZOEL ASSISTANT stopped successfully!")
-    else:
+            else:
         logger.error("❌ Failed to start VZOEL ASSISTANT!")
 
 if __name__ == "__main__":
-    try:
+           try: 
         asyncio.run(main())
-    except Exception as e:
+           except Exception as e:
         logger.error(f"❌ Fatal error: {e}")
         sys.exit(1)
 
