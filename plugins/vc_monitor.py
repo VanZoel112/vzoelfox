@@ -271,26 +271,52 @@ async def join_vc_handler(event):
             save_vc_log("join-failed", report)
             return
 
-        try:
-            # Get the bot's info to use as join_as parameter
-            me = await client.get_me()
-            
-            # Create params as required by newer Telethon versions
-            params = DataJSON(data='{}')
-            
-            await client(JoinGroupCallRequest(
-                call=call,
-                join_as=me,
-                params=params,
-                muted=False,
-                video_stopped=True
-            ))
+        # Try to join VC with retry logic for SSRC errors
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                # Get the bot's info to use as join_as parameter
+                me = await client.get_me()
+                
+                # Create params with unique SSRC for each attempt
+                import time
+                ssrc = int(time.time() * 1000) % 2147483647  # Generate unique SSRC
+                params = DataJSON(data=f'{{"ufrag": "user", "pwd": "pass", "ssrc": {ssrc}}}')
+                
+                await client(JoinGroupCallRequest(
+                    call=call,
+                    join_as=me,
+                    params=params,
+                    muted=False,
+                    video_stopped=True
+                ))
+                
+                # If successful, break out of retry loop
+                break
+                
+            except Exception as join_error:
+                error_msg = str(join_error).lower()
+                
+                # Check if it's an SSRC-related error that needs retry
+                if "ssrc" in error_msg or "retry joining" in error_msg:
+                    if attempt < max_retries - 1:
+                        print(f"[VC Monitor] SSRC error on attempt {attempt + 1}, retrying with new SSRC...")
+                        await asyncio.sleep(1)  # Brief delay before retry
+                        continue
+                    else:
+                        print(f"[VC Monitor] Failed after {max_retries} attempts: {join_error}")
+                        raise join_error
+                else:
+                    # For non-SSRC errors, don't retry
+                    raise join_error
         except FloodWaitError as fe:
             await safe_send_premium(event, f"{get_emoji('adder1')} Flood wait, tunggu {fe.seconds} detik...")
             await asyncio.sleep(fe.seconds)
-            # Retry with same parameters
+            # Retry with new SSRC after flood wait
             me = await client.get_me()
-            params = DataJSON(data='{}')
+            import time
+            ssrc = int(time.time() * 1000) % 2147483647  # Generate new SSRC
+            params = DataJSON(data=f'{{"ufrag": "user", "pwd": "pass", "ssrc": {ssrc}}}')
             await client(JoinGroupCallRequest(
                 call=call,
                 join_as=me,
