@@ -27,16 +27,16 @@ PLUGIN_INFO = {
     "features": ["blacklist management", "gcast protection", "premium emojis"]
 }
 
-# ===== Manual Premium Emoji Mapping (Updated with correct offset/length) =====
+# ===== Auto Premium Emoji Mapping (UTF-16 auto-detection) =====
 PREMIUM_EMOJIS = {
-    "main":    {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382", "length": 2, "offset": 0},
-    "check":   {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382", "length": 2, "offset": 0}, 
-    "adder1":  {"emoji": "⛈", "custom_emoji_id": "5794407002566300853", "length": 1, "offset": 2},
-    "adder2":  {"emoji": "✅", "custom_emoji_id": "5793913811471700779", "length": 1, "offset": 3},
-    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321412209992033736", "length": 2, "offset": 4},
-    "adder4":  {"emoji": "✈️", "custom_emoji_id": "5793973133559993740", "length": 2, "offset": 6},
-    "adder5":  {"emoji": "😈", "custom_emoji_id": "5357404860566235955", "length": 2, "offset": 8},
-    "adder6":  {"emoji": "🎚", "custom_emoji_id": "5794323465452394551", "length": 2, "offset": 10}
+    "main":    {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
+    "check":   {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
+    "adder1":  {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
+    "adder2":  {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
+    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
+    "adder4":  {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
+    "adder5":  {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
+    "adder6":  {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
 }
 
 # ===== Global Client Variable =====
@@ -63,33 +63,60 @@ def safe_get_emoji(emoji_type):
     emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
     return emoji_data["emoji"]
 
+def get_utf16_length(emoji_char):
+    """Get UTF-16 length of emoji character"""
+    try:
+        # Convert to UTF-16 and get byte length, then divide by 2 for character count
+        utf16_bytes = emoji_char.encode('utf-16le')
+        return len(utf16_bytes) // 2
+    except:
+        return 1
+
 def create_premium_emoji_entities(text):
-    """Create MessageEntityCustomEmoji entities for premium emojis in text"""
+    """Automatically create MessageEntityCustomEmoji entities for premium emojis"""
     entities = []
+    utf16_offset = 0
     
-    # Find all emoji positions in text and create entities
-    for emoji_name, emoji_data in PREMIUM_EMOJIS.items():
-        emoji_char = emoji_data["emoji"]
-        custom_emoji_id = emoji_data["custom_emoji_id"]
-        length = emoji_data["length"]
-        
-        # Find all occurrences of this emoji in text
-        start = 0
-        while True:
-            pos = text.find(emoji_char, start)
-            if pos == -1:
+    # Process text character by character to get accurate UTF-16 offsets
+    for i, char in enumerate(text):
+        # Check if this character matches any premium emoji
+        for emoji_name, emoji_data in PREMIUM_EMOJIS.items():
+            if char == emoji_data["emoji"]:
+                # Get actual UTF-16 length of this emoji
+                emoji_length = get_utf16_length(char)
+                
+                # Create custom emoji entity with automatic offset/length
+                entity = MessageEntityCustomEmoji(
+                    offset=utf16_offset,
+                    length=emoji_length,
+                    document_id=int(emoji_data["custom_emoji_id"])
+                )
+                entities.append(entity)
                 break
-            
-            # Create custom emoji entity
-            entity = MessageEntityCustomEmoji(
-                offset=pos,
-                length=length,
-                document_id=int(custom_emoji_id)
-            )
-            entities.append(entity)
-            start = pos + length
+        
+        # Update UTF-16 offset for next character
+        utf16_offset += get_utf16_length(char)
     
     return entities
+
+def analyze_emoji_positions(text):
+    """Debug function to analyze emoji positions in text"""
+    result = []
+    utf16_offset = 0
+    
+    for i, char in enumerate(text):
+        char_length = get_utf16_length(char)
+        if char in [emoji_data["emoji"] for emoji_data in PREMIUM_EMOJIS.values()]:
+            result.append({
+                "char": char,
+                "position": i,
+                "utf16_offset": utf16_offset,
+                "utf16_length": char_length,
+                "is_emoji": True
+            })
+        utf16_offset += char_length
+    
+    return result
 
 def safe_convert_font(text, font_type='bold'):
     """Convert teks ke format sederhana (bold / mono)"""
@@ -442,6 +469,33 @@ async def clear_blacklist_handler(event):
     except Exception as e:
         await safe_send_message(event, f"{safe_get_emoji('adder3')} {safe_convert_font('Error:', 'bold')} {str(e)}")
 
+# ===== Test Command for UTF-16 Emoji Detection =====
+async def test_emoji_handler(event):
+    """Test automatic UTF-16 emoji detection"""
+    if not await is_owner_check(event.sender_id):
+        return
+    
+    test_text = "⚙️⛈✅👽✈️😈🎚"
+    analysis = analyze_emoji_positions(test_text)
+    
+    debug_text = f"""
+{safe_get_emoji('main')} **EMOJI UTF-16 ANALYSIS**
+
+{safe_get_emoji('check')} **Test Text:** `{test_text}`
+
+{safe_get_emoji('adder2')} **Automatic Detection Results:**
+"""
+    
+    for item in analysis:
+        debug_text += f"• {item['char']} → offset={item['utf16_offset']}, length={item['utf16_length']}\n"
+    
+    debug_text += f"""
+{safe_get_emoji('adder4')} **Total entities detected:** {len(analysis)}
+{safe_get_emoji('adder6')} Now using automatic UTF-16 calculation instead of manual mapping!
+"""
+    
+    await safe_send_message(event, debug_text.strip())
+
 # ===== PLUGIN INFO =====
 def get_plugin_info():
     return PLUGIN_INFO
@@ -457,6 +511,7 @@ def setup(client_instance):
     client.add_event_handler(remove_blacklist_handler, events.NewMessage(pattern=r"\.rmbl(\s+(.+))?"))
     client.add_event_handler(list_blacklist_handler, events.NewMessage(pattern=r"\.listbl"))
     client.add_event_handler(clear_blacklist_handler, events.NewMessage(pattern=r"\.clearbl(\s+(.+))?"))
+    client.add_event_handler(test_emoji_handler, events.NewMessage(pattern=r"\.testemoji"))
     
-    print(f"✅ [GCast Blacklist] Plugin loaded with manual emoji mapping v{PLUGIN_INFO['version']}")
+    print(f"✅ [GCast Blacklist] Plugin loaded with auto UTF-16 emoji detection v{PLUGIN_INFO['version']}")
      
