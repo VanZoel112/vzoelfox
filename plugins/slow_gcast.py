@@ -24,21 +24,22 @@ PLUGIN_INFO = {
     "features": ["slow gcast", "animated editing", "anti spam", "progress tracking", "database logging", "premium emojis"]
 }
 
-# ===== PREMIUM EMOJI CONFIGURATION (STANDALONE) =====
+# Manual Premium Emoji Mapping berdasarkan data yang diberikan
 PREMIUM_EMOJIS = {
-    'main': {'id': '6156784006194009426', 'char': '🤩'},
-    'check': {'id': '5794353925360457382', 'char': '⚙️'},
-    'adder1': {'id': '5794407002566300853', 'char': '⛈'},
-    'adder2': {'id': '5793913811471700779', 'char': '✅'},
-    'adder3': {'id': '5321412209992033736', 'char': '👽'},
-    'adder4': {'id': '5793973133559993740', 'char': '✈️'},
-    'adder5': {'id': '5357404860566235955', 'char': '😈'},
-    'adder6': {'id': '5794323465452394551', 'char': '🎚️'}
+    "main": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
+    "check": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
+    "adder1": {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
+    "adder2": {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
+    "adder3": {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
+    "adder4": {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
+    "adder5": {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
+    "adder6": {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
 }
 
 def get_emoji(emoji_type):
-    """Get premium emoji character"""
-    return PREMIUM_EMOJIS.get(emoji_type, {}).get('char', '🤩')
+    """Get premium emoji with manual mapping"""
+    emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
+    return emoji_data["emoji"]
 
 def create_premium_entities(text):
     """Create premium emoji entities for text"""

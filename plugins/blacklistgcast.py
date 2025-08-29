@@ -24,62 +24,44 @@ PLUGIN_INFO = {
     "features": ["blacklist management", "gcast protection", "premium emojis", "env integration"]
 }
 
-# Import assetjson environment
-try:
-    from assetjson import create_plugin_environment
-except ImportError:
-    def create_plugin_environment(client=None): return {}
-
-env = None
+# Manual Premium Emoji Mapping berdasarkan data yang diberikan
+PREMIUM_EMOJIS = {
+    "main": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
+    "check": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
+    "adder1": {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
+    "adder2": {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
+    "adder3": {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
+    "adder4": {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
+    "adder5": {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
+    "adder6": {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
+}
 client = None
 
 # Blacklist file path
 BLACKLIST_FILE = "gcast_blacklist.json"
 
 # Helper functions with assetjson environment integration
-async def safe_send_message(event, text, use_env=True):
-    """Helper function to safely send messages with or without env"""
-    if use_env and env and 'safe_send_with_entities' in env:
-        await env['safe_send_with_entities'](event, text)
-    else:
-        await event.reply(text)
+async def safe_send_message(event, text):
+    """Send message with basic reply"""
+    await event.reply(text)
 
 def safe_get_emoji(emoji_type):
-    """Helper function to safely get emoji with fallback"""
-    if env and 'get_emoji' in env:
-        return env['get_emoji'](emoji_type)
-    emoji_fallbacks = {
-        'main': '🤩', 'check': '⚙️', 'adder1': '⛈', 'adder2': '✅', 
-        'adder3': '👽', 'adder4': '✈️', 'adder5': '😈', 'adder6': '🎚️'
-    }
-    return emoji_fallbacks.get(emoji_type, '🤩')
+    """Get premium emoji with manual mapping"""
+    emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
+    return emoji_data["emoji"]
 
 def safe_convert_font(text, font_type='bold'):
-    """Helper function to safely convert fonts with fallback"""
-    if env and 'convert_font' in env:
-        return env['convert_font'](text, font_type)
+    """Convert text to formatting (basic fallback)"""
+    if font_type == 'bold':
+        return f"**{text}**"
+    elif font_type == 'mono':
+        return f"`{text}`"
     return text
 
 async def is_owner_check(user_id):
-    """Check if user is owner with env integration"""
-    # Check if env is properly initialized and has is_owner function
-    if env and 'is_owner' in env:
-        try:
-            return await env['is_owner'](user_id)
-        except Exception:
-            pass
-    
-    # Fallback to manual check
-    try:
-        import os
-        owner_id = os.getenv("OWNER_ID")
-        if owner_id:
-            return user_id == int(owner_id)
-        
-        me = await client.get_me()
-        return user_id == me.id
-    except Exception:
-        return False
+    """Simple owner check"""
+    OWNER_ID = 7847025168  # Replace with your actual owner ID
+    return user_id == OWNER_ID
 
 def get_prefix():
     """Get command prefix"""
@@ -473,11 +455,8 @@ def get_plugin_info():
 
 def setup(client_instance):
     """Setup function untuk register event handlers"""
-    global client, env
+    global client
     client = client_instance
-    
-    # Create plugin environment
-    env = create_plugin_environment(client)
     
     # Register event handlers
     client.add_event_handler(add_blacklist_handler, events.NewMessage(pattern=r"\.addbl(\s+(.+))?"))
@@ -485,4 +464,4 @@ def setup(client_instance):
     client.add_event_handler(list_blacklist_handler, events.NewMessage(pattern=r"\.listbl"))
     client.add_event_handler(clear_blacklist_handler, events.NewMessage(pattern=r"\.clearbl(\s+(.+))?"))
     
-    print(f"✅ [GCast Blacklist] Plugin loaded with assetjson environment v{PLUGIN_INFO['version']}")
+    print(f"✅ [GCast Blacklist] Plugin loaded with manual emoji mapping v{PLUGIN_INFO['version']}")
