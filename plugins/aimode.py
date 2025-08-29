@@ -15,7 +15,7 @@ import aiohttp
 PLUGIN_INFO = {
     "name": "aimode",
     "version": "2.0.0",
-    "description": "AI Mode & Responder, config persist di SQLite, emoji premium dari assetjson, failover model otomatis.",
+    "description": "AI Mode & Responder dengan OpenAI GPT, config persist SQLite, premium emoji assetjson, failover otomatis.",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".aimode on", ".aimode off", ".aimode status", ".aiconfig", ".ai"],
     "features": ["ai mode", "auto reply ai", "status/config in sqlite", "model failover"]
@@ -45,21 +45,21 @@ def safe_get_emoji(emoji_type):
 
 DEFAULT_CONFIG = {
     "primary": {
-        "type": "huggingface",
-        "endpoint": "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
-        "key": "hf_your_primary_token",
-        "model": "microsoft/DialoGPT-medium"
+        "type": "openai",
+        "endpoint": "https://api.openai.com/v1/chat/completions",
+        "key": "proj_KTN67DL8wG2g1jMVCwW1vUQ2",
+        "model": "gpt-3.5-turbo"
     },
     "backup": {
-        "type": "openrouter",
-        "endpoint": "https://openrouter.ai/api/v1/chat/completions",
-        "key": "sk-or-your_backup_key",
-        "model": "mistralai/mistral-7b-instruct:free"
+        "type": "openai",
+        "endpoint": "https://api.openai.com/v1/chat/completions", 
+        "key": "proj_KTN67DL8wG2g1jMVCwW1vUQ2",
+        "model": "gpt-4o-mini"
     },
-    "system_prompt": "You are a helpful AI assistant for Telegram.",
-    "max_tokens": 128,
-    "temperature": 0.6,
-    "cooldown": 10
+    "system_prompt": "You are Vzoel AI Assistant 🤩, helpful AI untuk Telegram userbot by Vzoel Fox's Ltpn. Jawab dalam bahasa yang sama dengan user, singkat dan informatif dengan emoji yang sesuai konteks.",
+    "max_tokens": 200,
+    "temperature": 0.7,
+    "cooldown": 5
 }
 
 def get_db_conn():
@@ -257,6 +257,34 @@ async def call_ai(api_cfg, prompt, cfg):
                             return f"❌ Error: {data['error']}"
                         return json.dumps(data)
                     return f"❌ Error: {resp.status}"
+        elif model_type == "openai":
+            headers = {
+                "Authorization": f"Bearer {key}", 
+                "Content-Type": "application/json"
+            }
+            messages = []
+            if sys_prompt:
+                messages.append({"role": "system", "content": sys_prompt})
+            messages.append({"role": "user", "content": prompt})
+            
+            payload = {
+                "model": model,
+                "messages": messages,
+                "max_tokens": max_tokens,
+                "temperature": temp
+            }
+            
+            async with aiohttp.ClientSession() as session:
+                async with session.post(endpoint, headers=headers, json=payload) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        if "choices" in data and len(data["choices"]):
+                            return data["choices"][0]["message"]["content"].strip()
+                        return json.dumps(data)
+                    else:
+                        error_text = await resp.text()
+                        return f"❌ OpenAI Error ({resp.status}): {error_text[:100]}"
+                        
         elif model_type == "openrouter":
             headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
             messages = [{"role": "system", "content": sys_prompt}, {"role": "user", "content": prompt}]
@@ -274,8 +302,7 @@ async def call_ai(api_cfg, prompt, cfg):
                             return data["choices"][0]["message"]["content"].strip()
                         return json.dumps(data)
                     return f"❌ Error: {resp.status}"
-        # Add more APIs here if needed (OpenAI, Gemini, etc)
-        # else...
+        
         return f"❌ Model type `{model_type}` not implemented."
     except Exception as e:
         return f"❌ AI API error: {e}"
