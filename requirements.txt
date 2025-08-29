@@ -42,6 +42,15 @@ ujson>=5.0.0
 ratelimit>=2.2.0
 asyncio-throttle>=1.0.0
 
+# ===== TASK SCHEDULING =====
+schedule>=1.2.0
+
+# ===== ENHANCED SUBPROCESS =====
+subprocess32>=3.5.4
+
+# ===== HTTP CLIENT IMPROVEMENTS =====
+urllib3>=2.0.0
+
 # ===== MEDIA PROCESSING =====
 yt-dlp>=2023.12.30
 ffmpeg-python>=0.2.0
@@ -89,8 +98,18 @@ flake8>=6.0.0
 # ===== SYSTEM MONITORING =====
 psutil>=5.9.0
 
+# ===== OPTIONAL ENHANCEMENTS =====
+# Error tracking (uncomment if needed)
+# sentry-sdk>=1.30.0
+
+# Better logging (uncomment if needed)  
+# loguru>=0.7.0
+
+# Performance monitoring (uncomment if needed)
+# memory-profiler>=0.61.0
+
 # ===== VERSION INFO =====
-# VZOEL ASSISTANT v0.1.0.75 Enhanced
+# VZOEL ASSISTANT v0.1.0.76 Enhanced
 # Compatible with Python 3.8+
-# Updated: 2025-08-28 with AI & LLaMA2 support
+# Updated: 2025-08-29 with complete plugin dependencies
 # Author: Vzoel Fox's (Enhanced by Morgan)
