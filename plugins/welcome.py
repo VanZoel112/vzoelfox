@@ -306,11 +306,36 @@ async def safe_send_message(event, text, use_premium=True):
             if logger:
                 logger.error(f"[Welcome] Fallback send failed: {e2}")
 
+async def is_owner_check(user_id):
+    """Check if user is owner"""
+    try:
+        OWNER_ID = os.getenv('OWNER_ID')
+        if OWNER_ID:
+            return user_id == int(OWNER_ID)
+        # Fallback to client self-check
+        if client:
+            me = await client.get_me()
+            return user_id == me.id
+    except Exception as e:
+        if logger:
+            logger.error(f"[Welcome] Owner check error: {e}")
+    return False
+
 async def welcome_cmd_handler(event):
     """Handle welcome command"""
     try:
+        # Owner check first
+        if not await is_owner_check(event.sender_id):
+            return
+        
         chat = await event.get_chat()
         chat_id = chat.id
+        
+        # Only work in groups/supergroups
+        if not hasattr(chat, 'megagroup') and not hasattr(chat, 'broadcast'):
+            await safe_send_message(event, f"{get_emoji('main')} {convert_font('This command only works in groups!', 'bold')}")
+            return
+            
         args = event.text.split(maxsplit=2)
         
         if len(args) == 1:
@@ -484,4 +509,4 @@ def cleanup_plugin():
             logger.error(f"[Welcome] Cleanup error: {e}")
 
 # Export functions
-__all__ = ['setup', 'cleanup_plugin', 'get_plugin_info']
+__all__ = ['setup', 'cleanup_plugin', 'get_plugin_info', 'is_owner_check', 'get_emoji', 'convert_font', 'PREMIUM_EMOJIS']
