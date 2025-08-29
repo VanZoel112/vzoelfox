@@ -27,16 +27,16 @@ PLUGIN_INFO = {
     "features": ["blacklist management", "gcast protection", "premium emojis"]
 }
 
-# ===== Manual Premium Emoji Mapping (Updated) =====
+# ===== Manual Premium Emoji Mapping (Updated with correct offset/length) =====
 PREMIUM_EMOJIS = {
-    "main":    {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
-    "check":   {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
-    "adder1":  {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
-    "adder2":  {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
-    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
-    "adder4":  {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
-    "adder5":  {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
-    "adder6":  {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
+    "main":    {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382", "length": 2, "offset": 0},
+    "check":   {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382", "length": 2, "offset": 0}, 
+    "adder1":  {"emoji": "⛈", "custom_emoji_id": "5794407002566300853", "length": 1, "offset": 2},
+    "adder2":  {"emoji": "✅", "custom_emoji_id": "5793913811471700779", "length": 1, "offset": 3},
+    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321412209992033736", "length": 2, "offset": 4},
+    "adder4":  {"emoji": "✈️", "custom_emoji_id": "5793973133559993740", "length": 2, "offset": 6},
+    "adder5":  {"emoji": "😈", "custom_emoji_id": "5357404860566235955", "length": 2, "offset": 8},
+    "adder6":  {"emoji": "🎚", "custom_emoji_id": "5794323465452394551", "length": 2, "offset": 10}
 }
 
 # ===== Global Client Variable =====
@@ -47,13 +47,49 @@ BLACKLIST_FILE = "gcast_blacklist.json"
 
 # ===== Helper Functions =====
 async def safe_send_message(event, text):
-    """Kirim pesan aman dengan reply dasar"""
-    await event.reply(text)
+    """Send message with premium emoji entities"""
+    try:
+        entities = create_premium_emoji_entities(text)
+        if entities:
+            await event.reply(text, formatting_entities=entities)
+        else:
+            await event.reply(text)
+    except Exception as e:
+        # Fallback to regular message if premium emojis fail
+        await event.reply(text)
 
 def safe_get_emoji(emoji_type):
     """Ambil emoji premium dari mapping manual"""
     emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
     return emoji_data["emoji"]
+
+def create_premium_emoji_entities(text):
+    """Create MessageEntityCustomEmoji entities for premium emojis in text"""
+    entities = []
+    
+    # Find all emoji positions in text and create entities
+    for emoji_name, emoji_data in PREMIUM_EMOJIS.items():
+        emoji_char = emoji_data["emoji"]
+        custom_emoji_id = emoji_data["custom_emoji_id"]
+        length = emoji_data["length"]
+        
+        # Find all occurrences of this emoji in text
+        start = 0
+        while True:
+            pos = text.find(emoji_char, start)
+            if pos == -1:
+                break
+            
+            # Create custom emoji entity
+            entity = MessageEntityCustomEmoji(
+                offset=pos,
+                length=length,
+                document_id=int(custom_emoji_id)
+            )
+            entities.append(entity)
+            start = pos + length
+    
+    return entities
 
 def safe_convert_font(text, font_type='bold'):
     """Convert teks ke format sederhana (bold / mono)"""
