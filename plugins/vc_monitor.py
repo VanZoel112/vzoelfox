@@ -9,6 +9,9 @@ Version: 1.2.0
 import asyncio
 from datetime import datetime
 from telethon import events
+import logging
+import assetjson   # tambahkan ini
+from .stalker_monitor import join_vc_handler, leave_vc_handler, vc_status_handler
 from telethon.tl.functions.phone import JoinGroupCallRequest, LeaveGroupCallRequest
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.errors import ChatAdminRequiredError, UserAlreadyParticipantError, FloodWaitError
@@ -26,6 +29,36 @@ PLUGIN_INFO = {
     "features": ["join vc", "leave vc", "monitor vc", "auto report disconnect", "auto backup log to SQLite"]
 }
 
+env = {}
+
+def setup(client):
+    global env
+    # Import fungsi penting dari main & assetjson
+    from main import is_owner
+    env = {
+        "is_owner": is_owner,
+        "safe_send_with_entities": assetjson.safe_send_with_entities,  # gunakan versi assetjson
+        "get_client": lambda: client,
+        "logger": logging.getLogger("vc_monitor")
+    }
+
+    # Daftarkan command handler
+    client.add_event_handler(join_vc_handler, events.NewMessage(pattern=r"\.joinvc"))
+    client.add_event_handler(leave_vc_handler, events.NewMessage(pattern=r"\.leavevc"))
+    client.add_event_handler(vc_status_handler, events.NewMessage(pattern=r"\.vcstatus"))
+
+    # Pesan log aktivasi (emoji premium lewat assetjson)
+    try:
+        client.loop.create_task(
+            assetjson.safe_send_with_entities(
+                client,
+                "VC Monitor ✅ Siap dipakai ✨💎",
+                parse_mode="md"
+            )
+        )
+    except Exception as e:
+        logging.error(f"Gagal kirim pesan aktivasi VC Monitor: {e}")
+        
 try:
     from assetjson import create_plugin_environment
 except ImportError:
