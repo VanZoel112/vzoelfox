@@ -34,10 +34,36 @@ env = {}
 def setup(client):
     global env
     # Import fungsi penting dari main & assetjson
-    from main import is_owner
+    try:
+        from main import is_owner
+    except ImportError:
+        # Fallback ke basic owner check
+        async def is_owner(user_id):
+            me = await client.get_me()
+            return user_id == me.id
+    # Setup safe_send_with_entities
+    try:
+        # Try to import from assetjson if available
+        import sys
+        if 'plugin_assetjson' in sys.modules:
+            assetjson = sys.modules['plugin_assetjson']
+            safe_send = getattr(assetjson, 'safe_send_with_entities', None)
+        else:
+            safe_send = None
+    except:
+        safe_send = None
+    
+    # Fallback to simple reply if assetjson not available
+    if not safe_send:
+        async def safe_send(target, message):
+            if hasattr(target, 'reply'):
+                await target.reply(message)
+            elif hasattr(target, 'send_message'):
+                await target.send_message(target, message)
+    
     env = {
         "is_owner": is_owner,
-        "safe_send_with_entities": assetjson.safe_send_with_entities,  # gunakan versi assetjson
+        "safe_send_with_entities": safe_send,
         "get_client": lambda: client,
         "logger": logging.getLogger("vc_monitor")
     }
