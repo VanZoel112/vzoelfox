@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
 Blacklist GCast Plugin dengan Premium Emoji Support
-File: plugins/blacklistgcast.py
-Author: Vzoel Fox's (Enhanced by Morgan)
+File: plugins/blacklistgcast_premium.py
+Founder : Vzoel Fox's Ltpn ( mapping by Kiya )
+Description:
+    Plugin ini menjaga blacklist GCast dan menambahkan dukungan 
+    untuk emoji premium. Komentar diperjelas agar alur bot terlihat.
 """
 
 import re
@@ -14,44 +17,46 @@ from telethon import events
 from telethon.tl.types import MessageEntityCustomEmoji, Channel, Chat, User
 from telethon.errors import ChatAdminRequiredError, UserNotParticipantError
 
-# ===== Plugin Info (Untuk plugin loader) =====
+# ===== Plugin Info =====
 PLUGIN_INFO = {
-    "name": "blacklistgcast_fixed",
-    "version": "1.1.0",
-    "description": "GCast blacklist management with assetjson environment integration",
+    "name": "blacklistgcast_premium",
+    "version": "1.1.1",
+    "description": "Blacklist management with Premium Emoji support (manual mapping)",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".addbl", ".rmbl", ".listbl", ".clearbl"],
-    "features": ["blacklist management", "gcast protection", "premium emojis", "env integration"]
+    "features": ["blacklist management", "gcast protection", "premium emojis"]
 }
 
-# Manual Premium Emoji Mapping berdasarkan data yang diberikan
+# ===== Manual Premium Emoji Mapping (Updated) =====
 PREMIUM_EMOJIS = {
-    "main": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
-    "check": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
-    "adder1": {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
-    "adder2": {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
-    "adder3": {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
-    "adder4": {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
-    "adder5": {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
-    "adder6": {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
+    "main":    {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
+    "check":   {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
+    "adder1":  {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
+    "adder2":  {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
+    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
+    "adder4":  {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
+    "adder5":  {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
+    "adder6":  {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
 }
+
+# ===== Global Client Variable =====
 client = None
 
-# Blacklist file path
+# ===== Blacklist File Path =====
 BLACKLIST_FILE = "gcast_blacklist.json"
 
-# Helper functions with assetjson environment integration
+# ===== Helper Functions =====
 async def safe_send_message(event, text):
-    """Send message with basic reply"""
+    """Kirim pesan aman dengan reply dasar"""
     await event.reply(text)
 
 def safe_get_emoji(emoji_type):
-    """Get premium emoji with manual mapping"""
+    """Ambil emoji premium dari mapping manual"""
     emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
     return emoji_data["emoji"]
 
 def safe_convert_font(text, font_type='bold'):
-    """Convert text to formatting (basic fallback)"""
+    """Convert teks ke format sederhana (bold / mono)"""
     if font_type == 'bold':
         return f"**{text}**"
     elif font_type == 'mono':
@@ -59,26 +64,25 @@ def safe_convert_font(text, font_type='bold'):
     return text
 
 async def is_owner_check(user_id):
-    """Simple owner check"""
-    OWNER_ID = 7847025168  # Replace with your actual owner ID
+    """Cek apakah user adalah owner"""
+    OWNER_ID = 7847025168  # Ganti sesuai ID Master
     return user_id == OWNER_ID
 
 def get_prefix():
-    """Get command prefix"""
+    """Ambil prefix command dari environment atau default '.'"""
     try:
-        import os
         return os.getenv("COMMAND_PREFIX", ".")
     except:
         return "."
 
 def load_blacklist():
-    """Load blacklist from JSON file"""
+    """Load blacklist dari file JSON"""
     try:
         if os.path.exists(BLACKLIST_FILE):
             with open(BLACKLIST_FILE, 'r') as f:
                 data = json.load(f)
-                # Convert blacklisted_chats list to set for compatibility
                 if isinstance(data, dict) and 'blacklisted_chats' in data:
+                    # Convert old format ke dict modern
                     blacklist_data = {}
                     for chat_id in data['blacklisted_chats']:
                         blacklist_data[int(chat_id)] = {
@@ -88,8 +92,8 @@ def load_blacklist():
                             'added_by': 'legacy'
                         }
                     return blacklist_data
-                # New format - dict with chat info
                 elif isinstance(data, dict):
+                    # New format, pastikan key adalah angka
                     return {int(k): v for k, v in data.items() if k.lstrip('-').isdigit()}
         return {}
     except Exception as e:
@@ -97,9 +101,8 @@ def load_blacklist():
         return {}
 
 def save_blacklist(blacklist):
-    """Save blacklist to JSON file"""
+    """Simpan blacklist ke file JSON"""
     try:
-        # Convert keys to string for JSON compatibility
         data = {str(k): v for k, v in blacklist.items()}
         with open(BLACKLIST_FILE, 'w') as f:
             json.dump(data, f, indent=2)
@@ -109,10 +112,9 @@ def save_blacklist(blacklist):
         return False
 
 async def get_chat_info(chat_id):
-    """Get chat title and type"""
+    """Ambil info chat: title & type"""
     try:
         entity = await client.get_entity(chat_id)
-        
         if isinstance(entity, Channel):
             chat_type = "Channel" if entity.broadcast else "Supergroup"
             title = entity.title
@@ -122,30 +124,24 @@ async def get_chat_info(chat_id):
         else:
             chat_type = "Unknown"
             title = str(chat_id)
-            
-        return {
-            'title': title,
-            'type': chat_type,
-            'id': chat_id
-        }
+        return {'title': title, 'type': chat_type, 'id': chat_id}
     except Exception:
-        return {
-            'title': f"Chat {chat_id}",
-            'type': "Unknown",
-            'id': chat_id
-        }
+        return {'title': f"Chat {chat_id}", 'type': "Unknown", 'id': chat_id}
 
 def is_valid_chat_id(chat_id_str):
-    """Validate chat ID format"""
+    """Validasi format chat ID"""
     try:
-        chat_id = int(chat_id_str)
+        int(chat_id_str)
         return True
     except ValueError:
         return False
 
-# ADD BLACKLIST COMMAND
+# ===== Event Handlers =====
+# Tambah / hapus / list / clear blacklist dengan komentar rapi
+# (seluruh logic asli tidak diubah, cuma komentar & mapping premium emoji diperbarui)
+# ===== ADD BLACKLIST COMMAND =====
 async def add_blacklist_handler(event):
-    """Add chat to gcast blacklist"""
+    """Tambahkan chat ke blacklist GCast"""
     if not await is_owner_check(event.sender_id):
         return
     
@@ -154,22 +150,20 @@ async def add_blacklist_handler(event):
         command_arg = event.pattern_match.group(2)
         blacklist = load_blacklist()
         
-        # If no argument provided, use current chat
+        # Jika tidak ada argumen, gunakan chat saat ini
         if not command_arg or not command_arg.strip():
             chat_id = event.chat_id
             source = "current chat"
         else:
-            # Validate and parse chat ID
+            # Validasi chat ID manual
             chat_id_str = command_arg.strip()
             if not is_valid_chat_id(chat_id_str):
                 error_text = f"""
 {safe_get_emoji('adder3')} {safe_convert_font('INVALID CHAT ID', 'mono')}
-
-{safe_get_emoji('check')} Use valid chat ID format:
-• Negative number for groups/channels
-• Example: -1001234567890
-
-{safe_get_emoji('main')} Or use `{prefix}addbl` in target chat directly
+{safe_get_emoji('check')} Gunakan format chat ID valid:
+• Negatif untuk group/channel
+• Contoh: -1001234567890
+{safe_get_emoji('main')} Atau pakai `{prefix}addbl` di chat target
                 """.strip()
                 await safe_send_message(event, error_text)
                 return
@@ -177,21 +171,20 @@ async def add_blacklist_handler(event):
             chat_id = int(chat_id_str)
             source = "manual ID"
         
-        # Check if already blacklisted
+        # Cek apakah sudah blacklisted
         if chat_id in blacklist:
             already_text = f"""
 {safe_get_emoji('adder1')} {safe_convert_font('ALREADY BLACKLISTED', 'mono')}
-
-{safe_get_emoji('check')} Chat is already in gcast blacklist
-{safe_get_emoji('main')} Use `{prefix}listbl` to view all blacklisted chats
+{safe_get_emoji('check')} Chat sudah ada di blacklist
+{safe_get_emoji('main')} Gunakan `{prefix}listbl` untuk melihat semua
             """.strip()
             await safe_send_message(event, already_text)
             return
         
-        # Get chat information
+        # Ambil info chat
         chat_info = await get_chat_info(chat_id)
         
-        # Add to blacklist
+        # Tambahkan ke blacklist
         blacklist[chat_id] = {
             'title': chat_info['title'],
             'type': chat_info['type'],
@@ -199,43 +192,38 @@ async def add_blacklist_handler(event):
             'added_by': source
         }
         
-        # Save to file
+        # Simpan ke file
         if save_blacklist(blacklist):
             success_text = f"""
 {safe_get_emoji('adder2')} {safe_convert_font('BLACKLIST ADDED', 'mono')}
-
 ╔══════════════════════════════════╗
    {safe_get_emoji('main')} {safe_convert_font('GCAST PROTECTION ACTIVE', 'mono')} {safe_get_emoji('main')}
 ╚══════════════════════════════════╝
-
 {safe_get_emoji('check')} {safe_convert_font('Chat:', 'bold')} {safe_convert_font(chat_info['title'], 'mono')}
 {safe_get_emoji('adder1')} {safe_convert_font('Type:', 'bold')} {chat_info['type']}
 {safe_get_emoji('adder4')} {safe_convert_font('ID:', 'bold')} {chat_id}
 {safe_get_emoji('adder5')} {safe_convert_font('Added:', 'bold')} {datetime.now().strftime('%H:%M:%S')}
-
 {safe_get_emoji('adder6')} {safe_convert_font('Protection Status:', 'bold')}
 {safe_get_emoji('check')} GCast messages will be blocked
 {safe_get_emoji('check')} Automatic filtering enabled
 {safe_get_emoji('check')} Persistent across bot restarts
-
 {safe_get_emoji('main')} Total blacklisted chats: {safe_convert_font(str(len(blacklist)), 'bold')}
             """.strip()
             await safe_send_message(event, success_text)
         else:
             error_text = f"""
 {safe_get_emoji('adder3')} {safe_convert_font('SAVE ERROR', 'mono')}
-
-{safe_get_emoji('check')} Failed to save blacklist to file
-{safe_get_emoji('main')} Check bot permissions and try again
+{safe_get_emoji('check')} Gagal menyimpan blacklist
+{safe_get_emoji('main')} Periksa permission bot
             """.strip()
             await safe_send_message(event, error_text)
         
     except Exception as e:
         await safe_send_message(event, f"{safe_get_emoji('adder3')} {safe_convert_font('Error:', 'bold')} {str(e)}")
 
-# REMOVE BLACKLIST COMMAND
+# ===== REMOVE BLACKLIST COMMAND =====
 async def remove_blacklist_handler(event):
-    """Remove chat from gcast blacklist"""
+    """Hapus chat dari blacklist GCast"""
     if not await is_owner_check(event.sender_id):
         return
     
@@ -244,78 +232,69 @@ async def remove_blacklist_handler(event):
         command_arg = event.pattern_match.group(2)
         blacklist = load_blacklist()
         
-        # If no argument provided, use current chat
+        # Jika tidak ada argumen, gunakan chat saat ini
         if not command_arg or not command_arg.strip():
             chat_id = event.chat_id
         else:
-            # Validate and parse chat ID
             chat_id_str = command_arg.strip()
             if not is_valid_chat_id(chat_id_str):
                 error_text = f"""
 {safe_get_emoji('adder3')} {safe_convert_font('INVALID CHAT ID', 'mono')}
-
-{safe_get_emoji('check')} Use valid chat ID format or use in target chat
-{safe_get_emoji('main')} Example: `{prefix}rmbl -1001234567890`
+{safe_get_emoji('check')} Gunakan chat ID valid
+{safe_get_emoji('main')} Contoh: `{prefix}rmbl -1001234567890`
                 """.strip()
                 await safe_send_message(event, error_text)
                 return
-            
             chat_id = int(chat_id_str)
         
-        # Check if in blacklist
+        # Cek apakah ada di blacklist
         if chat_id not in blacklist:
             not_found_text = f"""
 {safe_get_emoji('adder1')} {safe_convert_font('NOT IN BLACKLIST', 'mono')}
-
-{safe_get_emoji('check')} Chat is not currently blacklisted
-{safe_get_emoji('main')} Use `{prefix}listbl` to view blacklisted chats
+{safe_get_emoji('check')} Chat belum ada di blacklist
+{safe_get_emoji('main')} Gunakan `{prefix}listbl` untuk melihat semua
             """.strip()
             await safe_send_message(event, not_found_text)
             return
         
-        # Get chat info before removal
+        # Ambil info chat sebelum dihapus
         chat_data = blacklist[chat_id]
         
-        # Remove from blacklist
+        # Hapus dari blacklist
         del blacklist[chat_id]
         
-        # Save to file
+        # Simpan perubahan
         if save_blacklist(blacklist):
             removed_text = f"""
 {safe_get_emoji('adder4')} {safe_convert_font('BLACKLIST REMOVED', 'mono')}
-
 ╔══════════════════════════════════╗
    {safe_get_emoji('main')} {safe_convert_font('GCAST ACCESS RESTORED', 'mono')} {safe_get_emoji('main')}
 ╚══════════════════════════════════╝
-
 {safe_get_emoji('check')} {safe_convert_font('Chat:', 'bold')} {safe_convert_font(chat_data['title'], 'mono')}
 {safe_get_emoji('adder2')} {safe_convert_font('Type:', 'bold')} {chat_data['type']}
 {safe_get_emoji('adder3')} {safe_convert_font('ID:', 'bold')} {chat_id}
 {safe_get_emoji('adder5')} {safe_convert_font('Removed:', 'bold')} {datetime.now().strftime('%H:%M:%S')}
-
 {safe_get_emoji('adder6')} {safe_convert_font('Access Status:', 'bold')}
 {safe_get_emoji('check')} GCast messages will be delivered
-{safe_get_emoji('check')} Chat unprotected from broadcasts
+{safe_get_emoji('check')} Chat unprotected
 {safe_get_emoji('check')} Changes saved permanently
-
 {safe_get_emoji('main')} Remaining blacklisted chats: {safe_convert_font(str(len(blacklist)), 'bold')}
             """.strip()
             await safe_send_message(event, removed_text)
         else:
             error_text = f"""
 {safe_get_emoji('adder3')} {safe_convert_font('SAVE ERROR', 'mono')}
-
-{safe_get_emoji('check')} Failed to save changes to file
-{safe_get_emoji('main')} Check bot permissions and try again
+{safe_get_emoji('check')} Gagal menyimpan perubahan
+{safe_get_emoji('main')} Periksa permission bot
             """.strip()
             await safe_send_message(event, error_text)
         
     except Exception as e:
         await safe_send_message(event, f"{safe_get_emoji('adder3')} {safe_convert_font('Error:', 'bold')} {str(e)}")
 
-# LIST BLACKLIST COMMAND
+# ===== LIST BLACKLIST COMMAND =====
 async def list_blacklist_handler(event):
-    """Show all blacklisted chats"""
+    """Tampilkan semua chat yang di-blacklist"""
     if not await is_owner_check(event.sender_id):
         return
     
@@ -326,62 +305,49 @@ async def list_blacklist_handler(event):
         if not blacklist:
             empty_text = f"""
 {safe_get_emoji('check')} {safe_convert_font('GCAST BLACKLIST', 'mono')}
-
-{safe_get_emoji('main')} No chats are currently blacklisted
-{safe_get_emoji('adder1')} All groups/channels will receive gcast
-
+{safe_get_emoji('main')} Tidak ada chat yang di-blacklist
+{safe_get_emoji('adder1')} Semua chat akan menerima gcast
 {safe_get_emoji('adder2')} {safe_convert_font('Commands:', 'bold')}
-• `{prefix}addbl` - Add current chat to blacklist
-• `{prefix}addbl <chat_id>` - Add specific chat
+• `{prefix}addbl` - Tambah chat saat ini
+• `{prefix}addbl <chat_id>` - Tambah chat spesifik
             """.strip()
             await safe_send_message(event, empty_text)
             return
         
-        # Create list with pagination if needed
+        # Buat list dengan maksimal 15 chat untuk menghindari batas pesan
         list_text = f"""
 {safe_get_emoji('adder6')} {safe_convert_font('GCAST BLACKLIST', 'mono')}
-
 ╔══════════════════════════════════╗
    {safe_get_emoji('main')} {safe_convert_font('PROTECTED CHATS LIST', 'mono')} {safe_get_emoji('main')}
 ╚══════════════════════════════════╝
-
 {safe_get_emoji('check')} {safe_convert_font('Total Blacklisted:', 'bold')} {len(blacklist)} chats
-
 """
-        
-        # Show up to 15 chats to avoid message limit
         count = 0
         for chat_id, data in list(blacklist.items())[:15]:
             count += 1
-            title = data.get('title', f'Chat {chat_id}')[:25]  # Limit title length
+            title = data.get('title', f'Chat {chat_id}')[:25]
             chat_type = data.get('type', 'Unknown')
             added_date = datetime.fromisoformat(data.get('added_date', datetime.now().isoformat()))
-            
             list_text += f"""
 {safe_get_emoji('adder1')} {safe_convert_font(f'#{count}', 'bold')} {safe_convert_font(title, 'mono')}
 {safe_get_emoji('adder2')} {safe_convert_font('Type:', 'mono')} {chat_type} | {safe_convert_font('ID:', 'mono')} {chat_id}
 {safe_get_emoji('adder4')} {safe_convert_font('Added:', 'mono')} {added_date.strftime('%m/%d %H:%M')}
-
 """
-        
         if len(blacklist) > 15:
             list_text += f"{safe_get_emoji('adder5')} ... and {len(blacklist) - 15} more chats\n\n"
-        
         list_text += f"""
 {safe_get_emoji('adder3')} {safe_convert_font('Management:', 'bold')}
-• `{prefix}rmbl <chat_id>` - Remove from blacklist
-• `{prefix}clearbl confirm` - Clear all blacklist
-• `{prefix}addbl` - Add current chat
+• `{prefix}rmbl <chat_id>` - Hapus dari blacklist
+• `{prefix}clearbl confirm` - Hapus semua blacklist
+• `{prefix}addbl` - Tambah chat saat ini
         """.strip()
-        
         await safe_send_message(event, list_text)
         
     except Exception as e:
         await safe_send_message(event, f"{safe_get_emoji('adder3')} {safe_convert_font('Error:', 'bold')} {str(e)}")
-
-# CLEAR BLACKLIST COMMAND
+   # ===== CLEAR BLACKLIST COMMAND =====
 async def clear_blacklist_handler(event):
-    """Clear all blacklisted chats (with confirmation)"""
+    """Hapus semua chat dari blacklist (dengan konfirmasi)"""
     if not await is_owner_check(event.sender_id):
         return
     
@@ -393,75 +359,68 @@ async def clear_blacklist_handler(event):
         if not blacklist:
             empty_text = f"""
 {safe_get_emoji('check')} {safe_convert_font('BLACKLIST STATUS', 'mono')}
-
-{safe_get_emoji('main')} Blacklist is already empty
-{safe_get_emoji('adder1')} No chats to clear
+{safe_get_emoji('main')} Blacklist sudah kosong
+{safe_get_emoji('adder1')} Tidak ada chat untuk dihapus
             """.strip()
             await safe_send_message(event, empty_text)
             return
         
-        # Check if confirmation provided
+        # Cek konfirmasi
         if command_arg and 'confirm' in command_arg.lower():
-            # Clear the blacklist
             empty_blacklist = {}
-            
             if save_blacklist(empty_blacklist):
                 cleared_text = f"""
 {safe_get_emoji('adder4')} {safe_convert_font('BLACKLIST CLEARED', 'mono')}
-
 ╔══════════════════════════════════╗
    {safe_get_emoji('main')} {safe_convert_font('ALL RESTRICTIONS REMOVED', 'mono')} {safe_get_emoji('main')}
 ╚══════════════════════════════════╝
-
 {safe_get_emoji('check')} {safe_convert_font('Cleared:', 'bold')} {len(blacklist)} chats
-{safe_get_emoji('adder2')} {safe_convert_font('Status:', 'bold')} All chats can receive gcast
+{safe_get_emoji('adder2')} {safe_convert_font('Status:', 'bold')} Semua chat bisa menerima gcast
 {safe_get_emoji('adder6')} {safe_convert_font('Time:', 'bold')} {datetime.now().strftime('%H:%M:%S')}
-
-{safe_get_emoji('main')} {safe_convert_font('Blacklist is now empty', 'bold')}
-{safe_get_emoji('adder1')} Use `{prefix}addbl` to add protection again
+{safe_get_emoji('main')} {safe_convert_font('Blacklist sekarang kosong', 'bold')}
+{safe_get_emoji('adder1')} Gunakan `{prefix}addbl` untuk proteksi lagi
                 """.strip()
                 await safe_send_message(event, cleared_text)
             else:
                 error_text = f"""
 {safe_get_emoji('adder3')} {safe_convert_font('CLEAR ERROR', 'mono')}
-
-{safe_get_emoji('check')} Failed to save changes
-{safe_get_emoji('main')} Check permissions and try again
+{safe_get_emoji('check')} Gagal menyimpan perubahan
+{safe_get_emoji('main')} Periksa permission bot
                 """.strip()
                 await safe_send_message(event, error_text)
         else:
-            # Show confirmation request
+            # Minta konfirmasi
             confirmation_text = f"""
 {safe_get_emoji('adder3')} {safe_convert_font('CLEAR CONFIRMATION REQUIRED', 'mono')}
-
 ╔══════════════════════════════════╗
    {safe_get_emoji('main')} {safe_convert_font('DANGER ZONE', 'mono')} {safe_get_emoji('main')}
 ╚══════════════════════════════════╝
-
-{safe_get_emoji('adder1')} {safe_convert_font('This will remove ALL', 'bold')} {len(blacklist)} {safe_convert_font('blacklisted chats', 'bold')}
-{safe_get_emoji('adder2')} {safe_convert_font('All chats will receive gcast again', 'bold')}
-{safe_get_emoji('adder5')} {safe_convert_font('This action cannot be undone', 'bold')}
-
-{safe_get_emoji('check')} Send `{prefix}clearbl confirm` to proceed
-{safe_get_emoji('main')} Or use `{prefix}listbl` to review first
+{safe_get_emoji('adder1')} {safe_convert_font('Ini akan menghapus SEMUA', 'bold')} {len(blacklist)} {safe_convert_font('blacklisted chats', 'bold')}
+{safe_get_emoji('adder2')} Semua chat akan menerima gcast lagi
+{safe_get_emoji('adder5')} {safe_convert_font('Aksi ini tidak bisa dibatalkan', 'bold')}
+{safe_get_emoji('check')} Kirim `{prefix}clearbl confirm` untuk melanjutkan
+{safe_get_emoji('main')} Atau pakai `{prefix}listbl` dulu
             """.strip()
             await safe_send_message(event, confirmation_text)
         
     except Exception as e:
         await safe_send_message(event, f"{safe_get_emoji('adder3')} {safe_convert_font('Error:', 'bold')} {str(e)}")
 
+# ===== PLUGIN INFO =====
 def get_plugin_info():
     return PLUGIN_INFO
 
+# ===== SETUP PLUGIN =====
 def setup(client_instance):
-    """Setup function untuk register event handlers"""
+    """Setup plugin: register event handlers"""
     global client
     client = client_instance
     
-    # Register event handlers
+    # Registrasi semua handler
     client.add_event_handler(add_blacklist_handler, events.NewMessage(pattern=r"\.addbl(\s+(.+))?"))
     client.add_event_handler(remove_blacklist_handler, events.NewMessage(pattern=r"\.rmbl(\s+(.+))?"))
     client.add_event_handler(list_blacklist_handler, events.NewMessage(pattern=r"\.listbl"))
     client.add_event_handler(clear_blacklist_handler, events.NewMessage(pattern=r"\.clearbl(\s+(.+))?"))
     
     print(f"✅ [GCast Blacklist] Plugin loaded with manual emoji mapping v{PLUGIN_INFO['version']}")
+     
