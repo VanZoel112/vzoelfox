@@ -1,0 +1,18 @@
+Database Backup Created
+Timestamp: 2025-08-29 19:04:07
+Files backed up: 11
+Failed: 0
+Backup directory: backups_20250829_190407
+
+Files included:
+- ./auto_update.db (0 bytes)
+- ./vzoel_assistant.db (36864 bytes)
+- ./stalker_monitor.db (24576 bytes)
+- ./data/main.db (16384 bytes)
+- ./plugins/aimode_simple.db (274432 bytes)
+- ./plugins/aimode_llama2.db (20480 bytes)
+- ./plugins/log.db (1269760 bytes)
+- ./plugins/welcome.db (8192 bytes)
+- ./plugins/pink.db (12288 bytes)
+- ./plugins/channel_logger.db (12288 bytes)
+- ./plugins/voice_clone.db (28672 bytes)
