@@ -242,6 +242,13 @@ async def join_vc_handler(event):
         )
         await env['safe_send_with_entities'](event, report)
         save_vc_log("join", report)
+        
+        # Send log to channel if available
+        if env and 'send_to_log_channel' in env:
+            try:
+                await env['send_to_log_channel'](f"🔊 **VC Joined**\n• Channel: {chat_title}\n• Topic: {monitor_state['current_topic']}\n• Time: {datetime.now().strftime('%H:%M:%S')}", "vc")
+            except Exception:
+                pass
     except ChatAdminRequiredError:
         report = "❌ Butuh hak admin untuk join VC."
         await env['safe_send_with_entities'](event, report)
@@ -282,6 +289,13 @@ async def leave_vc_handler(event):
         )
         await env['safe_send_with_entities'](event, report)
         save_vc_log("leave", report)
+        
+        # Send log to channel if available
+        if env and 'send_to_log_channel' in env:
+            try:
+                await env['send_to_log_channel'](f"🔇 **VC Left**\n• Channel: {vc_title}\n• Duration: {duration}\n• Topic: {topic}\n• Time: {datetime.now().strftime('%H:%M:%S')}", "vc")
+            except Exception:
+                pass
         monitor_state["vc_start_time"] = None
         monitor_state["current_topic"] = None
         monitor_state["chat_id"] = None

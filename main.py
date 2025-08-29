@@ -1486,6 +1486,14 @@ async def main():
     logger.info("🔍 Press Ctrl+C to stop")
     logger.info("🚀 All enhanced features active and bug fixes applied!")
     
+    # Send startup log to channel if channel_logger is available
+    try:
+        from plugins.channel_logger import send_to_log_channel
+        startup_msg = f"🚀 **VZOEL ASSISTANT Started**\n• Version: v0.1.0.76\n• Plugins: {len(plugin_loader.plugins) if plugin_loader else 0} loaded\n• Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n• Premium: {'Active' if premium_status else 'Standard'}"
+        asyncio.create_task(send_to_log_channel(startup_msg, "startup"))
+    except Exception as startup_log_error:
+        logger.warning(f"Startup log to channel failed: {startup_log_error}")
+    
     try:
         await client.run_until_disconnected()
     except KeyboardInterrupt:

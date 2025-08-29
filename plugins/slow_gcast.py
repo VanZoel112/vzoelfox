@@ -281,11 +281,27 @@ async def slow_gcast_handler(event):
         await event.edit(final_report)
         save_gcast_log(message, duration)
         
+        # Send log to channel if available
+        if env and 'send_to_log_channel' in env:
+            log_msg = f"{get_emoji('check')} **Slow GCast Completed**\n• Groups: {gcast_state['total_chats']}\n• Success: {gcast_state['success']}\n• Failed: {gcast_state['failed']}\n• Duration: {duration}"
+            try:
+                await env['send_to_log_channel'](log_msg, "gcast")
+            except Exception as log_e:
+                if env and 'logger' in env:
+                    env['logger'].warning(f"[Slow GCast] Channel log failed: {log_e}")
+        
     except Exception as e:
         error_msg = f"❌ Error dalam slow gcast: {e}"
         if env and 'logger' in env:
             env['logger'].error(f"[Slow GCast] Main error: {e}")
         await event.edit(error_msg)
+        
+        # Send error log to channel if available
+        if env and 'send_to_log_channel' in env:
+            try:
+                await env['send_to_log_channel'](f"{get_emoji('adder5')} **Slow GCast Error**\n• Error: {str(e)}\n• Time: {datetime.now().strftime('%H:%M:%S')}", "error")
+            except Exception:
+                pass
     
     finally:
         gcast_state["is_running"] = False
