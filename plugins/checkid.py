@@ -88,10 +88,23 @@ def save_id_log(user, chat, requester, method):
         return False
 
 async def id_handler(event):
+    print(f"[CheckID] Handler triggered by: {event.text}")
+    print(f"[CheckID] Sender ID: {event.sender_id}")
+    print(f"[CheckID] Environment available: {env is not None}")
+    
     # Check if env is properly initialized and has is_owner function
     if env is None or 'is_owner' not in env:
+        print("[CheckID] Environment not available or missing is_owner function")
         return
-    if not await env['is_owner'](event.sender_id):
+    
+    try:
+        is_owner = await env['is_owner'](event.sender_id)
+        print(f"[CheckID] Is owner check result: {is_owner}")
+        if not is_owner:
+            print("[CheckID] User is not owner, returning")
+            return
+    except Exception as e:
+        print(f"[CheckID] Error checking owner: {e}")
         return
     # Get client safely
     if 'get_client' not in env:
@@ -161,7 +174,19 @@ def get_plugin_info():
 
 def setup(client):
     global env
-    env = create_plugin_environment(client)
-    client.add_event_handler(id_handler, events.NewMessage(pattern=r"\.id"))
-    if env and 'logger' in env:
-        env['logger'].info("[CheckID] Plugin loaded and command registered.")
+    try:
+        env = create_plugin_environment(client)
+        print(f"[CheckID] Environment created: {env is not None}")
+        print(f"[CheckID] Available env functions: {list(env.keys()) if env else 'None'}")
+        
+        client.add_event_handler(id_handler, events.NewMessage(pattern=r"\.id(\s.*|$)"))
+        print("[CheckID] Event handler registered successfully")
+        
+        if env and 'logger' in env:
+            env['logger'].info("[CheckID] Plugin loaded and command registered.")
+        else:
+            print("[CheckID] Plugin loaded - no logger available")
+    except Exception as e:
+        print(f"[CheckID] Setup error: {e}")
+        import traceback
+        traceback.print_exc()
