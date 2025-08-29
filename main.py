@@ -979,7 +979,7 @@ Reply to message + `{COMMAND_PREFIX}gcast <additional text>`
         
         # Show enhanced progress message
         progress_msg = await event.reply(f"""
-{get_emoji('adder1')} {convert_font('Gcast Gacor by Vzoel'
+{get_emoji('adder1')} {convert_font('Gcast Gacor by Vzoel')}
 
 {get_emoji('check')} {convert_font('Mode:', 'bold')} {'Reply + Entity Preservation' if reply_message else 'Standard Text'}
 {get_emoji('adder1')} {convert_font('Status:', 'bold')} Gasss...
