@@ -1585,3 +1585,428 @@
 2025-08-29 13:26:44,415 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
 2025-08-29 13:27:36,472 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
 2025-08-29 13:27:52,047 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:28:12,073 - telethon.client.updates - INFO - Got difference for channel 2340494323 updates
+2025-08-29 13:28:20,283 - telethon.client.updates - INFO - Got difference for channel 2340494323 updates
+2025-08-29 13:28:36,560 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:28:36,684 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:28:54,748 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:28:56,112 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:29:00,162 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:29:01,898 - __main__ - INFO - Command 'ping' executed by 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (7847025168) in Private Chat
+2025-08-29 13:29:35,517 - telethon.network.connection.connection - WARNING - Server closed the connection: [Errno 103] Software caused connection abort
+2025-08-29 13:29:35,526 - telethon.network.connection.connection - INFO - The server closed the connection while sending
+2025-08-29 13:29:35,541 - telethon.network.mtprotosender - INFO - Connection closed while receiving data: Not connected
+2025-08-29 13:29:35,543 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2025-08-29 13:29:35,550 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:29:35,556 - telethon.network.connection.connection - INFO - <class 'ConnectionAbortedError'> during disconnect: [Errno 103] Software caused connection abort
+2025-08-29 13:29:35,603 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:29:35,690 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,695 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,704 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,708 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,730 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,737 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,743 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,747 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,753 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,757 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,763 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,768 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,773 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:29:35,783 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:29:36,749 - telethon.client.updates - INFO - Got difference for channel 2829694602 updates
+2025-08-29 13:29:38,949 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:29:39,080 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:29:44,907 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:29:45,058 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:29:59,697 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 13:30:00,450 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:30:00,735 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:30:02,064 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:30:03,160 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:30:03,227 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:30:08,464 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:30:13,634 - telethon.network.connection.connection - WARNING - Server closed the connection: [Errno 103] Software caused connection abort
+2025-08-29 13:30:13,637 - telethon.network.mtprotosender - INFO - Connection closed while receiving data: [Errno 103] Software caused connection abort
+2025-08-29 13:30:13,646 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2025-08-29 13:30:13,649 - telethon.network.connection.connection - INFO - <class 'ConnectionAbortedError'> during disconnect: [Errno 103] Software caused connection abort
+2025-08-29 13:30:13,650 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:30:13,693 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:30:18,733 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:30:25,813 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:30:26,540 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:30:30,967 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:30:34,030 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 13:30:35,470 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:30:36,769 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 13:30:37,398 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:30:58,103 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:31:07,599 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 13:31:30,259 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:31:30,893 - telethon.client.updates - INFO - Got difference for channel 2800398246 updates
+2025-08-29 13:31:45,596 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 13:32:11,995 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 13:32:16,862 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:32:30,051 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:32:30,864 - telethon.client.updates - INFO - Got difference for channel 2846734856 updates
+2025-08-29 13:32:45,958 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:32:49,162 - telethon.client.updates - INFO - Got difference for channel 2829694602 updates
+2025-08-29 13:33:03,677 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:33:24,520 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:33:28,561 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:33:30,621 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:33:38,001 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:33:38,818 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:33:39,015 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:33:39,090 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:33:42,761 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:33:43,001 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:33:43,426 - telethon.client.updates - INFO - Got difference for channel 2340494323 updates
+2025-08-29 13:33:44,360 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:33:45,796 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:33:52,629 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:33:53,611 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:33:54,199 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:33:55,967 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:34:12,196 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:34:16,680 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:34:22,307 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:34:35,697 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:34:39,980 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:34:40,738 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:34:42,215 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:34:57,134 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:35:07,899 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:35:22,418 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:35:30,904 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:35:31,366 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:35:53,735 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:35:55,094 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:36:04,415 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:36:04,526 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 13:36:20,693 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:36:27,513 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:36:28,597 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:36:39,310 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:36:52,621 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:37:01,191 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:37:04,958 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:37:08,038 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:37:08,143 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:37:17,033 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:37:30,729 - __main__ - INFO - Command 'gcast' executed by 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (7847025168) in Private Chat
+2025-08-29 13:37:38,676 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:37:42,917 - __main__ - INFO - Command 'gcast' executed by 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (7847025168) in Private Chat
+2025-08-29 13:37:43,139 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:37:43,331 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:37:43,815 - __main__ - INFO - Found 28 valid broadcast targets
+2025-08-29 13:37:45,785 - __main__ - ERROR - Error sending to Bacolan 👑: RPCError 400: TOPIC_CLOSED (caused by SendMessageRequest)
+2025-08-29 13:38:17,745 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:38:25,831 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:38:51,110 - telethon.client.updates - INFO - Got difference for channel 3058381426 updates
+2025-08-29 13:39:02,990 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:39:03,177 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:39:05,328 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:39:05,434 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:39:12,226 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:39:13,056 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:39:14,169 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:39:23,312 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:39:39,147 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:39:48,438 - __main__ - INFO - Command 'ping' executed by 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (7847025168) in Private Chat
+2025-08-29 13:40:09,281 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:40:11,451 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:40:20,966 - __main__ - INFO - Command 'ping' executed by 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (7847025168) in Private Chat
+2025-08-29 13:40:22,026 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:40:35,493 - __main__ - INFO - Command 'alive' executed by 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (7847025168) in Private Chat
+2025-08-29 13:40:40,374 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:40:42,766 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:40:48,045 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 13:40:52,401 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:40:52,729 - telethon.client.users - INFO - Sleeping for 5s (0:00:05) on CreateChannelRequest flood wait
+2025-08-29 13:40:57,541 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:40:58,782 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:41:00,831 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:41:02,510 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:41:04,793 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:41:17,771 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:41:26,577 - telethon.client.updates - ERROR - Unhandled exception on id_handler
+Traceback (most recent call last):
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/telethon/client/updates.py", line 570, in _dispatch_update
+    await callback(event)
+  File "/data/data/com.termux/files/home/vzoelfox/plugins/checkid.py", line 91, in id_handler
+    if not await env['is_owner'](event.sender_id):
+                 ~~~^^^^^^^^^^^^
+KeyError: 'is_owner'
+2025-08-29 13:41:51,650 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:41:55,539 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:42:02,328 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:42:06,403 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:42:11,123 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:42:23,186 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:42:23,423 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:42:40,056 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:42:46,090 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:42:52,393 - telethon.client.updates - INFO - Got difference for channel 2829694602 updates
+2025-08-29 13:42:57,484 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:43:00,536 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:43:02,369 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:43:03,364 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:43:37,114 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:43:42,653 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:44:26,139 - telethon.network.connection.connection - WARNING - Server closed the connection: [Errno 103] Software caused connection abort
+2025-08-29 13:44:26,144 - telethon.network.connection.connection - INFO - The server closed the connection while sending
+2025-08-29 13:44:26,159 - telethon.network.mtprotosender - INFO - Connection closed while receiving data: Not connected
+2025-08-29 13:44:26,171 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2025-08-29 13:44:26,172 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:44:26,180 - telethon.network.connection.connection - INFO - <class 'ConnectionAbortedError'> during disconnect: [Errno 103] Software caused connection abort
+2025-08-29 13:44:26,309 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:44:26,392 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,395 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,399 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,404 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,408 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,419 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,429 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,433 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,443 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,450 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,456 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,461 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,466 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,471 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,479 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,485 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,491 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,497 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,502 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,507 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,512 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,520 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,527 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,535 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,546 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,556 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,566 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,574 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,589 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 13:44:26,871 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:44:27,661 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:44:29,247 - telethon.client.updates - INFO - Got difference for channel 3058381426 updates
+2025-08-29 13:44:34,491 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:44:34,864 - telethon.client.updates - INFO - Got difference for channel 2829694602 updates
+2025-08-29 13:44:38,659 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:44:38,776 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 13:44:40,794 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:44:47,843 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:44:50,117 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:44:50,714 - telethon.client.updates - ERROR - Unhandled exception on auto_ai_responder
+Traceback (most recent call last):
+  File "/data/data/com.termux/files/home/vzoelfox/plugins/aimode_simple.py", line 456, in auto_ai_responder
+    await event.reply(ai_response)
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/telethon/tl/custom/message.py", line 779, in reply
+    return await self._client.send_message(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/telethon/client/messages.py", line 926, in send_message
+    result = await self(request)
+             ^^^^^^^^^^^^^^^^^^^
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/telethon/client/users.py", line 30, in __call__
+    return await self._call(self._sender, request, ordered=ordered)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/telethon/client/users.py", line 92, in _call
+    result = await future
+             ^^^^^^^^^^^^
+telethon.errors.rpcerrorlist.ChatWriteForbiddenError: You can't write in this chat (caused by SendMessageRequest)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/telethon/client/updates.py", line 570, in _dispatch_update
+    await callback(event)
+  File "/data/data/com.termux/files/home/vzoelfox/plugins/aimode_simple.py", line 465, in auto_ai_responder
+    print(f"Auto AI responder error: {e}")
+BrokenPipeError: [Errno 32] Broken pipe
+2025-08-29 13:44:50,774 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:44:52,128 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:45:08,551 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 13:45:16,181 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 13:45:18,980 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:45:26,899 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:45:39,897 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:45:44,725 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:45:44,846 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:45:46,771 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:46:05,907 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:46:07,014 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:46:18,347 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:46:19,373 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:46:26,318 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:46:33,702 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:46:38,377 - telethon.client.updates - INFO - Got difference for channel 2846734856 updates
+2025-08-29 13:46:38,540 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:46:41,215 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 13:46:45,736 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:46:45,837 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:46:55,554 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:46:56,167 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:47:00,645 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:47:01,385 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:47:02,116 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:47:04,639 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:47:09,010 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 13:47:09,021 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 13:47:09,023 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 13:47:09,025 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 13:47:09,026 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 13:47:09,027 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:47:09,375 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:47:10,965 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:47:14,407 - __main__ - ERROR - ❌ Error starting VZOEL ASSISTANT: database is locked
+2025-08-29 13:47:14,408 - __main__ - ERROR - ❌ Core system startup failed
+2025-08-29 13:47:17,667 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:47:34,308 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 13:47:38,671 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:47:48,367 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:47:55,039 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:48:01,701 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:48:02,440 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 13:48:23,150 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:48:41,964 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:48:43,516 - telethon.client.updates - INFO - Account is now banned in 2340494323 so we can no longer fetch updates from it
+2025-08-29 13:48:48,982 - telethon.client.updates - INFO - Got difference for channel 2846734856 updates
+2025-08-29 13:48:53,585 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:49:23,675 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:49:38,883 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:49:51,542 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:49:51,659 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:49:59,602 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:50:16,964 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:50:28,069 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:50:42,157 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:50:44,182 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:50:58,263 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 13:50:58,273 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 13:50:58,275 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 13:50:58,277 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 13:50:58,278 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 13:50:58,279 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:50:58,343 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:50:59,102 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 13:50:59,207 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 13:50:59,208 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 13:50:59,209 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 13:50:59,210 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 13:50:59,210 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 13:50:59,211 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 13:50:59,499 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 13:50:59,500 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 13:50:59,501 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 13:50:59,502 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 13:50:59,507 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 13:50:59,511 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 13:50:59,518 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 13:50:59,527 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 13:50:59,529 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 13:50:59,530 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 13:50:59,537 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 13:50:59,539 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 13:50:59,568 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 13:50:59,573 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 13:50:59,577 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 13:50:59,578 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 13:50:59,580 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 13:50:59,583 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 13:50:59,583 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 13:50:59,585 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 13:50:59,589 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 13:50:59,589 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 13:50:59,590 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 13:50:59,594 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 13:50:59,600 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 13:50:59,603 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 13:50:59,605 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 13:50:59,606 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 13:50:59,609 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 13:50:59,610 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 13:50:59,611 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 13:50:59,615 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 13:50:59,616 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 13:50:59,617 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 13:50:59,620 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 13:50:59,625 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 13:50:59,628 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 13:50:59,629 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 13:50:59,630 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 13:51:00,238 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 13:51:00,239 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 13:51:00,240 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 13:51:00,245 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 13:51:00,247 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 13:51:00,248 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 13:51:00,257 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 13:51:00,258 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 13:51:00,259 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 13:51:00,264 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:51:00,265 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 13:51:00,266 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 13:51:00,271 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:51:00,272 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 13:51:00,272 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 13:51:00,296 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 13:51:00,297 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 13:51:00,298 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 13:51:00,302 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 13:51:00,307 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 13:51:00,317 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:51:00,318 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 13:51:00,319 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 13:51:00,324 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:51:00,325 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 13:51:00,326 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 13:51:00,330 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 13:51:00,331 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 13:51:00,332 - plugin_loader - INFO - Loading plugin: test_handler
+2025-08-29 13:51:00,337 - plugin_loader - INFO - ✅ Plugin test_handler setup completed
+2025-08-29 13:51:00,337 - plugin_loader - INFO - ✅ Plugin loaded successfully: test_handler
+2025-08-29 13:51:00,338 - plugin_loader - INFO - Loading plugin: channel_logger
+2025-08-29 13:51:00,342 - plugin_loader - INFO - ✅ Plugin channel_logger setup completed
+2025-08-29 13:51:00,344 - plugin_loader - INFO - ✅ Plugin loaded successfully: channel_logger
+2025-08-29 13:51:00,345 - plugin_loader - INFO - Loading plugin: emoji_template
+2025-08-29 13:51:00,347 - plugin_loader - INFO - ✅ Plugin loaded successfully: emoji_template
+2025-08-29 13:51:00,348 - plugin_loader - INFO - Plugin loading complete: 21/26 loaded successfully
+2025-08-29 13:51:00,349 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:51:00,350 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 13:51:00,351 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 13:51:00,351 - plugin_loader - INFO -    📊 Total found: 26
+2025-08-29 13:51:00,352 - plugin_loader - INFO -    ✅ Successfully loaded: 21
+2025-08-29 13:51:00,353 - plugin_loader - INFO -    ❌ Failed to load: 5
+2025-08-29 13:51:00,354 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast, test_handler, channel_logger, emoji_template
+2025-08-29 13:51:00,354 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:51:00,355 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 13:51:00,356 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 13:51:00,357 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 13:51:00,358 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 13:51:00,359 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 13:51:00,361 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 13:51:00,362 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 13:51:00,363 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 13:51:00,364 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 13:51:00,365 - plugin_loader - INFO -       - help: help, .help
+2025-08-29 13:51:00,365 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 13:51:00,366 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 13:51:00,366 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 13:51:00,367 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 13:51:00,367 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 13:51:00,368 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 13:51:00,368 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 13:51:00,369 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 13:51:00,369 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 13:51:00,370 - plugin_loader - INFO -       - test_handler: .test, .emoji, .status, .premium
+2025-08-29 13:51:00,370 - plugin_loader - INFO -       - channel_logger: .logtest, .logstatus, .setchannel
+2025-08-29 13:51:00,370 - __main__ - INFO - ✅ Plugins loaded: 21/26
+2025-08-29 13:51:00,371 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:51:00,379 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 13:51:00,380 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 13:51:00,381 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 13:51:00,382 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 13:51:10,485 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
