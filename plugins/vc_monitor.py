@@ -126,7 +126,8 @@ async def monitor_vc(client, chat):
                         f"🔊 Channel: {vc_title}\n"
                         f"📜 Topik: {topic}"
                     )
-                    await env['safe_send_with_entities']('me', report)
+                    me = await client.get_me()
+                    await env['safe_send_with_entities'](me.id, report)
                     save_vc_log("disconnect", report)
                     break
             except Exception as e:
