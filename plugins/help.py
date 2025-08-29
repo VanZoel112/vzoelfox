@@ -8,7 +8,7 @@ Author: Vzoel Fox's (Enhanced by Morgan)
 import re
 import os
 import sys
-from telethon import events
+from telethon import events, Button
 from telethon.tl.types import MessageEntityCustomEmoji
 from datetime import datetime
 
@@ -125,8 +125,8 @@ def create_premium_entities(text):
     except Exception:
         return []
 
-async def safe_send_with_entities(event, text):
-    """Send message with premium entities if available"""
+async def safe_send_with_entities(event, text, buttons=None):
+    """Send message with premium entities and buttons if available"""
     try:
         # Check premium status first
         await check_premium_status()
@@ -134,14 +134,14 @@ async def safe_send_with_entities(event, text):
         if premium_status:
             entities = create_premium_entities(text)
             if entities:
-                await event.reply(text, formatting_entities=entities)
+                await event.reply(text, formatting_entities=entities, buttons=buttons)
                 return
         
-        # Fallback to normal reply
-        await event.reply(text)
+        # Fallback to normal reply with buttons
+        await event.reply(text, buttons=buttons)
     except Exception:
         # Final fallback
-        await event.reply(text)
+        await event.reply(text, buttons=buttons)
 
 async def is_owner_check(user_id):
     """Check if user is owner"""
@@ -179,44 +179,36 @@ async def help_handler(event):
         LOGO_URL = "https://imgur.com/gallery/logo-S6biYEi"
         
         if not category:
-            # Main help menu dengan premium emoji
+            # Main help menu dengan premium emoji dan buttons
             help_text = f"""
-[🚩]({LOGO_URL}) {convert_font('VZOEL ASSISTANT v0.1.0.75 HELP', 'mono')}
+[🚩]({LOGO_URL}) {convert_font('VZOEL ASSISTANT v0.1.0.76 HELP', 'mono')}
 
 ╔══════════════════════════════════╗
    {get_emoji('main')} {convert_font('COMMAND CATEGORIES', 'mono')} {get_emoji('main')}
 ╚══════════════════════════════════╝
 
-{get_emoji('check')} {convert_font('Basic Commands:', 'bold')}
-`{prefix}help basic` - Status, ping, alive commands
-
-{get_emoji('adder1')} {convert_font('Broadcast Commands:', 'bold')}
-`{prefix}help gcast` - Global broadcasting features
-
-{get_emoji('adder2')} {convert_font('Emoji Commands:', 'bold')}
-`{prefix}help emoji` - Premium emoji management
-
-{get_emoji('adder3')} {convert_font('User Commands:', 'bold')}
-`{prefix}help user` - User info, ID commands
-
-{get_emoji('adder4')} {convert_font('Voice Chat Commands:', 'bold')}
-`{prefix}help voice` - Voice chat controls
-
-{get_emoji('adder5')} {convert_font('Management Commands:', 'bold')}
-`{prefix}help manage` - Blacklist, settings
-
-{get_emoji('adder6')} {convert_font('System Commands:', 'bold')}
-`{prefix}help system` - Restart, founder info
-
 {get_emoji('main')} {convert_font('Quick Usage:', 'bold')}
 {get_emoji('check')} `{prefix}alive` - Bot status
 {get_emoji('check')} `{prefix}gcast <text>` - Broadcast message
+{get_emoji('check')} `{prefix}sgcast <text>` - Slow broadcast (anti-spam)
 {get_emoji('check')} Reply + `{prefix}gcast` - Enhanced gcast
 {get_emoji('check')} Reply + `{prefix}setemoji` - Auto extract emojis
 
-{convert_font('Type', 'bold')} `{prefix}help <category>` {convert_font('for detailed commands', 'bold')}
-{get_emoji('check')} {convert_font('Total Commands Available: 25+', 'bold')}
+{convert_font('Click buttons below for detailed help:', 'bold')}
+{get_emoji('check')} {convert_font('Total Commands Available: 30+', 'bold')}
             """.strip()
+            
+            # Create inline buttons
+            buttons = [
+                [Button.inline(f"{get_emoji('check')} Basic", b"help_basic"),
+                 Button.inline(f"{get_emoji('adder1')} Broadcast", b"help_gcast")],
+                [Button.inline(f"{get_emoji('adder2')} Emoji", b"help_emoji"),
+                 Button.inline(f"{get_emoji('adder3')} User", b"help_user")],
+                [Button.inline(f"{get_emoji('adder4')} Voice", b"help_voice"),
+                 Button.inline(f"{get_emoji('adder5')} Manage", b"help_manage")],
+                [Button.inline(f"{get_emoji('adder6')} System", b"help_system"),
+                 Button.inline(f"{get_emoji('main')} Back to Menu", b"help_main")]
+            ]
             
         elif category == "basic":
             help_text = f"""
@@ -453,8 +445,13 @@ Show founder and bot information
 {get_emoji('main')} Use `{prefix}help` for main menu
             """.strip()
         
-        # Send with premium entities
-        await safe_send_with_entities(event, help_text)
+        # Send with premium entities and buttons
+        if not category:
+            await safe_send_with_entities(event, help_text, buttons)
+        else:
+            # Add back button for category pages
+            back_button = [[Button.inline(f"{get_emoji('main')} Back to Menu", b"help_main")]]
+            await safe_send_with_entities(event, help_text, back_button)
         
     except Exception as e:
         error_text = f"""
@@ -463,6 +460,302 @@ Show founder and bot information
 {get_emoji('check')} Try: `{get_prefix()}help` for main menu
         """.strip()
         await safe_send_with_entities(event, error_text)
+
+# Button callback handler
+@client.on(events.CallbackQuery(pattern=rb"help_(.+)"))
+async def help_callback_handler(event):
+    """Handle inline button callbacks for help menu"""
+    if not await is_owner_check(event.sender_id):
+        await event.answer("❌ Only owner can use this!", alert=True)
+        return
+    
+    try:
+        category = event.data.decode('utf-8').split('_', 1)[1]
+        prefix = get_prefix()
+        
+        LOGO_URL = "https://imgur.com/gallery/logo-S6biYEi"
+        
+        if category == "main":
+            # Main help menu
+            help_text = f"""
+[🚩]({LOGO_URL}) {convert_font('VZOEL ASSISTANT v0.1.0.76 HELP', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('COMMAND CATEGORIES', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('main')} {convert_font('Quick Usage:', 'bold')}
+{get_emoji('check')} `{prefix}alive` - Bot status
+{get_emoji('check')} `{prefix}gcast <text>` - Broadcast message
+{get_emoji('check')} `{prefix}sgcast <text>` - Slow broadcast (anti-spam)
+{get_emoji('check')} Reply + `{prefix}gcast` - Enhanced gcast
+{get_emoji('check')} Reply + `{prefix}setemoji` - Auto extract emojis
+
+{convert_font('Click buttons below for detailed help:', 'bold')}
+{get_emoji('check')} {convert_font('Total Commands Available: 30+', 'bold')}
+            """.strip()
+            
+            buttons = [
+                [Button.inline(f"{get_emoji('check')} Basic", b"help_basic"),
+                 Button.inline(f"{get_emoji('adder1')} Broadcast", b"help_gcast")],
+                [Button.inline(f"{get_emoji('adder2')} Emoji", b"help_emoji"),
+                 Button.inline(f"{get_emoji('adder3')} User", b"help_user")],
+                [Button.inline(f"{get_emoji('adder4')} Voice", b"help_voice"),
+                 Button.inline(f"{get_emoji('adder5')} Manage", b"help_manage")],
+                [Button.inline(f"{get_emoji('adder6')} System", b"help_system"),
+                 Button.inline("🔄 Refresh", b"help_main")]
+            ]
+            
+        elif category == "basic":
+            help_text = f"""
+{get_emoji('check')} {convert_font('BASIC COMMANDS', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('STATUS & DIAGNOSTICS', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} `{prefix}alive`
+Show comprehensive bot status with statistics
+
+{get_emoji('check')} `{prefix}ping` 
+Test response time and latency analysis
+
+{get_emoji('adder1')} `{prefix}help [category]`
+Show command help (this menu)
+
+{get_emoji('adder2')} `{prefix}plugins`
+Show loaded plugins status
+
+{get_emoji('main')} {convert_font('Example Usage:', 'bold')}
+• `{prefix}alive` - Full system status
+• `{prefix}ping` - Response time test
+• `{prefix}help gcast` - Gcast commands help
+            """.strip()
+            buttons = [[Button.inline(f"{get_emoji('main')} Back to Menu", b"help_main")]]
+            
+        elif category == "gcast":
+            help_text = f"""
+{get_emoji('adder1')} {convert_font('BROADCAST COMMANDS', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('GLOBAL CASTING ENHANCED', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('adder2')} `{prefix}gcast <message>`
+Standard broadcast to all groups/channels
+
+{get_emoji('main')} `{prefix}sgcast <message>`
+NEW: Slow broadcast with 15s delay (anti-spam)
+
+{get_emoji('check')} Reply to message + `{prefix}gcast`
+Enhanced gcast with entity preservation
+
+{get_emoji('adder3')} Reply to message + `{prefix}sgcast`
+Forward message with slow broadcast
+
+{get_emoji('adder4')} {convert_font('Enhanced Features:', 'bold')}
+{get_emoji('check')} Premium emoji preservation
+{get_emoji('check')} Concurrent broadcasting (gcast)
+{get_emoji('check')} Anti-spam delays (sgcast)
+{get_emoji('check')} Advanced error handling
+{get_emoji('check')} Blacklist filtering
+{get_emoji('check')} Real-time progress updates
+{get_emoji('check')} Animated progress (sgcast)
+
+{get_emoji('adder5')} {convert_font('Usage Examples:', 'bold')}
+• `{prefix}gcast Hello everyone!`
+• `{prefix}sgcast Important announcement`
+• Reply to emoji message + `{prefix}gcast`
+• Reply to any message + `{prefix}sgcast`
+            """.strip()
+            buttons = [[Button.inline(f"{get_emoji('main')} Back to Menu", b"help_main")]]
+            
+        elif category == "emoji":
+            help_text = f"""
+{get_emoji('adder2')} {convert_font('EMOJI COMMANDS', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('PREMIUM EMOJI SYSTEM', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('main')} Reply to message + `{prefix}setemoji`
+NEW: Auto-extract ALL premium emojis from message
+
+{get_emoji('check')} `{prefix}setemoji <type> <emoji_id>`
+Manually set premium emoji by ID
+
+{get_emoji('adder3')} {convert_font('Available Types:', 'bold')}
+• main, check, adder1, adder2, adder3, adder4, adder5, adder6
+
+{get_emoji('adder4')} {convert_font('How to Get Emoji ID:', 'bold')}
+1. Send premium emoji in any chat
+2. Forward to @userinfobot
+3. Copy document_id from response
+
+{get_emoji('adder5')} {convert_font('Auto-Extract Features:', 'bold')}
+{get_emoji('check')} Extracts all premium emojis automatically
+{get_emoji('check')} Validates emoji IDs
+{get_emoji('check')} Maps to available slots
+{get_emoji('check')} Saves to database
+{get_emoji('check')} Shows detailed extraction report
+
+{get_emoji('adder6')} {convert_font('Usage Examples:', 'bold')}
+• Reply to emoji message + `{prefix}setemoji`
+• `{prefix}setemoji main 6156784006194009426`
+            """.strip()
+            buttons = [[Button.inline(f"{get_emoji('main')} Back to Menu", b"help_main")]]
+            
+        elif category == "user":
+            help_text = f"""
+{get_emoji('adder3')} {convert_font('USER COMMANDS', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('USER INFORMATION TOOLS', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} `{prefix}info [user]`
+Get detailed user information
+
+{get_emoji('check')} `{prefix}id`
+Get current chat and user IDs
+
+{get_emoji('adder1')} `{prefix}vzl <user> <custom_text>`
+Create stylized user mention with custom text
+
+{get_emoji('adder2')} {convert_font('User Input Methods:', 'bold')}
+• Reply to message (auto-detect user)
+• Username: @username
+• User ID: 123456789
+• No parameter (gets your own info)
+
+{get_emoji('adder4')} {convert_font('Usage Examples:', 'bold')}
+• `{prefix}info` - Your own info
+• Reply to message + `{prefix}info` - Target user info
+• `{prefix}info @username` - Specific user info
+• `{prefix}id` - Chat and user IDs
+• `{prefix}vzl @user Thanks for help!`
+            """.strip()
+            buttons = [[Button.inline(f"{get_emoji('main')} Back to Menu", b"help_main")]]
+            
+        elif category == "voice":
+            help_text = f"""
+{get_emoji('adder4')} {convert_font('VOICE CHAT COMMANDS', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('VOICE CHAT CONTROLS', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} `{prefix}joinvc`
+Join voice chat in current group/channel
+
+{get_emoji('adder1')} `{prefix}leavevc`
+Leave current voice chat
+
+{get_emoji('adder2')} `{prefix}vcstatus`
+Check voice chat monitoring status
+
+{get_emoji('adder3')} {convert_font('Requirements:', 'bold')}
+{get_emoji('check')} Active voice chat in the group
+{get_emoji('check')} Proper permissions (admin rights may be needed)
+{get_emoji('check')} Group/channel must support voice chats
+
+{get_emoji('adder5')} {convert_font('Features:', 'bold')}
+{get_emoji('check')} Auto-detect voice chat availability
+{get_emoji('check')} Enhanced error handling
+{get_emoji('check')} Duration tracking
+{get_emoji('check')} Auto-disconnect notifications
+{get_emoji('check')} Database logging
+
+{get_emoji('adder6')} {convert_font('Usage:', 'bold')}
+• Use in group/channel with active voice chat
+• Bot will join muted by default
+• Check permissions if join fails
+            """.strip()
+            buttons = [[Button.inline(f"{get_emoji('main')} Back to Menu", b"help_main")]]
+            
+        elif category == "manage":
+            help_text = f"""
+{get_emoji('adder5')} {convert_font('MANAGEMENT COMMANDS', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('BLACKLIST & SETTINGS', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} `{prefix}addbl [chat_id]`
+Add chat to gcast blacklist
+
+{get_emoji('adder1')} `{prefix}rmbl <chat_id>`
+Remove chat from blacklist
+
+{get_emoji('adder2')} `{prefix}listbl`
+Show all blacklisted chats
+
+{get_emoji('adder3')} `{prefix}sg`
+Toggle spam guard on/off
+
+{get_emoji('adder4')} {convert_font('Blacklist Features:', 'bold')}
+{get_emoji('check')} Auto-saves to JSON file
+{get_emoji('check')} Persistent across restarts
+{get_emoji('check')} Shows chat titles when possible
+{get_emoji('check')} Prevents accidental broadcasts
+
+{get_emoji('adder6')} {convert_font('Usage Examples:', 'bold')}
+• `{prefix}addbl` - Add current chat
+• `{prefix}addbl -1001234567890` - Add specific chat
+• `{prefix}rmbl -1001234567890` - Remove from blacklist
+• `{prefix}listbl` - View all blacklisted
+            """.strip()
+            buttons = [[Button.inline(f"{get_emoji('main')} Back to Menu", b"help_main")]]
+            
+        elif category == "system":
+            help_text = f"""
+{get_emoji('adder6')} {convert_font('SYSTEM COMMANDS', 'mono')}
+
+╔══════════════════════════════════╗
+   {get_emoji('main')} {convert_font('SYSTEM ADMINISTRATION', 'mono')} {get_emoji('main')}
+╚══════════════════════════════════╝
+
+{get_emoji('check')} `{prefix}restart`
+Restart the bot (with confirmation)
+
+{get_emoji('adder1')} `{prefix}infofounder`
+Show founder and bot information
+
+{get_emoji('adder2')} {convert_font('System Information:', 'bold')}
+{get_emoji('check')} Runtime statistics
+{get_emoji('check')} Error handling status
+{get_emoji('check')} Database connectivity
+{get_emoji('check')} Plugin system status
+{get_emoji('check')} Premium feature availability
+
+{get_emoji('adder3')} {convert_font('Safety Features:', 'bold')}
+{get_emoji('check')} Restart confirmation required
+{get_emoji('check')} Graceful shutdown process
+{get_emoji('check')} Configuration auto-save
+{get_emoji('check')} Error logging maintained
+
+{get_emoji('adder4')} {convert_font('Usage:', 'bold')}
+• `{prefix}restart` - Restart with confirmation
+• `{prefix}infofounder` - About the bot and creator
+            """.strip()
+            buttons = [[Button.inline(f"{get_emoji('main')} Back to Menu", b"help_main")]]
+        
+        # Check premium status
+        await check_premium_status()
+        
+        if premium_status:
+            entities = create_premium_entities(help_text)
+            if entities:
+                await event.edit(help_text, formatting_entities=entities, buttons=buttons)
+                await event.answer()
+                return
+        
+        # Fallback
+        await event.edit(help_text, buttons=buttons)
+        await event.answer()
+        
+    except Exception as e:
+        await event.answer(f"Error: {str(e)}", alert=True)
 
 # Plugin info
 PLUGIN_INFO = {
