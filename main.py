@@ -979,10 +979,10 @@ Reply to message + `{COMMAND_PREFIX}gcast <additional text>`
         
         # Show enhanced progress message
         progress_msg = await event.reply(f"""
-{get_emoji('main')} {convert_font('ENHANCED GCAST STARTING', 'bold')}
+{get_emoji('adder1')} {convert_font('Gcast Gacor by Vzoel Fox's {get_emoji('check')}', 'bold')}
 
 {get_emoji('check')} {convert_font('Mode:', 'bold')} {'Reply + Entity Preservation' if reply_message else 'Standard Text'}
-{get_emoji('adder1')} {convert_font('Status:', 'bold')} Preparing broadcast...
+{get_emoji('adder1')} {convert_font('Status:', 'bold')} Gasss...
         """.strip())
         
         # Progress callback for updates
@@ -1014,9 +1014,7 @@ Reply to message + `{COMMAND_PREFIX}gcast <additional text>`
             final_text = f"""
 {get_emoji('adder2')} {convert_font('GCAST COMPLETED!', 'mono')}
 
-╔══════════════════════════════════╗
      {convert_font('BROADCAST RESULTS', 'mono')} 
-╚══════════════════════════════════╝
 
 {get_emoji('adder4')} {convert_font('Statistics:', 'bold')}
 {get_emoji('check')} Total Channels: `{result['channels_total']}`
