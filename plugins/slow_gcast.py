@@ -1,34 +1,120 @@
 """
-Slow GCast Plugin for Vzoel Assistant
-Fitur: GCast dengan delay dan animasi edit untuk mengurangi spam
-Kompatibel: main.py, plugin_loader.py, assetjson.py (v3+)
+Slow GCast Plugin STANDALONE - No AssetJSON dependency  
+File: plugins/slow_gcast.py
 Author: Vzoel Fox's (Enhanced by Morgan)
-Version: 1.0.0
+Version: 2.0.0 - Standalone
+Fitur: GCast dengan delay dan animasi edit untuk mengurangi spam
 """
 
 import asyncio
 from datetime import datetime
 from telethon import events
 from telethon.errors import FloodWaitError, ChatWriteForbiddenError, UserBannedInChannelError
+from telethon.tl.types import MessageEntityCustomEmoji
 import sqlite3
 import os
 
-# ===== Plugin Info (Untuk plugin loader) =====
+# ===== Plugin Info =====
 PLUGIN_INFO = {
     "name": "slow_gcast",
-    "version": "1.0.0",
-    "description": "GCast dengan delay dan animasi edit untuk mengurangi spam",
+    "version": "2.0.0",
+    "description": "Standalone slow gcast with premium emoji animations",
     "author": "Vzoel Fox's (Enhanced by Morgan)",
     "commands": [".sgcast", ".slowgcast", ".sgstatus"],
-    "features": ["slow gcast", "animated editing", "anti spam", "progress tracking", "database logging"]
+    "features": ["slow gcast", "animated editing", "anti spam", "progress tracking", "database logging", "premium emojis"]
 }
 
-try:
-    from assetjson import create_plugin_environment
-except ImportError:
-    def create_plugin_environment(client=None): return {}
+# ===== PREMIUM EMOJI CONFIGURATION (STANDALONE) =====
+PREMIUM_EMOJIS = {
+    'main': {'id': '6156784006194009426', 'char': '🤩'},
+    'check': {'id': '5794353925360457382', 'char': '⚙️'},
+    'adder1': {'id': '5794407002566300853', 'char': '⛈'},
+    'adder2': {'id': '5793913811471700779', 'char': '✅'},
+    'adder3': {'id': '5321412209992033736', 'char': '👽'},
+    'adder4': {'id': '5793973133559993740', 'char': '✈️'},
+    'adder5': {'id': '5357404860566235955', 'char': '😈'},
+    'adder6': {'id': '5794323465452394551', 'char': '🎚️'}
+}
 
-env = None
+def get_emoji(emoji_type):
+    """Get premium emoji character"""
+    return PREMIUM_EMOJIS.get(emoji_type, {}).get('char', '🤩')
+
+def create_premium_entities(text):
+    """Create premium emoji entities for text"""
+    try:
+        entities = []
+        current_offset = 0
+        i = 0
+        
+        while i < len(text):
+            found_emoji = False
+            
+            for emoji_type, emoji_data in PREMIUM_EMOJIS.items():
+                emoji_char = emoji_data['char']
+                emoji_id = emoji_data['id']
+                
+                if text[i:].startswith(emoji_char):
+                    try:
+                        emoji_bytes = emoji_char.encode('utf-16-le')
+                        utf16_length = len(emoji_bytes) // 2
+                        
+                        entities.append(MessageEntityCustomEmoji(
+                            offset=current_offset,
+                            length=utf16_length,
+                            document_id=int(emoji_id)
+                        ))
+                        
+                        i += len(emoji_char)
+                        current_offset += utf16_length
+                        found_emoji = True
+                        break
+                        
+                    except Exception:
+                        break
+            
+            if not found_emoji:
+                char = text[i]
+                char_bytes = char.encode('utf-16-le')
+                char_utf16_length = len(char_bytes) // 2
+                current_offset += char_utf16_length
+                i += 1
+        
+        return entities
+    except Exception:
+        return []
+
+async def safe_edit_premium(event, text):
+    """Edit message with premium entities"""
+    try:
+        entities = create_premium_entities(text)
+        if entities:
+            await event.edit(text, formatting_entities=entities)
+        else:
+            await event.edit(text)
+    except Exception:
+        await event.edit(text)
+
+async def safe_send_premium(event, text):
+    """Send message with premium entities"""
+    try:
+        entities = create_premium_entities(text)
+        if entities:
+            await event.reply(text, formatting_entities=entities)
+        else:
+            await event.reply(text)
+    except Exception:
+        await event.reply(text)
+
+async def is_owner_check(client, user_id):
+    """Check if user is bot owner"""
+    try:
+        me = await client.get_me()
+        return user_id == me.id
+    except Exception:
+        return False
+
+# Global state
 gcast_state = {
     "is_running": False,
     "current_task": None,
@@ -39,17 +125,7 @@ gcast_state = {
     "start_time": None
 }
 
-# ===== Premium Emojis =====
-PREMIUM_EMOJIS = {
-    'main': {'char': '🤩'}, 'check': {'char': '⚙️'}, 'adder1': {'char': '⛈'},
-    'adder2': {'char': '✅'}, 'adder3': {'char': '👽'}, 'adder4': {'char': '✈️'},
-    'adder5': {'char': '😈'}, 'adder6': {'char': '🎚️'}
-}
-
-def get_emoji(emoji_type):
-    return PREMIUM_EMOJIS.get(emoji_type, {}).get('char', '🤩')
-
-# ===== Animation Words =====
+# ===== Animation Words with Premium Emojis =====
 ANIMATION_WORDS = [
     f"{get_emoji('check')} Memulai proses...",
     f"{get_emoji('adder1')} Mengambil daftar grup...",
@@ -67,13 +143,6 @@ ANIMATION_WORDS = [
 DB_FILE = "plugins/slow_gcast.db"
 
 def get_db_conn():
-    try:
-        if env and 'get_db_connection' in env:
-            return env['get_db_connection']('main')
-    except Exception as e:
-        if env and 'logger' in env:
-            env['logger'].warning(f"[Slow GCast] DB from assetjson failed: {e}")
-    
     try:
         os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
         conn = sqlite3.connect(DB_FILE)
@@ -93,9 +162,8 @@ def get_db_conn():
         """)
         return conn
     except Exception as e:
-        if env and 'logger' in env:
-            env['logger'].error(f"[Slow GCast] Local SQLite error: {e}")
-    return None
+        print(f"[Slow GCast] Database error: {e}")
+        return None
 
 def save_gcast_log(message, duration):
     try:
@@ -115,28 +183,31 @@ def save_gcast_log(message, duration):
         conn.close()
         return True
     except Exception as e:
-        if env and 'logger' in env:
-            env['logger'].error(f"[Slow GCast] Log save error: {e}")
+        print(f"[Slow GCast] Log save error: {e}")
         return False
 
 async def animate_progress(event, message):
-    """Animasi progress dengan edit pesan"""
+    """Animasi progress dengan edit pesan dan premium emojis"""
     for i, word in enumerate(ANIMATION_WORDS):
         try:
             progress = f"{word}\n\n📊 Progress: {gcast_state['processed']}/{gcast_state['total_chats']}\n✅ Berhasil: {gcast_state['success']}\n❌ Gagal: {gcast_state['failed']}"
-            await event.edit(progress)
+            await safe_edit_premium(event, progress)
             await asyncio.sleep(2)  # Delay 2 detik per kata
         except Exception as e:
-            if env and 'logger' in env:
-                env['logger'].error(f"[Slow GCast] Animation error: {e}")
+            print(f"[Slow GCast] Animation error: {e}")
             break
 
+# Global client reference
+client = None
+
 async def slow_gcast_handler(event):
-    if not await env['is_owner'](event.sender_id):
+    """Main slow gcast handler with premium emojis"""
+    global client
+    if not await is_owner_check(client, event.sender_id):
         return
     
     if gcast_state["is_running"]:
-        await env['safe_send_with_entities'](event, "⚠️ Slow GCast sedang berjalan! Gunakan `.sgstatus` untuk melihat progress.")
+        await safe_send_premium(event, f"{get_emoji('adder5')} Slow GCast sedang berjalan! Gunakan `.sgstatus` untuk melihat progress.")
         return
     
     # Parse pesan - bisa dari command atau reply
@@ -148,33 +219,35 @@ async def slow_gcast_handler(event):
         if replied_msg and replied_msg.text:
             message = replied_msg.text
         elif replied_msg and replied_msg.media:
-            # Jika reply ke media, ambil caption atau gunakan media
             message = replied_msg.text or "[Media/File]"
         else:
-            await env['safe_send_with_entities'](event, "❌ Pesan yang direply tidak valid!")
+            await safe_send_premium(event, f"{get_emoji('adder5')} Pesan yang direply tidak valid!")
             return
     else:
         # Parse dari command
         message_text = event.raw_text.split(maxsplit=1)
         if len(message_text) < 2:
-            help_text = (
-                f"{get_emoji('main')} **Cara Penggunaan Slow GCast:**\n\n"
-                f"**Metode 1:** `.sgcast <pesan>` - Tulis pesan langsung\n"
-                f"**Metode 2:** Reply ke pesan + `.sgcast` - Forward pesan yang direply\n"
-                f"**Alias:** `.slowgcast` juga bisa digunakan\n"
-                f"**Status:** `.sgstatus` - Lihat progress\n\n"
-                f"{get_emoji('check')} **Fitur:**\n"
-                f"{get_emoji('adder2')} Delay 15 detik antar grup\n"
-                f"{get_emoji('adder3')} Animasi progress 10 kata\n"
-                f"{get_emoji('adder4')} Anti flood protection\n"
-                f"{get_emoji('adder5')} Support reply message\n"
-                f"{get_emoji('adder6')} Database logging\n"
-                f"{get_emoji('adder1')} Real-time statistics"
-            )
-            await env['safe_send_with_entities'](event, help_text)
+            help_text = f"""
+{get_emoji('main')} **Cara Penggunaan Slow GCast v2.0:**
+
+{get_emoji('check')} **Metode 1:** `.sgcast <pesan>` - Tulis pesan langsung
+{get_emoji('check')} **Metode 2:** Reply ke pesan + `.sgcast` - Forward pesan yang direply
+{get_emoji('check')} **Alias:** `.slowgcast` juga bisa digunakan
+{get_emoji('check')} **Status:** `.sgstatus` - Lihat progress
+
+{get_emoji('adder1')} **Fitur:**
+{get_emoji('adder2')} Delay 15 detik antar grup
+{get_emoji('adder3')} Animasi progress 10 kata dengan premium emoji
+{get_emoji('adder4')} Anti flood protection
+{get_emoji('adder5')} Support reply message
+{get_emoji('adder6')} Database logging
+{get_emoji('main')} Real-time statistics
+
+{get_emoji('adder2')} **Version:** v2.0.0 Standalone - No dependencies!
+            """.strip()
+            await safe_send_premium(event, help_text)
             return
         message = message_text[1]
-    client = env['get_client']()
     
     # Reset state
     gcast_state.update({
@@ -195,7 +268,7 @@ async def slow_gcast_handler(event):
         gcast_state["total_chats"] = len(all_chats)
         
         if gcast_state["total_chats"] == 0:
-            await env['safe_send_with_entities'](event, "❌ Tidak ada grup yang ditemukan!")
+            await safe_send_premium(event, f"{get_emoji('adder5')} Tidak ada grup yang ditemukan!")
             gcast_state["is_running"] = False
             return
         
@@ -212,25 +285,19 @@ async def slow_gcast_handler(event):
                 if event.is_reply:
                     replied_msg = await event.get_reply_message()
                     if replied_msg:
-                        # Forward pesan yang direply
                         await client.forward_messages(chat.entity, replied_msg)
                     else:
-                        # Fallback ke text biasa
                         await client.send_message(chat.entity, message)
                 else:
-                    # Kirim pesan text biasa
                     await client.send_message(chat.entity, message)
                 
                 gcast_state["success"] += 1
-                if env and 'logger' in env:
-                    env['logger'].info(f"[Slow GCast] Sent to: {chat.name}")
+                print(f"[Slow GCast] Sent to: {chat.name}")
             
             except FloodWaitError as fe:
-                if env and 'logger' in env:
-                    env['logger'].warning(f"[Slow GCast] Flood wait {fe.seconds}s for {chat.name}")
+                print(f"[Slow GCast] Flood wait {fe.seconds}s for {chat.name}")
                 await asyncio.sleep(fe.seconds)
                 try:
-                    # Retry dengan method yang sama
                     if event.is_reply:
                         replied_msg = await event.get_reply_message()
                         if replied_msg:
@@ -245,13 +312,11 @@ async def slow_gcast_handler(event):
             
             except (ChatWriteForbiddenError, UserBannedInChannelError):
                 gcast_state["failed"] += 1
-                if env and 'logger' in env:
-                    env['logger'].warning(f"[Slow GCast] Banned/Forbidden: {chat.name}")
+                print(f"[Slow GCast] Banned/Forbidden: {chat.name}")
             
             except Exception as e:
                 gcast_state["failed"] += 1
-                if env and 'logger' in env:
-                    env['logger'].error(f"[Slow GCast] Error in {chat.name}: {e}")
+                print(f"[Slow GCast] Error in {chat.name}: {e}")
             
             gcast_state["processed"] += 1
             
@@ -263,51 +328,56 @@ async def slow_gcast_handler(event):
         if not animation_task.done():
             animation_task.cancel()
         
-        # Final report
+        # Final report dengan premium emojis
         end_time = datetime.now()
         duration = str(end_time - gcast_state["start_time"]).split('.')[0]
         
-        final_report = (
-            f"🎉 **Slow GCast Selesai!**\n\n"
-            f"📊 **Statistik:**\n"
-            f"• Total Grup: {gcast_state['total_chats']}\n"
-            f"• Berhasil: {gcast_state['success']}\n"
-            f"• Gagal: {gcast_state['failed']}\n"
-            f"• Durasi: {duration}\n\n"
-            f"📝 **Pesan:** {message[:50]}{'...' if len(message) > 50 else ''}\n"
-            f"🕒 **Selesai:** {end_time.strftime('%H:%M:%S')}"
-        )
+        final_report = f"""
+{get_emoji('main')} **Slow GCast Selesai! v2.0**
+
+{get_emoji('adder2')} **Statistik:**
+• Total Grup: {gcast_state['total_chats']}
+• Berhasil: {gcast_state['success']}
+• Gagal: {gcast_state['failed']}
+• Durasi: {duration}
+
+{get_emoji('adder3')} **Pesan:** {message[:50]}{'...' if len(message) > 50 else ''}
+{get_emoji('adder4')} **Selesai:** {end_time.strftime('%H:%M:%S')}
+
+{get_emoji('check')} **Premium emoji system working perfectly!**
+        """.strip()
         
-        await event.edit(final_report)
+        await safe_edit_premium(event, final_report)
         save_gcast_log(message, duration)
         
-        # Send log to channel if available
-        if env and 'send_to_log_channel' in env:
+        # Send to log channel if available
+        try:
+            # Try to send to channel -1002975804142 (damnitvzoel)
+            channel_id = -1002975804142
             log_msg = f"{get_emoji('check')} **Slow GCast Completed**\n• Groups: {gcast_state['total_chats']}\n• Success: {gcast_state['success']}\n• Failed: {gcast_state['failed']}\n• Duration: {duration}"
-            try:
-                await env['send_to_log_channel'](log_msg, "gcast")
-            except Exception as log_e:
-                if env and 'logger' in env:
-                    env['logger'].warning(f"[Slow GCast] Channel log failed: {log_e}")
+            await client.send_message(channel_id, log_msg)
+        except Exception:
+            pass  # Ignore if channel logging fails
         
     except Exception as e:
-        error_msg = f"❌ Error dalam slow gcast: {e}"
-        if env and 'logger' in env:
-            env['logger'].error(f"[Slow GCast] Main error: {e}")
-        await event.edit(error_msg)
+        error_msg = f"{get_emoji('adder5')} Error dalam slow gcast: {e}"
+        print(f"[Slow GCast] Main error: {e}")
+        await safe_edit_premium(event, error_msg)
         
         # Send error log to channel if available
-        if env and 'send_to_log_channel' in env:
-            try:
-                await env['send_to_log_channel'](f"{get_emoji('adder5')} **Slow GCast Error**\n• Error: {str(e)}\n• Time: {datetime.now().strftime('%H:%M:%S')}", "error")
-            except Exception:
-                pass
+        try:
+            channel_id = -1002975804142
+            await client.send_message(channel_id, f"{get_emoji('adder5')} **Slow GCast Error**\n• Error: {str(e)}\n• Time: {datetime.now().strftime('%H:%M:%S')}")
+        except Exception:
+            pass
     
     finally:
         gcast_state["is_running"] = False
 
 async def sgstatus_handler(event):
-    if not await env['is_owner'](event.sender_id):
+    """Show slow gcast status with premium emojis"""
+    global client
+    if not await is_owner_check(client, event.sender_id):
         return
     
     if not gcast_state["is_running"]:
@@ -320,47 +390,55 @@ async def sgstatus_handler(event):
                 conn.close()
                 
                 if last_gcast:
-                    status = (
-                        f"📊 **Status Slow GCast: IDLE**\n\n"
-                        f"📈 **Last GCast:**\n"
-                        f"• Total: {last_gcast['total_chats']} grup\n"
-                        f"• Berhasil: {last_gcast['success_count']}\n"
-                        f"• Gagal: {last_gcast['failed_count']}\n"
-                        f"• Durasi: {last_gcast['duration']}\n"
-                        f"• Waktu: {last_gcast['end_time']}\n\n"
-                        f"💡 Gunakan `.sgcast <pesan>` untuk memulai"
-                    )
+                    status = f"""
+{get_emoji('main')} **Status Slow GCast: IDLE v2.0**
+
+{get_emoji('adder2')} **Last GCast:**
+• Total: {last_gcast['total_chats']} grup
+• Berhasil: {last_gcast['success_count']}
+• Gagal: {last_gcast['failed_count']}
+• Durasi: {last_gcast['duration']}
+• Waktu: {last_gcast['end_time']}
+
+{get_emoji('check')} Gunakan `.sgcast <pesan>` untuk memulai
+                    """.strip()
                 else:
-                    status = "📊 **Status: IDLE** - Belum ada riwayat gcast\n\n💡 Gunakan `.sgcast <pesan>` untuk memulai"
+                    status = f"{get_emoji('main')} **Status: IDLE** - Belum ada riwayat gcast\n\n{get_emoji('check')} Gunakan `.sgcast <pesan>` untuk memulai"
             else:
-                status = "📊 **Status: IDLE** - Database tidak tersedia"
+                status = f"{get_emoji('main')} **Status: IDLE** - Database tidak tersedia"
         except Exception as e:
-            status = f"📊 **Status: IDLE** - Error: {e}"
+            status = f"{get_emoji('main')} **Status: IDLE** - Error: {e}"
     else:
         # Show current progress
         elapsed = str(datetime.now() - gcast_state["start_time"]).split('.')[0] if gcast_state["start_time"] else "0:00:00"
         progress_percent = (gcast_state["processed"] / gcast_state["total_chats"] * 100) if gcast_state["total_chats"] > 0 else 0
         
-        status = (
-            f"🔥 **Status Slow GCast: RUNNING**\n\n"
-            f"📊 **Progress:** {progress_percent:.1f}%\n"
-            f"📈 **Statistik:**\n"
-            f"• Diproses: {gcast_state['processed']}/{gcast_state['total_chats']}\n"
-            f"• Berhasil: {gcast_state['success']}\n"
-            f"• Gagal: {gcast_state['failed']}\n"
-            f"• Durasi: {elapsed}\n\n"
-            f"⏱️ **ETA:** ~{((gcast_state['total_chats'] - gcast_state['processed']) * 15 / 60):.1f} menit"
-        )
+        status = f"""
+{get_emoji('adder5')} **Status Slow GCast: RUNNING v2.0**
+
+{get_emoji('adder4')} **Progress:** {progress_percent:.1f}%
+{get_emoji('adder2')} **Statistik:**
+• Diproses: {gcast_state['processed']}/{gcast_state['total_chats']}
+• Berhasil: {gcast_state['success']}
+• Gagal: {gcast_state['failed']}
+• Durasi: {elapsed}
+
+{get_emoji('adder1')} **ETA:** ~{((gcast_state['total_chats'] - gcast_state['processed']) * 15 / 60):.1f} menit
+
+{get_emoji('main')} **Standalone system running perfectly!**
+        """.strip()
     
-    await env['safe_send_with_entities'](event, status)
+    await safe_send_premium(event, status)
 
 def get_plugin_info():
     return PLUGIN_INFO
 
-def setup(client):
-    global env
-    env = create_plugin_environment(client)
+def setup(client_instance):
+    """Setup function untuk register event handlers"""
+    global client
+    client = client_instance
+    
     client.add_event_handler(slow_gcast_handler, events.NewMessage(pattern=r"\.s(?:g|low)gcast"))
     client.add_event_handler(sgstatus_handler, events.NewMessage(pattern=r"\.sgstatus"))
-    if env and 'logger' in env:
-        env['logger'].info("[Slow GCast] Plugin loaded - Anti-spam gcast with animation ready.")
+    
+    print(f"✅ [Slow GCast] Plugin loaded - Standalone premium emoji anti-spam gcast v{PLUGIN_INFO['version']}")
