@@ -21,27 +21,27 @@ PLUGIN_INFO = {
     "features": ["ai mode", "auto reply ai", "status/config in sqlite", "model failover"]
 }
 
-try:
-    from assetjson import create_plugin_environment
-except ImportError:
-    def create_plugin_environment(client=None): return {}
-
-env = None
+# Manual Premium Emoji Mapping berdasarkan data yang diberikan
+PREMIUM_EMOJIS = {
+    "main": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
+    "check": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
+    "cross": {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
+    "storm": {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
+    "success": {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
+    "plane": {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
+    "devil": {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
+    "slider": {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
+}
 DB_FILE = "plugins/aimode.db"
 
-async def safe_send_message(event, text, use_env=True):
-    """Helper function to safely send messages with or without env"""
-    if use_env and env and 'safe_send_with_entities' in env:
-        await env['safe_send_with_entities'](event, text)
-    else:
-        await event.reply(text)
+async def safe_send_message(event, text):
+    """Send message with basic reply"""
+    await event.reply(text)
 
 def safe_get_emoji(emoji_type):
-    """Helper function to safely get emoji with fallback"""
-    if env and 'get_emoji' in env:
-        return env['get_emoji'](emoji_type)
-    emoji_fallbacks = {'main': '🤩', 'check': '⚙️', 'cross': '❌'}
-    return emoji_fallbacks.get(emoji_type, '🤩')
+    """Get premium emoji with manual mapping"""
+    emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
+    return emoji_data["emoji"]
 
 DEFAULT_CONFIG = {
     "primary": {
@@ -64,12 +64,6 @@ DEFAULT_CONFIG = {
 
 def get_db_conn():
     try:
-        if env and 'get_db_connection' in env:
-            return env['get_db_connection']('main')
-    except Exception as e:
-        if env and 'logger' in env:
-            env['logger'].warning(f"[AIMode] DB from assetjson failed: {e}")
-    try:
         os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
         conn = sqlite3.connect(DB_FILE)
         conn.row_factory = sqlite3.Row
@@ -89,8 +83,7 @@ def get_db_conn():
         """)
         return conn
     except Exception as e:
-        if env and 'logger' in env:
-            env['logger'].error(f"[AIMode] Local SQLite error: {e}")
+        print(f"[AIMode] Local SQLite error: {e}")
     return None
 
 def set_aimode(chat_id, enabled):
@@ -106,8 +99,7 @@ def set_aimode(chat_id, enabled):
         conn.close()
         return True
     except Exception as e:
-        if env and 'logger' in env:
-            env['logger'].error(f"[AIMode] Set status error: {e}")
+        print(f"[AIMode] Set status error: {e}")
         return False
 
 def get_aimode(chat_id):
@@ -119,8 +111,7 @@ def get_aimode(chat_id):
         conn.close()
         return row and row['enabled'] == 1
     except Exception as e:
-        if env and 'logger' in env:
-            env['logger'].error(f"[AIMode] Get status error: {e}")
+        print(f"[AIMode] Get status error: {e}")
         return False
 
 def get_config():
@@ -138,8 +129,7 @@ def get_config():
                     cfg[k] = v
             return cfg
     except Exception as e:
-        if env and 'logger' in env:
-            env['logger'].error(f"[AIMode] Load config error: {e}")
+        print(f"[AIMode] Load config error: {e}")
     return DEFAULT_CONFIG.copy()
 
 def set_config(new_cfg):
@@ -155,15 +145,14 @@ def set_config(new_cfg):
         conn.close()
         return True
     except Exception as e:
-        if env and 'logger' in env:
-            env['logger'].error(f"[AIMode] Set config error: {e}")
+        print(f"[AIMode] Set config error: {e}")
         return False
 
 async def aimode_handler(event):
-    # Check if env is properly initialized and has is_owner function
-    if env is None or 'is_owner' not in env:
+    # Simple owner check
+    OWNER_ID = 7847025168
+    if event.sender_id != OWNER_ID:
         return
-    if not await env['is_owner'](event.sender_id): return
     chat = await event.get_chat()
     chat_id = chat.id
     args = event.text.split()
@@ -186,10 +175,10 @@ async def aimode_handler(event):
         await safe_send_message(event, "Format: `.aimode on` / `.aimode off` / `.aimode status`")
 
 async def aiconfig_handler(event):
-    # Check if env is properly initialized and has is_owner function
-    if env is None or 'is_owner' not in env:
+    # Simple owner check
+    OWNER_ID = 7847025168
+    if event.sender_id != OWNER_ID:
         return
-    if not await env['is_owner'](event.sender_id): return
     args = event.text.split(maxsplit=2)
     cfg = get_config()
     if len(args) == 1 or (len(args) == 2 and args[1] == "show"):
@@ -311,10 +300,7 @@ def get_plugin_info():
     return PLUGIN_INFO
 
 def setup(client):
-    global env
-    env = create_plugin_environment(client)
     client.add_event_handler(aimode_handler, events.NewMessage(pattern=r"\.aimode"))
     client.add_event_handler(aiconfig_handler, events.NewMessage(pattern=r"\.aiconfig"))
     client.add_event_handler(ai_autoreply_handler, events.NewMessage(incoming=True, func=lambda e: not e.is_private and not e.text.startswith('.')))
-    if env and 'logger' in env:
-        env['logger'].info("[AIMode] Plugin loaded and commands registered.")
+    print("[AIMode] Plugin loaded with manual emoji mapping.")
