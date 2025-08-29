@@ -1501,8 +1501,6 @@ async def main():
             except Exception as e:
                 logger.error(f"Error during disconnect: {e}")
             logger.info("✅ VZOEL ASSISTANT stopped successfully!")
-    else:
-        logger.error("❌ Failed to start VZOEL ASSISTANT!")
 
 # Alternatif: Plugin command untuk testing
 @client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}plugins'))
