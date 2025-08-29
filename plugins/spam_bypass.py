@@ -20,7 +20,7 @@ PLUGIN_INFO = {
     "version": "1.0.0",
     "description": "Bypass spam bot limits dan custom response dengan premium emoji support",
     "author": "Vzoel Fox's (Enhanced by Morgan)",
-    "commands": [".spambypass", ".antispam", ".checkspam", ".setresponse"],
+    "commands": [".spambypass", ".antispam", ".checkspam", ".setresponse", ".limit"],
     "features": ["spam bot bypass", "response customization", "premium emoji", "auto-interaction"]
 }
 
@@ -256,6 +256,51 @@ def get_custom_response(original_text):
             logger.error(f"[SpamBypass] Error getting custom response: {e}")
         return None
 
+def set_response_delay(delay_seconds):
+    """Set global response delay for spam bypass"""
+    try:
+        conn = get_db_conn()
+        if not conn:
+            return False
+        
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Update or insert default bot setting
+        conn.execute("""
+            INSERT OR REPLACE INTO spam_bots 
+            (bot_username, response_delay, created_at) 
+            VALUES ('default', ?, ?)
+        """, (delay_seconds, now))
+        
+        conn.commit()
+        conn.close()
+        return True
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"[SpamBypass] Error setting response delay: {e}")
+        return False
+
+def get_response_delay():
+    """Get current response delay setting"""
+    try:
+        conn = get_db_conn()
+        if not conn:
+            return 1.0  # Default delay
+        
+        cur = conn.execute("SELECT response_delay FROM spam_bots WHERE bot_username = 'default'")
+        row = cur.fetchone()
+        conn.close()
+        
+        if row:
+            return float(row['response_delay'])
+        return 1.0  # Default delay
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"[SpamBypass] Error getting response delay: {e}")
+        return 1.0
+
 async def detect_spam_bot_response(event):
     """Detect and handle spam bot responses"""
     try:
@@ -295,8 +340,9 @@ async def detect_spam_bot_response(event):
                     if logger:
                         logger.warning(f"[SpamBypass] Could not delete message: {e}")
                 
-                # Send custom response
-                await asyncio.sleep(1)  # Small delay for natural flow
+                # Send custom response with configured delay
+                delay = get_response_delay()
+                await asyncio.sleep(delay)
                 await safe_send_message(event, custom_text)
                 
                 if logger:
@@ -328,6 +374,7 @@ async def spambypass_handler(event):
 • {convert_font('.antispam on/off', 'mono')} - Toggle auto-bypass  
 • {convert_font('.checkspam', 'mono')} - Check spam bot status
 • {convert_font('.setresponse <original> | <custom>', 'mono')} - Set custom response
+• {convert_font('.limit <seconds>', 'mono')} - Set response delay (0.5-10.0s)
 
 {get_emoji('bypass')} {convert_font('Features:', 'bold')}
 • Auto-replace spam bot responses
@@ -437,6 +484,72 @@ async def checkspam_handler(event):
             logger.error(f"[SpamBypass] Check spam handler error: {e}")
         await safe_send_message(event, f"{get_emoji('danger')} {convert_font('Status check error!', 'bold')}")
 
+async def limit_handler(event):
+    """Handle .limit command to set response delay"""
+    try:
+        if not await is_owner_check(event.sender_id):
+            return
+        
+        args = event.text.split(maxsplit=1)
+        
+        if len(args) == 1:
+            # Show current delay
+            current_delay = get_response_delay()
+            delay_text = f"""
+{get_emoji('monitor')} {convert_font('RESPONSE DELAY SETTINGS', 'bold')}
+
+{get_emoji('check')} {convert_font('Current Delay:', 'bold')} {current_delay} seconds
+{get_emoji('bypass')} {convert_font('Range:', 'bold')} 0.5 - 10.0 seconds
+
+{get_emoji('shield')} {convert_font('Usage:', 'bold')}
+• {convert_font('.limit <seconds>', 'mono')} - Set delay (e.g., .limit 2.5)
+• {convert_font('.limit', 'mono')} - Show current setting
+
+{get_emoji('security')} {convert_font('Purpose:', 'bold')}
+Delay before sending bypass response to avoid spam detection
+            """.strip()
+            
+            await safe_send_message(event, delay_text)
+            return
+        
+        try:
+            delay_value = float(args[1])
+            
+            # Validate delay range
+            if delay_value < 0.5:
+                await safe_send_message(event, f"{get_emoji('danger')} {convert_font('Minimum delay is 0.5 seconds', 'bold')}")
+                return
+            elif delay_value > 10.0:
+                await safe_send_message(event, f"{get_emoji('danger')} {convert_font('Maximum delay is 10.0 seconds', 'bold')}")
+                return
+            
+            # Set the delay
+            if set_response_delay(delay_value):
+                success_text = f"""
+{get_emoji('success')} {convert_font('DELAY UPDATED!', 'bold')}
+
+{get_emoji('monitor')} {convert_font('New Delay:', 'bold')} {delay_value} seconds
+{get_emoji('bypass')} {convert_font('Applied to:', 'bold')} All spam bypass responses
+{get_emoji('security')} {convert_font('Status:', 'bold')} Active immediately
+
+{get_emoji('shield')} {convert_font('Next spam response will wait', 'mono')} {delay_value}s {convert_font('before replying', 'mono')}
+                """.strip()
+                
+                await safe_send_message(event, success_text)
+            else:
+                await safe_send_message(event, f"{get_emoji('danger')} {convert_font('Failed to update delay setting!', 'bold')}")
+                
+        except ValueError:
+            await safe_send_message(event, 
+                f"{get_emoji('shield')} {convert_font('Invalid delay value!', 'bold')}\n\n"
+                f"{get_emoji('check')} {convert_font('Example:', 'bold')} {convert_font('.limit 2.5', 'mono')}\n"
+                f"{get_emoji('monitor')} {convert_font('Range:', 'bold')} 0.5 - 10.0 seconds")
+        
+    except Exception as e:
+        if logger:
+            logger.error(f"[SpamBypass] Limit handler error: {e}")
+        await safe_send_message(event, f"{get_emoji('danger')} {convert_font('Limit command error!', 'bold')}")
+
 def get_plugin_info():
     return PLUGIN_INFO
 
@@ -451,6 +564,7 @@ def setup(telegram_client):
             client.add_event_handler(spambypass_handler, events.NewMessage(pattern=r'\.spambypass'))
             client.add_event_handler(setresponse_handler, events.NewMessage(pattern=r'\.setresponse'))
             client.add_event_handler(checkspam_handler, events.NewMessage(pattern=r'\.checkspam'))
+            client.add_event_handler(limit_handler, events.NewMessage(pattern=r'\.limit'))
             
             # Register auto-detection for all messages
             client.add_event_handler(detect_spam_bot_response, events.NewMessage)
