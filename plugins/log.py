@@ -1,7 +1,7 @@
 """
 Enhanced Activity Logger Plugin - Comprehensive Userbot Monitoring
 Fitur: Monitor semua aktivitas userbot, outgoing/incoming messages, commands, statistics
-Author: Vzoel Fox's (Enhanced by Morgan)
+Founder Userbot: Vzoel Fox's Ltpn 🤩
 Version: 2.0.0 - Complete Activity Monitoring
 """
 
@@ -25,7 +25,7 @@ PLUGIN_INFO = {
     "name": "log",
     "version": "2.0.0",
     "description": "Comprehensive userbot activity monitoring dengan real-time statistics",
-    "author": "Vzoel Fox's (Enhanced by Morgan)",
+    "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".log show", ".log query <keyword>", ".log clear", ".log stats", ".log activity", ".log monitor"],
     "features": ["activity logging", "userbot monitoring", "statistics", "premium emoji", "real-time tracking"]
 }

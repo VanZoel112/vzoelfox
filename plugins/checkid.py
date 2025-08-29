@@ -2,7 +2,7 @@
 CheckID Plugin for Vzoel Assistant
 Fitur: Cek ID Telegram seseorang dengan mereply pesan atau menulis username.
 Kompatibel: main.py, plugin_loader.py, assetjson.py (v3+), backup log ke SQLite jika gagal akses database utama.
-Author: Vzoel Fox's (Enhanced by Morgan)
+Founder Userbot: Vzoel Fox's Ltpn 🤩
 Version: 1.0.0
 """
 
@@ -16,7 +16,7 @@ PLUGIN_INFO = {
     "name": "checkid",
     "version": "1.0.0",
     "description": "Cek ID Telegram seseorang dengan reply atau username, backup log ke SQLite jika gagal akses database utama.",
-    "author": "Vzoel Fox's (Enhanced by Morgan)",
+    "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".id", ".id @username", ".id (reply)"],
     "features": ["check user id", "log to sql if needed"]
 }

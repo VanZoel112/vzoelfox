@@ -1,7 +1,7 @@
 """
 Spam Bypass Plugin for Vzoel Assistant - Anti-Spam Bot Interaction
 Fitur: Bypass spam bot limits, custom response modification, premium emoji support
-Author: Vzoel Fox's (Enhanced by Morgan)
+Founder Userbot: Vzoel Fox's Ltpn 🤩
 Version: 1.0.0 - Spam Bot Interaction & Response Customization
 """
 
@@ -19,7 +19,7 @@ PLUGIN_INFO = {
     "name": "spam_bypass",
     "version": "1.0.0",
     "description": "Bypass spam bot limits dan custom response dengan premium emoji support",
-    "author": "Vzoel Fox's (Enhanced by Morgan)",
+    "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".spambypass", ".antispam", ".checkspam", ".setresponse", ".limit"],
     "features": ["spam bot bypass", "response customization", "premium emoji", "auto-interaction"]
 }

@@ -1,7 +1,7 @@
 """
 VC Monitor Plugin STANDALONE - Hardcoded Premium Emojis
 File: plugins/vc_monitor.py
-Author: Vzoel Fox's (Enhanced by Morgan)
+Founder Userbot: Vzoel Fox's Ltpn 🤩
 Version: 2.0.0 - Standalone
 Fitur: Join/Leave VC dengan monitoring durasi, premium emojis hardcoded
 """
@@ -32,7 +32,7 @@ PLUGIN_INFO = {
     "name": "vc_monitor",
     "version": "2.0.0",
     "description": "Standalone VC monitor with premium emoji support",
-    "author": "Vzoel Fox's (Enhanced by Morgan)",
+    "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".joinvc", ".leavevc", ".vcstatus"],
     "features": ["join vc", "leave vc", "monitor vc", "auto report", "premium emojis", "database logging"]
 }

@@ -19,7 +19,7 @@ PLUGIN_INFO = {
     "name": "blacklistgcast_fixed",
     "version": "1.1.0",
     "description": "GCast blacklist management with assetjson environment integration",
-    "author": "Vzoel Fox's (Enhanced by Morgan)",
+    "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".addbl", ".rmbl", ".listbl", ".clearbl"],
     "features": ["blacklist management", "gcast protection", "premium emojis", "env integration"]
 }

@@ -1,7 +1,7 @@
 """
 AIMode & AI Responder Plugin for Vzoel Assistant
 Fitur: Mode AI otomatis dengan premium emoji support, env assetjson, config & status persist di SQLite, model failover otomatis.
-Author: Vzoel Fox's (Enhanced by Morgan)
+Founder Userbot: Vzoel Fox's Ltpn 🤩
 """
 
 import sqlite3
@@ -16,7 +16,7 @@ PLUGIN_INFO = {
     "name": "aimode",
     "version": "2.0.0",
     "description": "AI Mode & Responder, config persist di SQLite, emoji premium dari assetjson, failover model otomatis.",
-    "author": "Vzoel Fox's (Enhanced by Morgan)",
+    "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".aimode on", ".aimode off", ".aimode status", ".aiconfig", ".ai"],
     "features": ["ai mode", "auto reply ai", "status/config in sqlite", "model failover"]
 }
