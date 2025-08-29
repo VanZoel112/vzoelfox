@@ -1,0 +1,293 @@
+{
+  "_comment": "🎨 VZOEL USERBOT - Custom Messages Configuration",
+  "_description": "File ini berisi semua pesan yang dapat dikustomisasi untuk userbot",
+  "_version": "1.0.0",
+  "_author": "Vzoel Fox's (Enhanced by Morgan)",
+  "_last_updated": "2025-08-28",
+  
+  "alive_messages": {
+    "default": {
+      "title": "🤖 **VZOEL USERBOT IS ALIVE!**",
+      "content": [
+        "**🌟 Bot Status:** Online & Running",
+        "**👤 Owner:** {owner_name}",
+        "**⚡ Uptime:** {uptime}",
+        "**🐍 Python:** {python_version}",
+        "**📦 Version:** {bot_version}",
+        "**💾 Memory:** {memory_usage}",
+        "**📊 Plugins:** {plugin_count} loaded"
+      ],
+      "footer": "**🚀 VZOEL BOT - Ready to serve!**",
+      "media_type": "photo",
+      "media_url": "https://telegra.ph/file/example_alive.jpg"
+    },
+    "premium": {
+      "title": "✨ **VZOEL PREMIUM EDITION**",
+      "content": [
+        "**🎭 Status:** Premium Active",
+        "**👑 Owner:** {owner_name}",
+        "**⚡ Runtime:** {uptime}",
+        "**🔥 Features:** All Premium Features Unlocked",
+        "**💎 License:** Lifetime Premium",
+        "**🌐 Servers:** Multi-Region Available"
+      ],
+      "footer": "**⭐ VZOEL PREMIUM - Excellence Redefined**",
+      "media_type": "animation",
+      "media_url": "https://telegra.ph/file/premium_alive.gif"
+    },
+    "custom": {
+      "title": "🎨 **CUSTOM ALIVE MESSAGE**",
+      "content": [
+        "**Sesuaikan pesan ini sesuai keinginan**",
+        "**Gunakan placeholder:** {owner_name}, {uptime}, dll",
+        "**Edit di:** userbot_custom_messages.json"
+      ],
+      "footer": "**Custom message - Edit as needed**",
+      "media_type": "none",
+      "media_url": ""
+    }
+  },
+  
+  "ping_messages": {
+    "default": {
+      "title": "🏓 **PONG!**",
+      "content": "**⚡ Response Time:** {ping_time}ms",
+      "footer": "**VZOEL BOT - Lightning Fast!**"
+    },
+    "detailed": {
+      "title": "📊 **PING STATISTICS**",
+      "content": [
+        "**⚡ Ping:** {ping_time}ms",
+        "**🌐 DC:** {dc_id}",
+        "**📡 Connection:** {connection_type}",
+        "**🕐 Server Time:** {server_time}",
+        "**💾 RAM Usage:** {memory_usage}"
+      ],
+      "footer": "**🚀 VZOEL BOT Performance Metrics**"
+    },
+    "fun": {
+      "title": "🎾 **PONG PONG!**",
+      "content": "**Wush!** Bola kembali dalam {ping_time}ms! 🏓",
+      "footer": "**🎮 VZOEL BOT - Game Mode Active**"
+    }
+  },
+  
+  "gcast_messages": {
+    "default": {
+      "header": "📢 **GLOBAL BROADCAST**",
+      "footer": "**📡 Powered by VZOEL USERBOT**",
+      "excluded_chats": ["spam", "test", "bot"],
+      "delay_between": 2
+    },
+    "announcement": {
+      "header": "📣 **PENGUMUMAN PENTING**",
+      "footer": "**🔥 VZOEL BOT - Official Announcement**",
+      "excluded_chats": ["spam", "test", "deleted"],
+      "delay_between": 1
+    },
+    "promotion": {
+      "header": "🎉 **PROMOSI SPESIAL**", 
+      "footer": "**💎 VZOEL PREMIUM - Limited Offer**",
+      "excluded_chats": ["work", "family"],
+      "delay_between": 3
+    }
+  },
+  
+  "afk_messages": {
+    "default": {
+      "away_message": "😴 **Saya sedang AFK**\n\n**Alasan:** {reason}\n**Sejak:** {since_time}\n\nSaya akan kembali secepatnya!",
+      "back_message": "🎉 **Saya sudah kembali!**\n\n**AFK Duration:** {afk_duration}\n**Pesan yang terlewat:** {missed_messages}",
+      "auto_reply": true,
+      "log_mentions": true
+    },
+    "busy": {
+      "away_message": "💼 **Sedang sibuk**\n\n**Status:** {reason}\n**Kembali sekitar:** {estimated_return}\n\nUntuk urgent, hubungi nomor alternatif.",
+      "back_message": "✅ **Back to work!**\n\nTerima kasih atas kesabarannya.",
+      "auto_reply": true,
+      "log_mentions": true
+    }
+  },
+  
+  "help_messages": {
+    "main_menu": {
+      "title": "📚 **VZOEL USERBOT - HELP MENU**",
+      "description": "Pilih kategori plugin yang ingin Anda pelajari:",
+      "categories": [
+        {"name": "🤖 AI & Voice", "command": "aihelp"},
+        {"name": "🔧 Admin Tools", "command": "adminhelp"},
+        {"name": "🎭 Entertainment", "command": "funhelp"},
+        {"name": "💾 Database", "command": "dbhelp"},
+        {"name": "🌐 Web Tools", "command": "webhelp"},
+        {"name": "📊 Statistics", "command": "stathelp"}
+      ],
+      "footer": "**📖 Gunakan:** `.help <category>` **untuk detail**"
+    },
+    "plugin_template": {
+      "title": "🔧 **{plugin_name}** - Commands",
+      "commands": "{commands_list}",
+      "examples": "{examples_list}",
+      "footer": "**💡 Tip:** Gunakan `.{main_command} help` untuk detail lebih"
+    }
+  },
+  
+  "error_messages": {
+    "permission_denied": "❌ **Access Denied!**\n\nAnda tidak memiliki permission untuk command ini.",
+    "plugin_not_found": "❌ **Plugin tidak ditemukan!**\n\nPastikan plugin sudah diinstall dengan benar.",
+    "invalid_syntax": "❌ **Syntax Error!**\n\nFormat: `{correct_syntax}`\nContoh: `{example}`",
+    "api_error": "🔴 **API Error!**\n\nError: {error_message}\nSilakan coba lagi nanti.",
+    "network_error": "🌐 **Network Error!**\n\nPeriksa koneksi internet Anda.",
+    "database_error": "💾 **Database Error!**\n\nTerjadi kesalahan pada database. Contact admin.",
+    "rate_limit": "⏳ **Rate Limited!**\n\nTerlalu banyak request. Tunggu {wait_time} detik.",
+    "maintenance": "🔧 **Under Maintenance**\n\nFitur ini sedang dalam maintenance. Coba lagi nanti."
+  },
+  
+  "success_messages": {
+    "generic": "✅ **Berhasil!**",
+    "plugin_loaded": "✅ **Plugin {plugin_name} berhasil dimuat!**",
+    "setting_saved": "✅ **Pengaturan berhasil disimpan!**",
+    "user_added": "✅ **User berhasil ditambahkan!**",
+    "file_uploaded": "✅ **File berhasil diupload!**",
+    "database_updated": "✅ **Database berhasil diupdate!**",
+    "backup_created": "✅ **Backup berhasil dibuat!**",
+    "restart_scheduled": "⚡ **Bot akan restart dalam 5 detik...**"
+  },
+  
+  "loading_messages": {
+    "generic": "⏳ **Processing...**",
+    "downloading": "📥 **Downloading... {progress}%**",
+    "uploading": "📤 **Uploading... {progress}%**",
+    "analyzing": "🔍 **Analyzing data...**",
+    "generating": "🎨 **Generating content...**",
+    "calculating": "🧮 **Calculating...**",
+    "searching": "🔎 **Searching...**",
+    "connecting": "🌐 **Connecting to API...**",
+    "processing_image": "🖼️ **Processing image...**",
+    "processing_audio": "🎵 **Processing audio...**",
+    "processing_video": "🎬 **Processing video...**"
+  },
+  
+  "welcome_messages": {
+    "group_default": {
+      "message": "👋 **Selamat datang** {mention}!\n\n🎉 Terima kasih sudah bergabung dengan **{chat_title}**\n\n📜 **Rules:**\n{group_rules}\n\nSemoga betah di sini! 😊",
+      "media_type": "photo",
+      "media_url": "",
+      "delete_service": true,
+      "delete_after": 0
+    },
+    "group_vip": {
+      "message": "✨ **Welcome VIP Member** {mention}! ✨\n\n👑 Anda telah bergabung dengan grup eksklusif **{chat_title}**\n\n🌟 **Special Privileges:**\n• Priority support\n• Exclusive content access\n• VIP-only features\n\nEnjoy your premium experience! 💎",
+      "media_type": "animation",
+      "media_url": "",
+      "delete_service": true,
+      "delete_after": 60
+    }
+  },
+  
+  "goodbye_messages": {
+    "default": {
+      "message": "👋 **{mention}** telah meninggalkan grup.\n\nSemoga sukses di luar sana! 🍀",
+      "delete_service": true,
+      "delete_after": 30
+    },
+    "funny": {
+      "message": "🎭 **{mention}** kabur dari grup!\n\nMungkin dia lagi nyari WiFi gratis... 📶😂",
+      "delete_service": true,
+      "delete_after": 45
+    }
+  },
+  
+  "status_messages": {
+    "online": "🟢 **Online**",
+    "away": "🟡 **Away**", 
+    "busy": "🔴 **Busy**",
+    "invisible": "⚫ **Invisible**",
+    "last_seen": "👁️ **Last seen:** {last_seen_time}"
+  },
+  
+  "notification_messages": {
+    "new_member": "👤 **New member joined:** {username}",
+    "member_left": "👋 **Member left:** {username}",
+    "admin_added": "⭐ **New admin:** {username}",
+    "admin_removed": "👥 **Admin removed:** {username}",
+    "group_updated": "📝 **Group info updated**",
+    "bot_mentioned": "📢 **Bot mentioned in:** {chat_title}",
+    "pm_received": "💬 **New PM from:** {username}",
+    "file_received": "📁 **File received:** {filename}"
+  },
+  
+  "voice_clone_messages": {
+    "generating": "🎭 **Generating voice as {character}...**",
+    "success": "✅ **Voice generated successfully!**\n\n🎤 **Character:** {character}\n⏱️ **Generation time:** {time}s",
+    "error": "❌ **Voice generation failed!**\n\n**Error:** {error_message}\n**Character:** {character}",
+    "quota_warning": "⚠️ **Quota Warning!**\n\nAPI quota hampir habis: {usage}%\nSisa karakter: {remaining}",
+    "no_api_key": "🔑 **API Key required!**\n\nSetup API key dengan: `.vsetup keys`",
+    "character_list": "🎭 **Available Characters:**\n\n{character_list}\n\n**Usage:** `.vclone <character> <text>`"
+  },
+  
+  "ai_messages": {
+    "thinking": "🤔 **AI sedang berpikir...**",
+    "generating": "🧠 **Generating response...**",
+    "model_switch": "🔄 **Switched to {model_name}**",
+    "context_cleared": "🗑️ **Conversation context cleared**",
+    "max_tokens": "⚠️ **Response truncated** - Maximum token limit reached",
+    "api_error": "🔴 **AI API Error:** {error_message}"
+  },
+  
+  "placeholders": {
+    "_comment": "Placeholder yang dapat digunakan dalam pesan",
+    "user_placeholders": [
+      "{mention}", "{username}", "{user_id}", "{first_name}", "{last_name}", "{full_name}"
+    ],
+    "bot_placeholders": [
+      "{owner_name}", "{bot_version}", "{uptime}", "{plugin_count}", "{memory_usage}", "{ping_time}"
+    ],
+    "chat_placeholders": [
+      "{chat_title}", "{chat_id}", "{members_count}", "{admins_count}"
+    ],
+    "time_placeholders": [
+      "{current_time}", "{server_time}", "{since_time}", "{duration}", "{date}"
+    ],
+    "system_placeholders": [
+      "{python_version}", "{dc_id}", "{connection_type}", "{os_info}"
+    ]
+  },
+  
+  "themes": {
+    "default": {
+      "primary_emoji": "🤖",
+      "success_emoji": "✅",
+      "error_emoji": "❌",
+      "warning_emoji": "⚠️",
+      "info_emoji": "ℹ️",
+      "loading_emoji": "⏳"
+    },
+    "premium": {
+      "primary_emoji": "👑",
+      "success_emoji": "💎",
+      "error_emoji": "🔴",
+      "warning_emoji": "⚡",
+      "info_emoji": "✨",
+      "loading_emoji": "🔄"
+    },
+    "gaming": {
+      "primary_emoji": "🎮",
+      "success_emoji": "🏆",
+      "error_emoji": "💥",
+      "warning_emoji": "⚠️",
+      "info_emoji": "🎯",
+      "loading_emoji": "⚡"
+    }
+  },
+  
+  "customization_settings": {
+    "current_theme": "default",
+    "language": "id",
+    "timezone": "Asia/Jakarta",
+    "date_format": "DD/MM/YYYY HH:mm",
+    "auto_delete_commands": false,
+    "show_response_time": true,
+    "use_premium_emojis": true,
+    "message_animation": "fade",
+    "notification_sound": true
+  }
+}

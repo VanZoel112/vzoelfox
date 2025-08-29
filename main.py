@@ -1333,7 +1333,7 @@ async def ping_handler(event):
 {get_emoji('check')} Commands Executed: `{stats['commands_executed']}`
 {get_emoji('check')} Gcast Sent: `{stats['gcast_sent']}`
 {get_emoji('check')} Voice Chat: {'Active' if voice_call_active else 'Inactive'}`
-{get_emoji('main')} {convert_font('Userbot by. VzoelFox\'s (\Lutpan) ', 'bold')}{get_emoji('main')}
+{get_emoji('main')} {convert_font('Userbot by. VzoelFox\\'s (\\Lutpan) ', 'bold')}{get_emoji('main')}
 {get_emoji('check')} {convert_font('Bot performance optimal!', 'bold')}
         """.strip()
         
@@ -1443,28 +1443,41 @@ async def startup():
 async def main():
     global plugin_loader
     
-    # PERBAIKAN: Gunakan 'client' bukan 'app'
+    # PERBAIKAN COMPLETE: Load plugins SETELAH startup selesai
     try:
-        print("Loading plugins...")
-        # Pastikan client sudah di-start sebelum load plugins
-        if not client.is_connected():
-            await client.start()
-        
-        # Setup plugins dengan client yang sudah initialized
-        plugin_loader = setup_plugins(client, "plugins")
-        
-        # Get status dengan method yang benar
-        status = plugin_loader.get_status()
-        print(f"✅ {status['total_loaded']}/{status['total_plugins']} plugins loaded successfully")
-        
-        # Show failed plugins if any
-        if status['total_failed'] > 0:
-            plugin_list = plugin_loader.list_plugins()
-            if plugin_list['failed']:
-                print(f"⚠️ Failed to load: {', '.join(plugin_list['failed'])}")
+        # STEP 1: Start client dan sistem utama dulu
+        if await startup():
+            logger.info("✅ Core system started successfully")
+            
+            # STEP 2: Load plugins setelah client ready
+            logger.info("🔌 Loading plugins...")
+            plugin_loader = setup_plugins(client, "plugins")
+            
+            # Get status dengan method yang benar
+            status = plugin_loader.get_status()
+            logger.info(f"✅ Plugins loaded: {status['total_loaded']}/{status['total_plugins']}")
+            
+            # Show failed plugins if any
+            if status['total_failed'] > 0:
+                plugin_list = plugin_loader.list_plugins()
+                if plugin_list['failed']:
+                    logger.warning(f"⚠️ Failed plugins: {', '.join(plugin_list['failed'])}")
+            
+            # STEP 3: Trigger auto-update check after plugins loaded
+            try:
+                from plugins.auto_updater import schedule_startup_update
+                schedule_startup_update()
+                logger.info("🔄 Auto-update system initialized")
+            except ImportError:
+                logger.warning("⚠️ Auto updater plugin not found")
+            except Exception as e:
+                logger.error(f"⚠️ Auto update initialization error: {e}")
+        else:
+            logger.error("❌ Core system startup failed")
+            return
     
     except Exception as e:
-        print(f"⚠️ Plugin loading error: {e}")
+        logger.error(f"⚠️ Plugin loading error: {e}")
         # Set plugin_loader to empty instance to avoid None errors
         plugin_loader = PluginLoader(client=client)
     

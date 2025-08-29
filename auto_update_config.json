@@ -1,0 +1,216 @@
+{
+  "_comment": "🔄 Auto Updater Configuration",
+  "_description": "Configuration untuk auto git pull dan update system",
+  "_version": "1.0.0",
+  "_author": "Vzoel Fox's (Enhanced by Morgan)",
+  "_last_updated": "2025-08-28",
+  
+  "auto_update": {
+    "enabled_on_startup": true,
+    "startup_delay_seconds": 10,
+    "max_startup_retries": 3,
+    "timeout_seconds": 60
+  },
+  
+  "git_settings": {
+    "remote_name": "origin",
+    "main_branch": "main",
+    "fallback_branches": ["master", "develop"],
+    "auto_stash_changes": true,
+    "force_pull": false,
+    "verify_ssl": true
+  },
+  
+  "backup_settings": {
+    "create_backup_before_update": true,
+    "backup_directory": "backups",
+    "max_backups": 10,
+    "backup_important_files": [
+      "main.py",
+      "plugin_loader.py", 
+      "client.py",
+      "userbot_custom_messages.json",
+      "voice_clone_config.json",
+      "auto_update_config.json",
+      ".env"
+    ],
+    "backup_directories": [
+      "plugins",
+      "database",
+      "logs"
+    ]
+  },
+  
+  "update_checking": {
+    "check_interval_hours": 1,
+    "notify_on_updates": true,
+    "auto_update_minor": true,
+    "auto_update_major": false,
+    "check_on_commands": ["alive", "ping", "update"],
+    "github_api_url": "",
+    "webhook_notifications": false
+  },
+  
+  "rollback_settings": {
+    "enable_rollback": true,
+    "keep_rollback_points": 5,
+    "rollback_timeout_hours": 24,
+    "auto_rollback_on_error": false
+  },
+  
+  "notifications": {
+    "update_available": {
+      "enabled": true,
+      "message": "🔄 **Update Available!**\n\n**📊 Details:**\n• New commits: {commits_count}\n• Latest: {latest_commit}\n• Changes: {changes_summary}\n\n**Commands:**\n• `.update` - Update now\n• `.updatecheck` - View details",
+      "send_to_saved_messages": true,
+      "notify_admins": false
+    },
+    "update_success": {
+      "enabled": true,
+      "message": "✅ **Update Completed!**\n\n**📊 Summary:**\n• Updated: {old_version} → {new_version}\n• Files changed: {files_changed}\n• Duration: {duration}s\n\n**🔄 Bot automatically restarted**",
+      "auto_delete_after": 60
+    },
+    "update_failed": {
+      "enabled": true,
+      "message": "❌ **Update Failed!**\n\n**Error:** {error_message}\n\n**🔧 Actions:**\n• Check internet connection\n• Resolve git conflicts\n• Contact support if needed\n\n**Backup:** {backup_status}",
+      "notify_immediately": true
+    }
+  },
+  
+  "restart_behavior": {
+    "restart_after_update": true,
+    "restart_delay_seconds": 5,
+    "restart_command": "python3 main.py",
+    "pre_restart_commands": [
+      "pip install -r requirements.txt --upgrade",
+      "python3 -c \"print('Dependencies updated')\""
+    ],
+    "post_restart_validation": true
+  },
+  
+  "logging": {
+    "log_file": "update_log.txt",
+    "log_level": "INFO",
+    "max_log_size_mb": 10,
+    "rotate_logs": true,
+    "detailed_logging": true,
+    "log_git_output": true
+  },
+  
+  "security": {
+    "verify_commits": false,
+    "allowed_authors": [],
+    "block_force_updates": true,
+    "require_clean_working_tree": false,
+    "validate_after_update": true
+  },
+  
+  "performance": {
+    "parallel_operations": false,
+    "compression_level": 6,
+    "cache_git_status": true,
+    "cache_duration_seconds": 300,
+    "optimize_disk_space": true
+  },
+  
+  "development": {
+    "debug_mode": false,
+    "dry_run_mode": false,
+    "test_mode": false,
+    "skip_dependencies": false,
+    "verbose_output": false
+  },
+  
+  "hooks": {
+    "pre_update": {
+      "enabled": false,
+      "commands": [
+        "echo 'Starting update process...'",
+        "python3 -c \"print('Pre-update hook executed')\""
+      ],
+      "timeout": 30
+    },
+    "post_update": {
+      "enabled": true,
+      "commands": [
+        "echo 'Update completed successfully'",
+        "python3 -c \"import os; print(f'Updated at {os.getcwd()}')\""
+      ],
+      "timeout": 60
+    },
+    "on_failure": {
+      "enabled": true,
+      "commands": [
+        "echo 'Update failed, checking status...'",
+        "git status"
+      ],
+      "timeout": 30
+    }
+  },
+  
+  "ui_messages": {
+    "checking_updates": "🔍 **Checking for updates...**",
+    "update_available": "📥 **{count} updates available!**",
+    "updating": "⚡ **Updating userbot...**",
+    "creating_backup": "💾 **Creating backup...**",
+    "pulling_changes": "📥 **Pulling changes...**",
+    "installing_deps": "📦 **Installing dependencies...**", 
+    "restarting": "🔄 **Restarting bot...**",
+    "success": "✅ **Update successful!**",
+    "up_to_date": "✅ **Already up to date**",
+    "failed": "❌ **Update failed**",
+    "rollback": "↩️ **Rolling back changes...**"
+  },
+  
+  "commands": {
+    "aliases": {
+      ".update": [".up", ".pull", ".refresh"],
+      ".updatecheck": [".upcheck", ".checkup"],
+      ".updateauto": [".autoup", ".autoUpdate"],
+      ".rollback": [".revert", ".undo"]
+    },
+    "permissions": {
+      "update": "owner_only",
+      "updatecheck": "all_users", 
+      "updateauto": "owner_only",
+      "rollback": "owner_only"
+    }
+  },
+  
+  "troubleshooting": {
+    "common_errors": {
+      "merge_conflict": {
+        "message": "Merge conflict detected. Manual resolution required.",
+        "solutions": [
+          "Check git status with .gitinfo",
+          "Resolve conflicts manually",
+          "Or use .rollback to revert"
+        ]
+      },
+      "network_error": {
+        "message": "Network connection failed.",
+        "solutions": [
+          "Check internet connection",
+          "Verify git remote URL",
+          "Try again later"
+        ]
+      },
+      "permission_denied": {
+        "message": "Permission denied during update.",
+        "solutions": [
+          "Check file permissions",
+          "Run as proper user",
+          "Check disk space"
+        ]
+      }
+    }
+  },
+  
+  "statistics": {
+    "track_update_frequency": true,
+    "track_success_rate": true,
+    "track_performance_metrics": true,
+    "generate_reports": false,
+    "report_interval_days": 7
+  }
+}

@@ -1,0 +1,206 @@
+{
+  "_comment": "Voice Cloning Configuration - Setup your API keys here",
+  "api_keys": {
+    "elevenlabs": {
+      "key": "YOUR_ELEVENLABS_API_KEY_HERE",
+      "note": "Get from: https://elevenlabs.io/",
+      "pricing": "Free tier available, premium for unlimited"
+    },
+    "murf": {
+      "key": "YOUR_MURF_API_KEY_HERE", 
+      "note": "Get from: https://murf.ai/",
+      "pricing": "Free trial, subscription based"
+    },
+    "openai": {
+      "key": "YOUR_OPENAI_API_KEY_HERE",
+      "note": "For Whisper speech-to-text. Get from: https://openai.com/",
+      "pricing": "Pay per usage"
+    }
+  },
+  "voice_settings": {
+    "default_voice": "anime_girl",
+    "quality_preference": "high",
+    "real_time_processing": true,
+    "auto_process_calls": false,
+    "streaming_enabled": false
+  },
+  "character_voices": {
+    "jokowi": {
+      "name": "Joko Widodo (Jokowi)",
+      "description": "🇮🇩 Presiden Indonesia - Suara khas Bapak Jokowi",
+      "api": "elevenlabs",
+      "voice_id": "jokowi_indonesia_voice",
+      "settings": {
+        "stability": 0.85,
+        "similarity_boost": 0.80,
+        "style": 0.3,
+        "use_speaker_boost": true
+      }
+    },
+    "prabowo": {
+      "name": "Prabowo Subianto",
+      "description": "🎖️ Menteri Pertahanan - Suara tegas dan berwibawa",
+      "api": "elevenlabs",
+      "voice_id": "prabowo_subianto_voice",
+      "settings": {
+        "stability": 0.82,
+        "similarity_boost": 0.78,
+        "style": 0.35,
+        "use_speaker_boost": true
+      }
+    },
+    "claude": {
+      "name": "Claude AI Assistant",
+      "description": "🤖 AI Assistant - Professional dan informatif",
+      "api": "elevenlabs",
+      "voice_id": "claude_ai_voice",
+      "settings": {
+        "stability": 0.75,
+        "similarity_boost": 0.70,
+        "style": 0.2,
+        "use_speaker_boost": false
+      }
+    },
+    "mlbb": {
+      "name": "MLBB Narrator",
+      "description": "⚔️ Mobile Legends - Narrator epik pertempuran",
+      "api": "elevenlabs",
+      "voice_id": "mlbb_narrator_voice",
+      "settings": {
+        "stability": 0.80,
+        "similarity_boost": 0.75,
+        "style": 0.4,
+        "use_speaker_boost": true
+      }
+    },
+    "squidward": {
+      "name": "Squidward Tentacles",
+      "description": "🦑 SpongeBob - Suara sarkastik dan pesimis",
+      "api": "elevenlabs",
+      "voice_id": "squidward_tentacles_voice",
+      "settings": {
+        "stability": 0.70,
+        "similarity_boost": 0.65,
+        "style": 0.5,
+        "use_speaker_boost": true
+      }
+    },
+    "spongebob": {
+      "name": "SpongeBob SquarePants",
+      "description": "🧽 SpongeBob - Suara ceria dan antusias",
+      "api": "elevenlabs",
+      "voice_id": "spongebob_squarepants_voice",
+      "settings": {
+        "stability": 0.65,
+        "similarity_boost": 0.60,
+        "style": 0.6,
+        "use_speaker_boost": true
+      }
+    },
+    "presenter": {
+      "name": "Presenter Sexy",
+      "description": "💃 Presenter - Suara sensual dan menarik",
+      "api": "elevenlabs",
+      "voice_id": "sexy_presenter_voice",
+      "settings": {
+        "stability": 0.77,
+        "similarity_boost": 0.72,
+        "style": 0.45,
+        "use_speaker_boost": true
+      }
+    },
+    "anime_girl": {
+      "name": "Anime Girl Voice",
+      "description": "Cute anime-style female voice",
+      "api": "elevenlabs",
+      "voice_id": "21m00Tcm4TlvDq8ikWAM",
+      "settings": {
+        "stability": 0.71,
+        "similarity_boost": 0.5,
+        "style": 0.0,
+        "use_speaker_boost": true
+      }
+    },
+    "deep_male": {
+      "name": "Deep Male Voice", 
+      "description": "Deep authoritative male voice",
+      "api": "elevenlabs",
+      "voice_id": "29vD33N1CtxCmqQRPOHJ",
+      "settings": {
+        "stability": 0.75,
+        "similarity_boost": 0.75,
+        "style": 0.2
+      }
+    },
+    "celebrity_1": {
+      "name": "Celebrity Voice 1",
+      "description": "Famous personality voice clone (Example)",
+      "api": "murf",
+      "voice_id": "custom_celebrity_1",
+      "settings": {
+        "speed": 1.0,
+        "pitch": 0,
+        "emphasis": 1.2
+      }
+    },
+    "robot": {
+      "name": "Robot Voice",
+      "description": "Futuristic robot/AI voice",
+      "api": "coqui", 
+      "voice_id": "robot_model",
+      "settings": {
+        "vocoder": "griffin_lim",
+        "speed": 0.9
+      }
+    }
+  },
+  "custom_voices": {
+    "_comment": "Add your custom trained voices here",
+    "example_custom": {
+      "name": "My Custom Voice",
+      "description": "Custom trained voice model",
+      "api": "elevenlabs",
+      "voice_id": "YOUR_CUSTOM_VOICE_ID",
+      "audio_samples": ["sample1.wav", "sample2.wav"],
+      "training_date": "2025-01-01",
+      "quality_rating": 4.5
+    }
+  },
+  "audio_settings": {
+    "output_format": "mp3",
+    "sample_rate": 44100,
+    "bit_rate": 128,
+    "channels": 1,
+    "max_duration": 300
+  },
+  "call_settings": {
+    "auto_clone_calls": false,
+    "real_time_processing": true,
+    "call_recording": false,
+    "voice_change_detection": true
+  },
+  "setup_instructions": {
+    "1": "Get API keys from providers (ElevenLabs, Murf, OpenAI)",
+    "2": "Update api_keys section with your actual keys",
+    "3": "Run `.vclone setup` in Telegram to initialize",
+    "4": "Test with `.vclone test Hello world`",
+    "5": "Generate voice notes with `.vclone note Your text here`",
+    "6": "For calls, use `.vclone call @username`"
+  },
+  "character_requests": {
+    "_comment": "Popular character voice requests - will be added",
+    "anime_characters": [
+      "Naruto Uzumaki", "Goku", "Zero Two", "Rem", "Asuka Langley"
+    ],
+    "movie_characters": [
+      "Darth Vader", "Iron Man", "Batman", "Joker", "Yoda"
+    ],
+    "celebrity_voices": [
+      "Morgan Freeman", "Samuel L. Jackson", "Scarlett Johansson"
+    ],
+    "game_characters": [
+      "Master Chief", "Kratos", "GLaDOS", "Cortana", "Solid Snake"
+    ],
+    "note": "Tell me which character you want and I'll add it!"
+  }
+}

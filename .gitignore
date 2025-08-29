@@ -1,25 +1,47 @@
-# ============= CREDENTIALS & SENSITIVE DATA =============
+# ===== VZOEL USERBOT - GITIGNORE =====
+# Enhanced gitignore untuk repository userbot
+# Created by: Vzoel Fox's (Enhanced by Morgan)
+
+# ===== CREDENTIALS & SENSITIVE DATA =====
 # JANGAN PERNAH COMMIT FILE INI!
 .env
+.env.local
+.env.production
 *.session
 *.session-journal
 config.py
 secrets.py
 credentials.json
+api_keys.json
 *.key
 *.pem
 
-# ============= USERBOT SPECIFIC =============
+# ===== USERBOT SPECIFIC =====
 userbot_session.session*
+vzoel_session.session*
 userbot.log*
+update_log.txt
 *.db
 *.sqlite
 *.sqlite3
+*.db-journal
+
+# Directories to ignore
 downloads/
 temp/
+temp_audio/
 logs/
+backups/
+voice_clone_backups/
+message_backups/
+voice_models/
+voice_samples/
+voice_cache/
+tts_cache/
+ai_cache/
+model_cache/
 
-# ============= PYTHON =============
+# ===== PYTHON =====
 __pycache__/
 *.py[cod]
 *$py.class
@@ -28,7 +50,6 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
 eggs/
 .eggs/
 lib/
@@ -43,9 +64,15 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# ============= VIRTUAL ENVIRONMENTS =============
-.env
-.venv
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ===== VIRTUAL ENVIRONMENTS =====
+.venv/
 env/
 venv/
 ENV/
@@ -53,14 +80,14 @@ env.bak/
 venv.bak/
 telethon_env/
 
-# ============= IDE SETTINGS =============
+# ===== IDE SETTINGS =====
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# ============= OS GENERATED =============
+# ===== OS GENERATED =====
 .DS_Store
 .DS_Store?
 ._*
@@ -68,20 +95,86 @@ telethon_env/
 .Trashes
 ehthumbs.db
 Thumbs.db
+Desktop.ini
+*.lnk
 
-# ============= CLOUD DEPLOYMENT =============
+# ===== CLOUD DEPLOYMENT =====
 .heroku/
 .vercel/
 .netlify/
 
-# ============= BACKUP FILES =============
+# ===== BACKUP & TEMPORARY FILES =====
 *.bak
 *.backup
 *.old
 *.orig
+*.tmp
+*.temp
+*_backup_*.json
+config_backup_*/
 
-# ============= MEDIA CACHE =============
+# ===== MEDIA & CACHE =====
 media/
 cache/
+.cache/
 thumbnails/
 profile_photos/
+images/
+videos/
+audio/
+*.mp3
+*.wav
+*.mp4
+*.avi
+*.mkv
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
+# ===== PLUGIN SPECIFIC =====
+plugins/temp/
+plugins/__pycache__/
+plugins/*.log
+plugins/*.db
+
+# ===== PACKAGE MANAGERS =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== JUPYTER NOTEBOOK =====
+.ipynb_checkpoints
+
+# ===== COMPRESSION FILES =====
+*.zip
+*.rar
+*.7z
+*.tar.gz
+*.tar.bz2
+
+# ===== DEVELOPMENT =====
+test_files/
+experimental/
+dev_plugins/
+personal/
+private/
+secrets/
+
+# ===== USER SPECIFIC =====
+user_config.json
+personal_settings.json
+
+# ===== PERFORMANCE LOGS =====
+performance_logs/
+metrics/
+
+# ===== KEEP IMPORTANT CONFIG FILES =====
+# These files should be tracked:
+# - userbot_custom_messages.json
+# - voice_clone_config.json 
+# - auto_update_config.json
+# - requirements.txt
+# - main.py, plugin_loader.py, client.py

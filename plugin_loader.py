@@ -41,18 +41,23 @@ class PluginLoader:
     def inject_dependencies(self, module):
         """Inject client dan shared functions ke plugin module"""
         try:
-            # Inject client
+            # Inject client - PERBAIKAN: Set sebagai global juga
             if self.client:
                 setattr(module, 'client', self.client)
-                # Also set as global in module
+                # Set as global in module dict
                 if hasattr(module, '__dict__'):
                     module.__dict__['client'] = self.client
+                # IMPORTANT: Set as global for decorators
+                if hasattr(module, '__globals__'):
+                    module.__globals__['client'] = self.client
             
             # Inject shared functions
             for func_name, func in self.shared_functions.items():
                 setattr(module, func_name, func)
                 if hasattr(module, '__dict__'):
                     module.__dict__[func_name] = func
+                if hasattr(module, '__globals__'):
+                    module.__globals__[func_name] = func
             
             logger.debug(f"Dependencies injected successfully to {module.__name__ if hasattr(module, '__name__') else 'unknown'}")
             
@@ -77,21 +82,55 @@ class PluginLoader:
             # Add to sys.modules to prevent import issues
             sys.modules[f"plugin_{plugin_name}"] = module
             
-            # Inject dependencies SEBELUM exec_module
-            self.inject_dependencies(module)
+            # PERBAIKAN CRITICAL: Set client sebagai global untuk plugin
+            if self.client:
+                # Set in module namespace sebelum execution
+                setattr(module, 'client', self.client)
+                
+                # Set as global using sys.modules approach
+                original_builtins = None
+                try:
+                    import builtins
+                    if not hasattr(builtins, 'client'):
+                        builtins.client = self.client
+                        original_builtins = True
+                except Exception:
+                    pass
             
-            # Execute module
+            # Execute module dengan client tersedia
             spec.loader.exec_module(module)
             
-            # Call plugin initialization if exists
-            if hasattr(module, 'initialize_plugin'):
+            # Clean up builtins to avoid pollution  
+            try:
+                import builtins
+                if original_builtins and hasattr(builtins, 'client'):
+                    delattr(builtins, 'client')
+            except Exception:
+                pass
+            
+            # Inject other dependencies
+            self.inject_dependencies(module)
+            
+            # PERBAIKAN: Call setup function for plugins that use it
+            if hasattr(module, 'setup'):
+                try:
+                    setup_result = module.setup(self.client)
+                    if asyncio.iscoroutine(setup_result):
+                        logger.warning(f"Plugin {plugin_name} has async setup - consider using sync setup")
+                    logger.info(f"✅ Plugin {plugin_name} setup completed")
+                except Exception as setup_error:
+                    logger.error(f"Plugin {plugin_name} setup error: {setup_error}")
+            
+            # Call plugin initialization if exists (legacy support)
+            elif hasattr(module, 'initialize_plugin'):
                 try:
                     init_result = module.initialize_plugin()
                     if asyncio.iscoroutine(init_result):
-                        # Handle async initialization jika diperlukan
                         logger.warning(f"Plugin {plugin_name} has async initialization - skipping for now")
                 except Exception as init_error:
                     logger.warning(f"Plugin {plugin_name} initialization error: {init_error}")
+            
+            # For plugins without setup function, event handlers should already be registered via decorators
             
             # Get plugin info if available
             if hasattr(module, 'get_plugin_info'):

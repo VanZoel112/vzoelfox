@@ -1,4 +1,4 @@
-# Core dependencies
+# ===== CORE DEPENDENCIES =====
 telethon>=1.35.0
 python-dotenv>=1.0.0
 
@@ -6,34 +6,91 @@ python-dotenv>=1.0.0
 cryptg>=0.4.0
 hachoir>=3.2.0
 
+# ===== AI & ML DEPENDENCIES =====
+# Async HTTP client for AI APIs
+aiohttp>=3.9.0
+requests>=2.31.0
+
+# AI API integrations
+openai>=1.0.0
+groq>=0.4.0
+httpx>=0.25.0
+
+# HuggingFace transformers (for local AI models)
+transformers>=4.30.0
+
+# PyTorch (for LLaMA2 and other models) - Optional
+# torch>=2.0.0  # Uncomment if using local models
+
+# ===== DATABASE & STORAGE =====
+sqlalchemy>=2.0.0
+aiosqlite>=0.19.0
+
 # File handling
 aiofiles>=23.0.0
 pillow>=10.0.0
 
-# Database (for advanced features)
-sqlalchemy>=2.0.0
-aiosqlite>=0.19.0
-
-# HTTP requests
-aiohttp>=3.9.0
-requests>=2.31.0
-
-# Utilities
+# ===== UTILITIES =====
 python-dateutil>=2.8.0
 pytz>=2023.3
 colorama>=0.4.6
 
-# Media processing
+# JSON handling
+ujson>=5.0.0
+
+# Rate limiting & throttling
+ratelimit>=2.2.0
+asyncio-throttle>=1.0.0
+
+# ===== MEDIA PROCESSING =====
 yt-dlp>=2023.12.30
 ffmpeg-python>=0.2.0
 
-# Optional: For web interface
+# ===== VOICE CLONING & AUDIO =====
+# Voice cloning APIs
+elevenlabs>=0.2.0
+murf-ai>=0.1.0
+
+# Audio processing
+pyaudio>=0.2.11
+soundfile>=0.12.0
+librosa>=0.10.0
+pydub>=0.25.0
+
+# Speech recognition & TTS
+SpeechRecognition>=3.10.0
+whisper-openai>=20231106
+TTS>=0.22.0  # Coqui TTS
+
+# Real-time audio streaming
+pywebrtc>=0.1.0
+websockets>=11.0.0
+
+# Audio codecs & formats
+wave>=0.0.2
+mutagen>=1.47.0
+
+# ===== TEXT PROCESSING =====
+# For advanced NLP (optional)
+# nltk>=3.8.0  # Uncomment if needed
+beautifulsoup4>=4.12.0
+
+# ===== SECURITY =====
+cryptography>=41.0.0
+
+# ===== WEB INTERFACE (OPTIONAL) =====
 flask>=2.3.0
 gunicorn>=21.2.0
 
-# Development tools (optional)
+# ===== DEVELOPMENT TOOLS (OPTIONAL) =====
 black>=23.0.0
 flake8>=6.0.0
 
-# System monitoring (for enhanced alive command)
+# ===== SYSTEM MONITORING =====
 psutil>=5.9.0
+
+# ===== VERSION INFO =====
+# VZOEL ASSISTANT v0.1.0.75 Enhanced
+# Compatible with Python 3.8+
+# Updated: 2025-08-28 with AI & LLaMA2 support
+# Author: Vzoel Fox's (Enhanced by Morgan)
