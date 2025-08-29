@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Help Plugin dengan Premium Emoji Support
+Help Plugin dengan Premium Emoji Support via AssetJSON
 File: plugins/help.py
 Author: Vzoel Fox's (Enhanced by Morgan)
+Version: 1.1.0
 """
 
 import re
@@ -11,6 +12,23 @@ import sys
 from telethon import events, Button
 from telethon.tl.types import MessageEntityCustomEmoji
 from datetime import datetime
+
+# ===== Plugin Info =====
+PLUGIN_INFO = {
+    "name": "help",
+    "version": "1.1.0",
+    "description": "Enhanced help system with premium emoji support via AssetJSON",
+    "author": "Vzoel Fox's (Enhanced by Morgan)",
+    "commands": ["help"],
+    "features": ["interactive navigation", "premium emoji integration", "category system", "button navigation"]
+}
+
+try:
+    from assetjson import create_plugin_environment
+except ImportError:
+    def create_plugin_environment(client=None): return {}
+
+env = None
 
 # Premium emoji configuration (copy dari main.py)
 PREMIUM_EMOJIS = {
@@ -128,6 +146,12 @@ def create_premium_entities(text):
 async def safe_send_with_entities(event, text, buttons=None):
     """Send message with premium entities and buttons if available"""
     try:
+        # Use assetjson environment if available
+        if env and 'safe_send_with_entities' in env:
+            await env['safe_send_with_entities'](event, text, buttons)
+            return
+        
+        # Fallback dengan entities manual
         # Check premium status first
         await check_premium_status()
         
@@ -167,7 +191,11 @@ def get_prefix():
 # HELP COMMAND HANDLER WITH PREMIUM EMOJI SUPPORT  
 async def help_handler(event):
     """Enhanced help command with premium emoji support"""
-    if not await is_owner_check(event.sender_id):
+    # Check ownership using environment if available
+    if env and 'is_owner' in env:
+        if not await env['is_owner'](event.sender_id):
+            return
+    elif not await is_owner_check(event.sender_id):
         return
     
     try:
@@ -755,23 +783,19 @@ Show founder and bot information
     except Exception as e:
         await event.answer(f"Error: {str(e)}", alert=True)
 
-# Plugin info
-PLUGIN_INFO = {
-    'name': 'help',
-    'version': '1.0.2',
-    'description': 'Comprehensive help system with premium emoji support',
-    'author': 'Vzoel Fox\'s (Enhanced by Morgan)',
-    'commands': ['help'],
-    'categories': ['basic', 'gcast', 'emoji', 'user', 'voice', 'manage', 'system']
-}
-
 def get_plugin_info():
     return PLUGIN_INFO
 
 def setup(client):
-    """Setup function untuk register event handlers"""
+    """Setup function untuk register event handlers dengan AssetJSON support"""
+    global env
+    env = create_plugin_environment(client)
+    
     client.add_event_handler(help_handler, events.NewMessage(pattern=rf'\.help(\s+(.+))?'))
     client.add_event_handler(help_callback_handler, events.CallbackQuery(pattern=rb"help_(.+)"))
     
     # Set global client untuk functions yang membutuhkan
     globals()['client'] = client
+    
+    if env and 'logger' in env:
+        env['logger'].info("[Help] Plugin loaded with premium emoji support via AssetJSON")
