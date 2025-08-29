@@ -9,19 +9,20 @@ import os
 import json
 from datetime import datetime
 from telethon import events
+from telethon.tl.types import MessageEntityCustomEmoji
 import asyncio
 import aiohttp
 
 PLUGIN_INFO = {
     "name": "aimode",
-    "version": "2.0.0",
-    "description": "AI Mode & Responder dengan OpenAI GPT, config persist SQLite, premium emoji assetjson, failover otomatis.",
+    "version": "2.1.0",
+    "description": "AI Mode & Responder with OpenAI GPT, auto UTF-16 premium emoji detection, SQLite persistence.",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
-    "commands": [".aimode on", ".aimode off", ".aimode status", ".aiconfig", ".ai"],
-    "features": ["ai mode", "auto reply ai", "status/config in sqlite", "model failover"]
+    "commands": [".aimode on", ".aimode off", ".aimode status", ".aiconfig", ".testaiemoji"],
+    "features": ["ai mode", "auto reply ai", "status/config in sqlite", "auto UTF-16 premium emoji"]
 }
 
-# Manual Premium Emoji Mapping berdasarkan data yang diberikan
+# Auto Premium Emoji Mapping (UTF-16 auto-detection)
 PREMIUM_EMOJIS = {
     "main": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
     "check": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
@@ -32,14 +33,50 @@ PREMIUM_EMOJIS = {
     "devil": {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
     "slider": {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
 }
+
 DB_FILE = "plugins/aimode.db"
 
+def get_utf16_length(emoji_char):
+    """Get UTF-16 length of emoji character"""
+    try:
+        utf16_bytes = emoji_char.encode('utf-16le')
+        return len(utf16_bytes) // 2
+    except:
+        return 1
+
+def create_premium_emoji_entities(text):
+    """Automatically create MessageEntityCustomEmoji entities for premium emojis"""
+    entities = []
+    utf16_offset = 0
+    
+    for i, char in enumerate(text):
+        for emoji_name, emoji_data in PREMIUM_EMOJIS.items():
+            if char == emoji_data["emoji"]:
+                emoji_length = get_utf16_length(char)
+                entity = MessageEntityCustomEmoji(
+                    offset=utf16_offset,
+                    length=emoji_length,
+                    document_id=int(emoji_data["custom_emoji_id"])
+                )
+                entities.append(entity)
+                break
+        utf16_offset += get_utf16_length(char)
+    
+    return entities
+
 async def safe_send_message(event, text):
-    """Send message with basic reply"""
-    await event.reply(text)
+    """Send message with premium emoji entities"""
+    try:
+        entities = create_premium_emoji_entities(text)
+        if entities:
+            await event.reply(text, formatting_entities=entities)
+        else:
+            await event.reply(text)
+    except Exception as e:
+        await event.reply(text)
 
 def safe_get_emoji(emoji_type):
-    """Get premium emoji with manual mapping"""
+    """Get premium emoji with automatic mapping"""
     emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
     return emoji_data["emoji"]
 
@@ -296,11 +333,39 @@ async def call_ai(api_cfg, prompt, cfg):
     except Exception as e:
         return f"❌ AI API error: {e}"
 
+async def test_ai_emoji_handler(event):
+    """Test UTF-16 emoji detection for AI plugin"""
+    OWNER_ID = 7847025168
+    if event.sender_id != OWNER_ID:
+        return
+    
+    test_text = f"""
+{safe_get_emoji('main')} **AIMODE EMOJI TEST**
+
+{safe_get_emoji('check')} AI Mode commands:
+• `.aimode on` - Enable AI mode
+• `.aimode off` - Disable AI mode  
+• `.aimode status` - Check status
+• `.aiconfig` - Show configuration
+
+{safe_get_emoji('success')} Status emojis:
+• {safe_get_emoji('success')} AI enabled
+• {safe_get_emoji('cross')} AI disabled
+• {safe_get_emoji('storm')} Processing
+• {safe_get_emoji('devil')} Error
+• {safe_get_emoji('plane')} API call
+
+{safe_get_emoji('slider')} Auto UTF-16 premium emoji detection active!
+"""
+    
+    await safe_send_message(event, test_text.strip())
+
 def get_plugin_info():
     return PLUGIN_INFO
 
 def setup(client):
     client.add_event_handler(aimode_handler, events.NewMessage(pattern=r"\.aimode"))
     client.add_event_handler(aiconfig_handler, events.NewMessage(pattern=r"\.aiconfig"))
+    client.add_event_handler(test_ai_emoji_handler, events.NewMessage(pattern=r"\.testaiemoji"))
     client.add_event_handler(ai_autoreply_handler, events.NewMessage(incoming=True, func=lambda e: not e.is_private and not e.text.startswith('.')))
-    print("[AIMode] Plugin loaded with manual emoji mapping.")
+    print(f"[AIMode] Plugin loaded with auto UTF-16 emoji detection v{PLUGIN_INFO['version']}")
