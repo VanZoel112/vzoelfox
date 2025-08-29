@@ -9,3 +9,1579 @@
 2025-08-29 08:56:52,660 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.51:443/TcpFull complete!
 2025-08-29 08:56:53,514 - __main__ - ERROR - ❌ Error starting VZOEL ASSISTANT: EOF when reading a line
 2025-08-29 08:56:53,515 - __main__ - ERROR - ❌ Core system startup failed
+2025-08-29 12:13:27,308 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 12:13:27,319 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 12:13:27,321 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 12:13:27,323 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 12:13:27,324 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 12:13:27,325 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.51:443/TcpFull...
+2025-08-29 12:13:27,531 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.51:443/TcpFull complete!
+2025-08-29 12:13:28,475 - __main__ - ERROR - ❌ Error starting VZOEL ASSISTANT: EOF when reading a line
+2025-08-29 12:13:28,476 - __main__ - ERROR - ❌ Core system startup failed
+2025-08-29 12:15:14,110 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 12:15:14,128 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 12:15:14,130 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 12:15:14,133 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 12:15:14,134 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 12:15:14,136 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.51:443/TcpFull...
+2025-08-29 12:15:14,334 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.51:443/TcpFull complete!
+2025-08-29 12:15:15,588 - telethon.client.users - INFO - Phone migrated to 5
+2025-08-29 12:15:15,814 - telethon.client.telegrambaseclient - INFO - Reconnecting to new data center 5
+2025-08-29 12:15:16,052 - telethon.network.mtprotosender - INFO - Disconnecting from 149.154.167.51:443/TcpFull...
+2025-08-29 12:15:16,056 - telethon.network.mtprotosender - INFO - Disconnection from 149.154.167.51:443/TcpFull complete!
+2025-08-29 12:15:16,058 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:15:18,099 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:15:18,563 - __main__ - ERROR - ❌ Error starting VZOEL ASSISTANT: EOF when reading a line
+2025-08-29 12:15:18,564 - __main__ - ERROR - ❌ Core system startup failed
+2025-08-29 12:15:58,242 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 12:15:58,254 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 12:15:58,256 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 12:15:58,258 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 12:15:58,259 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 12:15:58,261 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:15:58,304 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:15:59,028 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 12:15:59,083 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 12:15:59,085 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 12:15:59,085 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 12:15:59,086 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 12:15:59,088 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 12:15:59,088 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 12:15:59,251 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 12:15:59,252 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 12:15:59,252 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 12:15:59,253 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 12:15:59,256 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 12:15:59,263 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 12:15:59,272 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 12:15:59,280 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 12:15:59,282 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 12:15:59,283 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 12:15:59,291 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 12:15:59,292 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 12:15:59,324 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 12:15:59,328 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 12:15:59,334 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 12:15:59,335 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 12:15:59,336 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 12:15:59,341 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 12:15:59,342 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 12:15:59,343 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 12:15:59,425 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 12:15:59,426 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 12:15:59,428 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 12:15:59,438 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 12:15:59,446 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 12:15:59,453 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 12:15:59,453 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 12:15:59,454 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 12:15:59,458 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 12:15:59,459 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 12:15:59,460 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 12:15:59,465 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 12:15:59,466 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 12:15:59,466 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 12:15:59,489 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 12:15:59,493 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 12:15:59,500 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 12:15:59,501 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 12:15:59,502 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 12:16:00,473 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 12:16:00,474 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 12:16:00,476 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 12:16:00,482 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 12:16:00,483 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 12:16:00,484 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 12:16:00,497 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 12:16:00,497 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 12:16:00,498 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 12:16:00,555 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:16:00,556 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 12:16:00,557 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 12:16:00,598 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:16:00,600 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 12:16:00,601 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 12:16:00,692 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 12:16:00,693 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 12:16:00,694 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 12:16:00,735 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 12:16:00,740 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 12:16:00,787 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:16:00,788 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 12:16:00,789 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 12:16:00,827 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:16:00,828 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 12:16:00,829 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 12:16:00,855 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 12:16:00,856 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 12:16:00,857 - plugin_loader - INFO - Plugin loading complete: 18/23 loaded successfully
+2025-08-29 12:16:00,858 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:16:00,859 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 12:16:00,860 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 12:16:00,861 - plugin_loader - INFO -    📊 Total found: 23
+2025-08-29 12:16:00,862 - plugin_loader - INFO -    ✅ Successfully loaded: 18
+2025-08-29 12:16:00,863 - plugin_loader - INFO -    ❌ Failed to load: 5
+2025-08-29 12:16:00,864 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast
+2025-08-29 12:16:00,865 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:16:00,866 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 12:16:00,868 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 12:16:00,869 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 12:16:00,870 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 12:16:00,870 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 12:16:00,872 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 12:16:00,873 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 12:16:00,874 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 12:16:00,875 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 12:16:00,877 - plugin_loader - INFO -       - help: help
+2025-08-29 12:16:00,878 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 12:16:00,879 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 12:16:00,880 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 12:16:00,882 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 12:16:00,883 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 12:16:00,884 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 12:16:00,885 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 12:16:00,887 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 12:16:00,888 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 12:16:00,889 - __main__ - INFO - ✅ Plugins loaded: 18/23
+2025-08-29 12:16:00,890 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:16:01,084 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 12:16:01,085 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 12:16:01,086 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 12:16:01,086 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 12:16:25,616 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 12:17:00,601 - telethon.client.updates - INFO - Got difference for channel 2893902003 updates
+2025-08-29 12:17:00,979 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 12:17:01,154 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:17:13,648 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:18:00,436 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 12:18:00,659 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:18:01,010 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:18:17,344 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 12:18:17,429 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 12:18:17,541 - telethon.client.updates - INFO - Got difference for channel 3058381426 updates
+2025-08-29 12:18:28,376 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 12:18:28,387 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 12:18:28,388 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 12:18:28,390 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 12:18:28,391 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 12:18:28,392 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:18:28,441 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:18:28,980 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 12:18:29,042 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 12:18:29,043 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 12:18:29,044 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 12:18:29,044 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 12:18:29,045 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 12:18:29,045 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 12:18:29,223 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 12:18:29,224 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 12:18:29,224 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 12:18:29,225 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 12:18:29,228 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 12:18:29,232 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 12:18:29,238 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 12:18:29,242 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 12:18:29,244 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 12:18:29,245 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 12:18:29,251 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 12:18:29,252 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 12:18:29,281 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 12:18:29,285 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 12:18:29,289 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 12:18:29,289 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 12:18:29,290 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 12:18:29,293 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 12:18:29,294 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 12:18:29,295 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 12:18:29,298 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 12:18:29,299 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 12:18:29,300 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 12:18:29,304 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 12:18:29,310 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 12:18:29,314 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 12:18:29,315 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 12:18:29,316 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 12:18:29,319 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 12:18:29,320 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 12:18:29,322 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 12:18:29,325 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 12:18:29,326 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 12:18:29,328 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 12:18:29,354 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 12:18:29,358 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 12:18:29,361 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 12:18:29,362 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 12:18:29,363 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 12:18:29,951 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 12:18:29,952 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 12:18:29,953 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 12:18:29,959 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 12:18:29,960 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 12:18:29,960 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 12:18:29,969 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 12:18:29,970 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 12:18:29,972 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 12:18:29,977 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:18:29,978 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 12:18:29,979 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 12:18:29,984 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:18:29,985 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 12:18:29,987 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 12:18:30,011 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 12:18:30,012 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 12:18:30,013 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 12:18:30,017 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 12:18:30,022 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 12:18:30,032 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:18:30,033 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 12:18:30,033 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 12:18:30,038 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:18:30,039 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 12:18:30,040 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 12:18:30,045 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 12:18:30,046 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 12:18:30,047 - plugin_loader - INFO - Plugin loading complete: 18/23 loaded successfully
+2025-08-29 12:18:30,048 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:18:30,049 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 12:18:30,049 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 12:18:30,050 - plugin_loader - INFO -    📊 Total found: 23
+2025-08-29 12:18:30,051 - plugin_loader - INFO -    ✅ Successfully loaded: 18
+2025-08-29 12:18:30,051 - plugin_loader - INFO -    ❌ Failed to load: 5
+2025-08-29 12:18:30,052 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast
+2025-08-29 12:18:30,053 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:18:30,054 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 12:18:30,055 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 12:18:30,056 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 12:18:30,057 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 12:18:30,057 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 12:18:30,058 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 12:18:30,058 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 12:18:30,059 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 12:18:30,059 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 12:18:30,060 - plugin_loader - INFO -       - help: help
+2025-08-29 12:18:30,062 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 12:18:30,062 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 12:18:30,063 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 12:18:30,064 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 12:18:30,065 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 12:18:30,065 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 12:18:30,066 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 12:18:30,067 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 12:18:30,068 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 12:18:30,069 - __main__ - INFO - ✅ Plugins loaded: 18/23
+2025-08-29 12:18:30,070 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:18:30,078 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 12:18:30,079 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 12:18:30,080 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 12:18:30,082 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 12:18:39,132 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:19:30,183 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:19:30,442 - telethon.client.updates - INFO - Got difference for channel 2307794289 updates
+2025-08-29 12:19:30,570 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:19:31,032 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:19:46,005 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:19:51,111 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:20:00,832 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:20:01,059 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:20:04,431 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:20:05,423 - telethon.client.updates - INFO - Got difference for channel 2829694602 updates
+2025-08-29 12:20:13,696 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:20:30,142 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:20:30,257 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:20:55,690 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:20:55,775 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 12:21:12,357 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 12:21:12,572 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:21:13,229 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:21:27,972 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 12:21:28,234 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:21:28,408 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:21:35,876 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:21:41,891 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:21:55,040 - telethon.client.updates - INFO - Got difference for channel 2893902003 updates
+2025-08-29 12:21:55,132 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:21:57,494 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:22:16,431 - telethon.client.updates - INFO - Got difference for channel 3058381426 updates
+2025-08-29 12:22:16,551 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:23:31,079 - telethon.client.updates - INFO - Got difference for channel 2846734856 updates
+2025-08-29 12:23:31,197 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:23:31,599 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:23:33,171 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:23:33,369 - telethon.client.updates - INFO - Got difference for channel 2893902003 updates
+2025-08-29 12:23:33,482 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 12:23:33,565 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:23:47,790 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:23:56,926 - telethon.client.updates - INFO - Got difference for channel 2307794289 updates
+2025-08-29 12:24:54,100 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 12:24:54,113 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 12:24:54,115 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 12:24:54,117 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 12:24:54,118 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 12:24:54,120 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:24:54,162 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:24:54,680 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 12:24:54,732 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 12:24:54,733 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 12:24:54,733 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 12:24:54,734 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 12:24:54,735 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 12:24:54,735 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 12:24:54,878 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 12:24:54,879 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 12:24:54,879 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 12:24:54,880 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 12:24:54,883 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 12:24:54,887 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 12:24:54,894 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 12:24:54,901 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 12:24:54,902 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 12:24:54,903 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 12:24:54,912 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 12:24:54,913 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 12:24:54,945 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 12:24:54,951 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 12:24:54,957 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 12:24:54,959 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 12:24:54,960 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 12:24:54,965 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 12:24:54,965 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 12:24:54,966 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 12:24:54,973 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 12:24:54,974 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 12:24:54,976 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 12:24:54,980 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 12:24:54,988 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 12:24:54,991 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 12:24:54,992 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 12:24:54,993 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 12:24:54,996 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 12:24:54,997 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 12:24:54,998 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 12:24:55,001 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 12:24:55,002 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 12:24:55,004 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 12:24:55,009 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 12:24:55,014 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 12:24:55,018 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 12:24:55,019 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 12:24:55,021 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 12:24:56,077 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 12:24:56,078 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 12:24:56,079 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 12:24:56,085 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 12:24:56,086 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 12:24:56,088 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 12:24:56,098 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 12:24:56,100 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 12:24:56,101 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 12:24:56,111 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:24:56,112 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 12:24:56,113 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 12:24:56,123 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:24:56,124 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 12:24:56,125 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 12:24:56,150 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 12:24:56,151 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 12:24:56,153 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 12:24:56,159 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 12:24:56,165 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 12:24:56,177 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:24:56,178 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 12:24:56,179 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 12:24:56,189 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:24:56,190 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 12:24:56,191 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 12:24:56,230 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 12:24:56,232 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 12:24:56,234 - plugin_loader - INFO - Loading plugin: test_handler
+2025-08-29 12:24:56,468 - plugin_loader - INFO - ✅ Plugin test_handler setup completed
+2025-08-29 12:24:56,469 - plugin_loader - INFO - ✅ Plugin loaded successfully: test_handler
+2025-08-29 12:24:56,470 - plugin_loader - INFO - Plugin loading complete: 19/24 loaded successfully
+2025-08-29 12:24:56,471 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:24:56,472 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 12:24:56,473 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 12:24:56,474 - plugin_loader - INFO -    📊 Total found: 24
+2025-08-29 12:24:56,476 - plugin_loader - INFO -    ✅ Successfully loaded: 19
+2025-08-29 12:24:56,476 - plugin_loader - INFO -    ❌ Failed to load: 5
+2025-08-29 12:24:56,477 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast, test_handler
+2025-08-29 12:24:56,478 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:24:56,479 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 12:24:56,480 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 12:24:56,480 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 12:24:56,481 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 12:24:56,482 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 12:24:56,484 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 12:24:56,485 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 12:24:56,486 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 12:24:56,487 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 12:24:56,488 - plugin_loader - INFO -       - help: help
+2025-08-29 12:24:56,489 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 12:24:56,490 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 12:24:56,490 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 12:24:56,491 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 12:24:56,492 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 12:24:56,493 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 12:24:56,493 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 12:24:56,494 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 12:24:56,495 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 12:24:56,496 - plugin_loader - INFO -       - test_handler: .test, .emoji, .status, .premium
+2025-08-29 12:24:56,498 - __main__ - INFO - ✅ Plugins loaded: 19/24
+2025-08-29 12:24:56,498 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:24:56,508 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 12:24:56,510 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 12:24:56,511 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 12:24:56,512 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 12:25:44,950 - telethon.client.updates - INFO - Got difference for channel 2307794289 updates
+2025-08-29 12:25:45,053 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 12:25:45,172 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:25:45,543 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:25:46,629 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 12:25:55,258 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:26:40,678 - telethon.network.connection.connection - WARNING - Server closed the connection: [Errno 103] Software caused connection abort
+2025-08-29 12:26:40,691 - telethon.network.mtprotosender - INFO - Connection closed while receiving data: [Errno 103] Software caused connection abort
+2025-08-29 12:26:40,694 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2025-08-29 12:26:40,696 - telethon.network.connection.connection - INFO - <class 'ConnectionAbortedError'> during disconnect: [Errno 103] Software caused connection abort
+2025-08-29 12:26:40,697 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:26:40,732 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:26:41,303 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:26:43,970 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:26:51,902 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 12:26:52,179 - telethon.client.updates - INFO - Got difference for channel 2307794289 updates
+2025-08-29 12:26:52,427 - telethon.client.updates - INFO - Got difference for channel 2800398246 updates
+2025-08-29 12:26:52,526 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 12:27:28,940 - telethon.network.connection.connection - WARNING - Server closed the connection: [Errno 103] Software caused connection abort
+2025-08-29 12:27:28,943 - telethon.network.connection.connection - INFO - The server closed the connection while sending
+2025-08-29 12:27:28,950 - telethon.network.mtprotosender - INFO - Connection closed while receiving data: Not connected
+2025-08-29 12:27:28,954 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2025-08-29 12:27:28,957 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:27:28,971 - telethon.network.connection.connection - INFO - <class 'ConnectionAbortedError'> during disconnect: [Errno 103] Software caused connection abort
+2025-08-29 12:27:29,015 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:27:29,066 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,073 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,077 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,082 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,086 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,091 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,110 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,115 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,127 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,132 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,137 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,142 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,147 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,155 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,170 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,181 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,187 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,193 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,198 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,202 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,206 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,211 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,224 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,229 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,234 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,237 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,243 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,247 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,253 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,260 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,268 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,273 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,278 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,286 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,294 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,304 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,315 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,328 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,352 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,356 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,362 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,372 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,378 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,384 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,390 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,420 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,449 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,457 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,462 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,468 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,476 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,483 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,488 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,498 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,507 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,513 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,517 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,523 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,529 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,536 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,541 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,558 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,565 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,569 - telethon.network.mtprotosender - WARNING - Security error while unpacking a received message: Server replied with a wrong session ID (see FAQ for details)
+2025-08-29 12:27:29,694 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 12:27:30,097 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:27:30,162 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 12:27:30,485 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:27:31,574 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:27:31,704 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 12:27:31,771 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 12:27:31,871 - telethon.client.updates - INFO - Got difference for channel 2307794289 updates
+2025-08-29 12:27:32,072 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:27:32,151 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 12:27:32,269 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:27:53,491 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:27:57,077 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 12:28:00,527 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:28:29,744 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:28:38,493 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:28:41,384 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:29:30,706 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:29:31,571 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:29:31,713 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 12:29:31,803 - telethon.client.updates - INFO - Got difference for channel 2340494323 updates
+2025-08-29 12:29:48,512 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:30:22,514 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 12:30:22,666 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:30:22,765 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:30:22,887 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 12:30:29,852 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:30:47,549 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:30:48,116 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 12:31:30,835 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:31:31,100 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:31:32,088 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:32:00,605 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:32:00,772 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:32:30,536 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:32:30,659 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:32:59,244 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:32:59,342 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:33:14,804 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:33:27,026 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:33:51,661 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:34:01,073 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 12:34:10,273 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:34:56,888 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:36:07,565 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:36:07,650 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:36:07,812 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:36:29,273 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:37:05,289 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:37:05,378 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:37:05,543 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 12:37:30,584 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:38:07,747 - telethon.client.updates - INFO - Got difference for channel 2307794289 updates
+2025-08-29 12:38:08,046 - telethon.client.updates - INFO - Got difference for channel 2769115270 updates
+2025-08-29 12:38:24,237 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:38:27,654 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:38:31,812 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 12:38:31,824 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 12:38:31,826 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 12:38:31,828 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 12:38:31,829 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 12:38:31,831 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:38:31,879 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:38:33,569 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:38:36,913 - __main__ - ERROR - ❌ Error starting VZOEL ASSISTANT: database is locked
+2025-08-29 12:38:36,914 - __main__ - ERROR - ❌ Core system startup failed
+2025-08-29 12:38:48,565 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:38:54,075 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:39:21,625 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 12:39:21,637 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 12:39:21,639 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 12:39:21,641 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 12:39:21,642 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 12:39:21,643 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:39:21,688 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:39:22,160 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 12:39:22,211 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 12:39:22,212 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 12:39:22,213 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 12:39:22,213 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 12:39:22,214 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 12:39:22,214 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 12:39:22,424 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 12:39:22,425 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 12:39:22,426 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 12:39:22,427 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 12:39:22,433 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 12:39:22,438 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 12:39:22,445 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 12:39:22,453 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 12:39:22,455 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 12:39:22,456 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 12:39:22,467 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 12:39:22,468 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 12:39:22,498 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 12:39:22,502 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 12:39:22,508 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 12:39:22,509 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 12:39:22,510 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 12:39:22,514 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 12:39:22,515 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 12:39:22,517 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 12:39:22,524 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 12:39:22,525 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 12:39:22,526 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 12:39:22,531 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 12:39:22,538 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 12:39:22,542 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 12:39:22,544 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 12:39:22,545 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 12:39:22,548 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 12:39:22,549 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 12:39:22,550 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 12:39:22,554 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 12:39:22,555 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 12:39:22,556 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 12:39:22,587 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 12:39:22,592 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 12:39:22,597 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 12:39:22,598 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 12:39:22,599 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 12:39:23,334 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 12:39:23,336 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 12:39:23,336 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 12:39:23,342 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 12:39:23,344 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 12:39:23,346 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 12:39:23,360 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 12:39:23,361 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 12:39:23,363 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 12:39:23,371 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:39:23,372 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 12:39:23,373 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 12:39:23,381 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:39:23,382 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 12:39:23,384 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 12:39:23,412 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 12:39:23,413 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 12:39:23,414 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 12:39:23,419 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 12:39:23,426 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 12:39:23,439 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:39:23,440 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 12:39:23,441 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 12:39:23,448 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:39:23,449 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 12:39:23,450 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 12:39:23,486 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 12:39:23,487 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 12:39:23,488 - plugin_loader - INFO - Loading plugin: test_handler
+2025-08-29 12:39:23,718 - plugin_loader - INFO - ✅ Plugin test_handler setup completed
+2025-08-29 12:39:23,719 - plugin_loader - INFO - ✅ Plugin loaded successfully: test_handler
+2025-08-29 12:39:23,721 - plugin_loader - INFO - Loading plugin: channel_logger
+2025-08-29 12:39:23,741 - plugin_loader - ERROR - ❌ Failed to load plugin channel_logger: name 'LOG_CHANNEL' is used prior to global declaration (channel_logger.py, line 261)
+2025-08-29 12:39:23,748 - plugin_loader - INFO - Plugin loading complete: 19/25 loaded successfully
+2025-08-29 12:39:23,749 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager, channel_logger
+2025-08-29 12:39:23,750 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 12:39:23,751 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 12:39:23,752 - plugin_loader - INFO -    📊 Total found: 25
+2025-08-29 12:39:23,753 - plugin_loader - INFO -    ✅ Successfully loaded: 19
+2025-08-29 12:39:23,753 - plugin_loader - INFO -    ❌ Failed to load: 6
+2025-08-29 12:39:23,754 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast, test_handler
+2025-08-29 12:39:23,755 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager, channel_logger
+2025-08-29 12:39:23,756 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 12:39:23,757 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 12:39:23,757 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 12:39:23,758 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 12:39:23,759 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 12:39:23,760 - plugin_loader - WARNING -       - channel_logger: Load failed (check logs)
+2025-08-29 12:39:23,761 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 12:39:23,761 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 12:39:23,762 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 12:39:23,762 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 12:39:23,763 - plugin_loader - INFO -       - help: help
+2025-08-29 12:39:23,763 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 12:39:23,764 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 12:39:23,764 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 12:39:23,764 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 12:39:23,765 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 12:39:23,765 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 12:39:23,766 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 12:39:23,766 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 12:39:23,766 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 12:39:23,767 - plugin_loader - INFO -       - test_handler: .test, .emoji, .status, .premium
+2025-08-29 12:39:23,767 - __main__ - INFO - ✅ Plugins loaded: 19/25
+2025-08-29 12:39:23,768 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager, channel_logger
+2025-08-29 12:39:23,780 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 12:39:23,781 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 12:39:23,783 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 12:39:23,784 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 12:39:23,803 - __main__ - WARNING - Startup log to channel failed: name 'LOG_CHANNEL' is used prior to global declaration (channel_logger.py, line 261)
+2025-08-29 12:39:58,216 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 12:39:58,232 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 12:39:58,233 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 12:39:58,236 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 12:39:58,237 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 12:39:58,238 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:39:58,299 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:39:59,181 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 12:39:59,279 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 12:39:59,280 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 12:39:59,281 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 12:39:59,282 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 12:39:59,283 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 12:39:59,284 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 12:39:59,518 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 12:39:59,520 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 12:39:59,521 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 12:39:59,521 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 12:39:59,526 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 12:39:59,531 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 12:39:59,539 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 12:39:59,547 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 12:39:59,549 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 12:39:59,550 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 12:39:59,559 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 12:39:59,561 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 12:39:59,593 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 12:39:59,597 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 12:39:59,603 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 12:39:59,604 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 12:39:59,606 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 12:39:59,610 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 12:39:59,611 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 12:39:59,613 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 12:39:59,619 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 12:39:59,620 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 12:39:59,621 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 12:39:59,626 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 12:39:59,633 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 12:39:59,638 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 12:39:59,639 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 12:39:59,641 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 12:39:59,644 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 12:39:59,645 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 12:39:59,647 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 12:39:59,651 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 12:39:59,652 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 12:39:59,654 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 12:39:59,658 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 12:39:59,664 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 12:39:59,668 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 12:39:59,670 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 12:39:59,671 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 12:40:00,338 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 12:40:00,339 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 12:40:00,340 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 12:40:00,346 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 12:40:00,347 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 12:40:00,348 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 12:40:00,357 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 12:40:00,358 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 12:40:00,359 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 12:40:00,365 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:40:00,366 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 12:40:00,367 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 12:40:00,374 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:40:00,375 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 12:40:00,376 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 12:40:00,399 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 12:40:00,400 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 12:40:00,401 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 12:40:00,405 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 12:40:00,410 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 12:40:00,418 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:40:00,420 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 12:40:00,421 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 12:40:00,425 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:40:00,426 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 12:40:00,426 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 12:40:00,432 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 12:40:00,433 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 12:40:00,434 - plugin_loader - INFO - Loading plugin: test_handler
+2025-08-29 12:40:00,634 - plugin_loader - INFO - ✅ Plugin test_handler setup completed
+2025-08-29 12:40:00,636 - plugin_loader - INFO - ✅ Plugin loaded successfully: test_handler
+2025-08-29 12:40:00,638 - plugin_loader - INFO - Loading plugin: channel_logger
+2025-08-29 12:40:00,656 - plugin_loader - ERROR - ❌ Failed to load plugin channel_logger: name 'LOG_CHANNEL' is used prior to global declaration (channel_logger.py, line 256)
+2025-08-29 12:40:00,660 - plugin_loader - INFO - Plugin loading complete: 19/25 loaded successfully
+2025-08-29 12:40:00,661 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager, channel_logger
+2025-08-29 12:40:00,661 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 12:40:00,662 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 12:40:00,662 - plugin_loader - INFO -    📊 Total found: 25
+2025-08-29 12:40:00,663 - plugin_loader - INFO -    ✅ Successfully loaded: 19
+2025-08-29 12:40:00,663 - plugin_loader - INFO -    ❌ Failed to load: 6
+2025-08-29 12:40:00,664 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast, test_handler
+2025-08-29 12:40:00,665 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager, channel_logger
+2025-08-29 12:40:00,665 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 12:40:00,665 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 12:40:00,666 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 12:40:00,666 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 12:40:00,667 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 12:40:00,667 - plugin_loader - WARNING -       - channel_logger: Load failed (check logs)
+2025-08-29 12:40:00,668 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 12:40:00,668 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 12:40:00,669 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 12:40:00,669 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 12:40:00,669 - plugin_loader - INFO -       - help: help
+2025-08-29 12:40:00,670 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 12:40:00,670 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 12:40:00,671 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 12:40:00,671 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 12:40:00,672 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 12:40:00,672 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 12:40:00,673 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 12:40:00,673 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 12:40:00,674 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 12:40:00,675 - plugin_loader - INFO -       - test_handler: .test, .emoji, .status, .premium
+2025-08-29 12:40:00,676 - __main__ - INFO - ✅ Plugins loaded: 19/25
+2025-08-29 12:40:00,676 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager, channel_logger
+2025-08-29 12:40:00,685 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 12:40:00,685 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 12:40:00,686 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 12:40:00,686 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 12:40:00,702 - __main__ - WARNING - Startup log to channel failed: name 'LOG_CHANNEL' is used prior to global declaration (channel_logger.py, line 256)
+2025-08-29 12:40:12,885 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:40:38,335 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 12:40:38,476 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:40:38,604 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:44:31,234 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 12:44:31,248 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 12:44:31,250 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 12:44:31,253 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 12:44:31,254 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 12:44:31,257 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 12:44:31,299 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 12:44:31,766 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 12:44:31,819 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 12:44:31,820 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 12:44:31,820 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 12:44:31,821 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 12:44:31,822 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 12:44:31,823 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 12:44:31,993 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 12:44:31,994 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 12:44:31,995 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 12:44:31,996 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 12:44:32,000 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 12:44:32,004 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 12:44:32,012 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 12:44:32,018 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 12:44:32,020 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 12:44:32,021 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 12:44:32,032 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 12:44:32,034 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 12:44:32,063 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 12:44:32,067 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 12:44:32,071 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 12:44:32,072 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 12:44:32,073 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 12:44:32,076 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 12:44:32,078 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 12:44:32,079 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 12:44:32,085 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 12:44:32,086 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 12:44:32,088 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 12:44:32,092 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 12:44:32,099 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 12:44:32,103 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 12:44:32,104 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 12:44:32,106 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 12:44:32,109 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 12:44:32,110 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 12:44:32,111 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 12:44:32,114 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 12:44:32,115 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 12:44:32,117 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 12:44:32,121 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 12:44:32,125 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 12:44:32,129 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 12:44:32,130 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 12:44:32,131 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 12:44:32,809 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 12:44:32,810 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 12:44:32,811 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 12:44:32,817 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 12:44:32,818 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 12:44:32,819 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 12:44:32,829 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 12:44:32,830 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 12:44:32,831 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 12:44:32,837 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:44:32,838 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 12:44:32,840 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 12:44:32,846 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:44:32,847 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 12:44:32,848 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 12:44:32,873 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 12:44:32,875 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 12:44:32,876 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 12:44:32,880 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 12:44:32,886 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 12:44:32,894 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:44:32,895 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 12:44:32,896 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 12:44:32,900 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 12:44:32,901 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 12:44:32,902 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 12:44:32,906 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 12:44:32,907 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 12:44:32,907 - plugin_loader - INFO - Loading plugin: test_handler
+2025-08-29 12:44:33,085 - plugin_loader - INFO - ✅ Plugin test_handler setup completed
+2025-08-29 12:44:33,086 - plugin_loader - INFO - ✅ Plugin loaded successfully: test_handler
+2025-08-29 12:44:33,087 - plugin_loader - INFO - Loading plugin: channel_logger
+2025-08-29 12:44:33,110 - plugin_loader - INFO - ✅ Plugin channel_logger setup completed
+2025-08-29 12:44:33,111 - plugin_loader - INFO - ✅ Plugin loaded successfully: channel_logger
+2025-08-29 12:44:33,112 - plugin_loader - INFO - Plugin loading complete: 20/25 loaded successfully
+2025-08-29 12:44:33,112 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:44:33,113 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 12:44:33,114 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 12:44:33,114 - plugin_loader - INFO -    📊 Total found: 25
+2025-08-29 12:44:33,115 - plugin_loader - INFO -    ✅ Successfully loaded: 20
+2025-08-29 12:44:33,116 - plugin_loader - INFO -    ❌ Failed to load: 5
+2025-08-29 12:44:33,116 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast, test_handler, channel_logger
+2025-08-29 12:44:33,117 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:44:33,117 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 12:44:33,118 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 12:44:33,119 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 12:44:33,120 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 12:44:33,120 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 12:44:33,121 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 12:44:33,122 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 12:44:33,123 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 12:44:33,124 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 12:44:33,125 - plugin_loader - INFO -       - help: help
+2025-08-29 12:44:33,125 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 12:44:33,126 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 12:44:33,127 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 12:44:33,127 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 12:44:33,128 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 12:44:33,129 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 12:44:33,129 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 12:44:33,130 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 12:44:33,131 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 12:44:33,132 - plugin_loader - INFO -       - test_handler: .test, .emoji, .status, .premium
+2025-08-29 12:44:33,132 - plugin_loader - INFO -       - channel_logger: .logtest, .logstatus, .setchannel
+2025-08-29 12:44:33,133 - __main__ - INFO - ✅ Plugins loaded: 20/25
+2025-08-29 12:44:33,134 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 12:44:33,145 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 12:44:33,146 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 12:44:33,147 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 12:44:33,148 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 12:45:07,626 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:45:32,373 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 12:45:32,470 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 12:45:46,162 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:45:46,297 - telethon.client.updates - INFO - Got difference for channel 2769115270 updates
+2025-08-29 12:46:32,670 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:46:32,771 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:47:03,248 - telethon.client.updates - INFO - Got difference for channel 2846734856 updates
+2025-08-29 12:47:03,326 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:47:03,455 - telethon.client.updates - INFO - Got difference for channel 2769115270 updates
+2025-08-29 12:47:03,580 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:47:17,648 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:47:31,320 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 12:47:31,424 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 12:47:47,478 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:47:47,587 - telethon.client.updates - INFO - Got difference for channel 2340494323 updates
+2025-08-29 12:48:12,379 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:48:12,510 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:48:30,474 - telethon.client.updates - INFO - Got difference for channel 3058381426 updates
+2025-08-29 12:49:10,155 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:49:10,289 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:49:35,816 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:49:43,608 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:50:17,722 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 12:50:48,058 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:50:48,183 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:50:48,292 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 12:50:48,390 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:50:48,576 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 12:50:53,532 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:51:06,653 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 12:51:33,042 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:51:33,243 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 12:51:33,484 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:52:33,718 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:52:33,876 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:52:34,037 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 12:53:34,027 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:53:34,285 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 12:53:34,437 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:53:34,729 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 12:53:49,502 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:54:01,233 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:54:12,148 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:54:28,815 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:54:39,397 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 12:54:39,493 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:54:53,898 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:54:53,988 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:54:59,065 - __main__ - INFO - Command 'ping' executed by 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (7847025168) in Private Chat
+2025-08-29 12:54:59,529 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:55:05,049 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 12:55:11,057 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:55:27,851 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 12:55:27,964 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:55:28,048 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 12:55:31,119 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 12:55:39,877 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:55:49,040 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 12:55:49,185 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:55:49,738 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 12:56:05,566 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 12:56:05,676 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 12:56:33,203 - telethon.client.updates - INFO - Got difference for channel 2769115270 updates
+2025-08-29 12:56:33,283 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:57:14,742 - telethon.client.updates - INFO - Got difference for channel 2846734856 updates
+2025-08-29 12:57:14,880 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 12:57:26,884 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:57:40,043 - telethon.client.updates - INFO - Got difference for channel 2769115270 updates
+2025-08-29 12:58:20,429 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:58:23,383 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:58:23,513 - telethon.client.updates - INFO - Got difference for channel 2769115270 updates
+2025-08-29 12:58:26,844 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 12:58:30,066 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:01:05,897 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 13:01:05,913 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 13:01:05,915 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 13:01:05,917 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 13:01:05,918 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 13:01:05,922 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:01:05,973 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:01:06,637 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 13:01:06,729 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 13:01:06,730 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 13:01:06,732 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 13:01:06,733 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 13:01:06,734 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 13:01:06,735 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 13:01:06,977 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 13:01:06,978 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 13:01:06,980 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 13:01:06,980 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 13:01:06,987 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 13:01:06,993 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 13:01:07,003 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 13:01:07,010 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 13:01:07,012 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 13:01:07,016 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 13:01:07,027 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 13:01:07,029 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 13:01:07,067 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 13:01:07,073 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 13:01:07,078 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 13:01:07,081 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 13:01:07,085 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 13:01:07,090 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 13:01:07,091 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 13:01:07,092 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 13:01:07,223 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 13:01:07,224 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 13:01:07,225 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 13:01:07,235 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 13:01:07,243 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 13:01:07,258 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 13:01:07,259 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 13:01:07,260 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 13:01:07,263 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 13:01:07,264 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 13:01:07,265 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 13:01:07,270 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 13:01:07,271 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 13:01:07,272 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 13:01:07,276 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 13:01:07,280 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 13:01:07,283 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 13:01:07,284 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 13:01:07,285 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 13:01:07,988 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 13:01:07,990 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 13:01:07,993 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 13:01:07,999 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 13:01:08,001 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 13:01:08,003 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 13:01:08,013 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 13:01:08,014 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 13:01:08,015 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 13:01:08,021 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:01:08,022 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 13:01:08,023 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 13:01:08,030 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:01:08,032 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 13:01:08,033 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 13:01:08,057 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 13:01:08,058 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 13:01:08,059 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 13:01:08,064 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 13:01:08,071 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 13:01:08,081 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:01:08,082 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 13:01:08,084 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 13:01:08,089 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:01:08,090 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 13:01:08,091 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 13:01:08,099 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 13:01:08,100 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 13:01:08,102 - plugin_loader - INFO - Loading plugin: test_handler
+2025-08-29 13:01:08,345 - plugin_loader - INFO - ✅ Plugin test_handler setup completed
+2025-08-29 13:01:08,349 - plugin_loader - INFO - ✅ Plugin loaded successfully: test_handler
+2025-08-29 13:01:08,352 - plugin_loader - INFO - Loading plugin: channel_logger
+2025-08-29 13:01:08,363 - plugin_loader - INFO - ✅ Plugin channel_logger setup completed
+2025-08-29 13:01:08,365 - plugin_loader - INFO - ✅ Plugin loaded successfully: channel_logger
+2025-08-29 13:01:08,366 - plugin_loader - INFO - Plugin loading complete: 20/25 loaded successfully
+2025-08-29 13:01:08,368 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:01:08,370 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 13:01:08,372 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 13:01:08,373 - plugin_loader - INFO -    📊 Total found: 25
+2025-08-29 13:01:08,375 - plugin_loader - INFO -    ✅ Successfully loaded: 20
+2025-08-29 13:01:08,377 - plugin_loader - INFO -    ❌ Failed to load: 5
+2025-08-29 13:01:08,378 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast, test_handler, channel_logger
+2025-08-29 13:01:08,379 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:01:08,381 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 13:01:08,382 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 13:01:08,383 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 13:01:08,384 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 13:01:08,386 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 13:01:08,387 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 13:01:08,389 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 13:01:08,390 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 13:01:08,391 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 13:01:08,393 - plugin_loader - INFO -       - help: help
+2025-08-29 13:01:08,394 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 13:01:08,395 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 13:01:08,397 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 13:01:08,399 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 13:01:08,400 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 13:01:08,402 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 13:01:08,404 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 13:01:08,405 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 13:01:08,406 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 13:01:08,408 - plugin_loader - INFO -       - test_handler: .test, .emoji, .status, .premium
+2025-08-29 13:01:08,409 - plugin_loader - INFO -       - channel_logger: .logtest, .logstatus, .setchannel
+2025-08-29 13:01:08,411 - __main__ - INFO - ✅ Plugins loaded: 20/25
+2025-08-29 13:01:08,413 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:01:08,426 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 13:01:08,427 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 13:01:08,428 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 13:01:08,430 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 13:01:13,728 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 13:01:31,270 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 13:01:41,117 - __main__ - INFO - Command 'alive' executed by 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (7847025168) in Private Chat
+2025-08-29 13:01:47,340 - __main__ - INFO - Command 'ping' executed by 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (7847025168) in Private Chat
+2025-08-29 13:02:11,913 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:02:17,733 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:03:11,751 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:03:24,972 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:03:46,502 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:04:07,371 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:04:09,490 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:04:09,709 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:04:10,270 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 13:04:20,738 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:04:45,056 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:04:45,230 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:05:05,567 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:05:47,004 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:05:47,191 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:05:47,277 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:06:39,946 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 13:06:47,721 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:06:55,828 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:07:12,384 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:08:34,200 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 13:08:36,892 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:08:46,546 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:08:49,688 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:09:09,705 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:09:10,014 - telethon.client.updates - INFO - Got difference for channel 2303380586 updates
+2025-08-29 13:09:11,489 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 13:09:12,433 - telethon.client.updates - INFO - Got difference for account updates
+2025-08-29 13:09:12,861 - telethon.client.updates - INFO - Account is now banned in 2769115270 so we can no longer fetch updates from it
+2025-08-29 13:09:14,519 - telethon.client.updates - INFO - Got difference for channel 2303380586 updates
+2025-08-29 13:09:23,137 - telethon.network.connection.connection - WARNING - Server closed the connection: [Errno 103] Software caused connection abort
+2025-08-29 13:09:23,139 - telethon.network.mtprotosender - INFO - Connection closed while receiving data: [Errno 103] Software caused connection abort
+2025-08-29 13:09:23,141 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2025-08-29 13:09:23,143 - telethon.network.connection.connection - INFO - <class 'ConnectionAbortedError'> during disconnect: [Errno 103] Software caused connection abort
+2025-08-29 13:09:23,144 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:09:23,206 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:09:41,167 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:10:06,512 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:10:12,885 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 13:10:16,092 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:10:16,200 - telethon.client.updates - INFO - Got difference for channel 2846734856 updates
+2025-08-29 13:10:49,700 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:11:15,284 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:11:51,219 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 13:11:52,176 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:11:55,802 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:11:58,348 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:11:59,416 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:12:08,640 - telethon.client.updates - INFO - Got difference for channel 2340494323 updates
+2025-08-29 13:12:08,773 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:12:09,874 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:12:11,196 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:12:11,385 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:12:14,671 - telethon.client.updates - INFO - Got difference for channel 3058381426 updates
+2025-08-29 13:12:29,537 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:12:40,620 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:12:47,140 - telethon.client.updates - INFO - Got difference for channel 2846734856 updates
+2025-08-29 13:13:01,954 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:15:07,224 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2025-08-29 13:15:07,228 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:15:07,266 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:15:07,592 - telethon.client.updates - INFO - Got difference for channel 2340494323 updates
+2025-08-29 13:15:08,983 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 13:15:10,098 - telethon.client.users - INFO - Sleeping for 8s (0:00:08) on SendMessageRequest flood wait
+2025-08-29 13:15:10,102 - telethon.client.users - INFO - Sleeping for 8s (0:00:08) on SendMessageRequest flood wait
+2025-08-29 13:15:10,454 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:15:10,662 - telethon.client.updates - INFO - Got difference for channel 2893902003 updates
+2025-08-29 13:15:10,886 - telethon.client.updates - INFO - Got difference for channel 2340494323 updates
+2025-08-29 13:15:13,542 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:15:17,029 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:15:18,717 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:15:19,928 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:15:23,578 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 13:15:29,211 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:15:29,624 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:15:30,525 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:15:40,487 - telethon.client.updates - INFO - Got difference for channel 2893902003 updates
+2025-08-29 13:15:41,091 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:15:46,168 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:15:52,604 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 13:16:18,784 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 13:16:18,796 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 13:16:18,798 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 13:16:18,800 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 13:16:18,801 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 13:16:18,802 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:16:18,844 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:16:19,285 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 13:16:19,478 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 13:16:19,479 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 13:16:19,479 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 13:16:19,480 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 13:16:19,481 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 13:16:19,481 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 13:16:19,654 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 13:16:19,655 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 13:16:19,656 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 13:16:19,657 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 13:16:19,661 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 13:16:19,667 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 13:16:19,672 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 13:16:19,679 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 13:16:19,681 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 13:16:19,682 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 13:16:19,688 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 13:16:19,689 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 13:16:19,716 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 13:16:19,720 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 13:16:19,724 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 13:16:19,725 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 13:16:19,726 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 13:16:19,730 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 13:16:19,731 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 13:16:19,732 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 13:16:19,756 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 13:16:19,757 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 13:16:19,758 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 13:16:19,762 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 13:16:19,770 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 13:16:19,774 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 13:16:19,775 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 13:16:19,777 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 13:16:19,781 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 13:16:19,783 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 13:16:19,784 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 13:16:19,789 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 13:16:19,790 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 13:16:19,791 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 13:16:19,796 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 13:16:19,801 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 13:16:19,804 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 13:16:19,805 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 13:16:19,806 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 13:16:20,477 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 13:16:20,478 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 13:16:20,479 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 13:16:20,485 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 13:16:20,486 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 13:16:20,487 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 13:16:20,495 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 13:16:20,496 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 13:16:20,497 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 13:16:20,502 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:16:20,503 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 13:16:20,504 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 13:16:20,509 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:16:20,510 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 13:16:20,511 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 13:16:20,534 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 13:16:20,534 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 13:16:20,535 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 13:16:20,540 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 13:16:20,545 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 13:16:20,552 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:16:20,553 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 13:16:20,554 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 13:16:20,558 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:16:20,559 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 13:16:20,560 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 13:16:20,593 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 13:16:20,594 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 13:16:20,595 - plugin_loader - INFO - Loading plugin: test_handler
+2025-08-29 13:16:20,614 - plugin_loader - INFO - ✅ Plugin test_handler setup completed
+2025-08-29 13:16:20,614 - plugin_loader - INFO - ✅ Plugin loaded successfully: test_handler
+2025-08-29 13:16:20,615 - plugin_loader - INFO - Loading plugin: channel_logger
+2025-08-29 13:16:20,808 - plugin_loader - INFO - ✅ Plugin channel_logger setup completed
+2025-08-29 13:16:20,809 - plugin_loader - INFO - ✅ Plugin loaded successfully: channel_logger
+2025-08-29 13:16:20,810 - plugin_loader - INFO - Loading plugin: emoji_template
+2025-08-29 13:16:20,819 - plugin_loader - INFO - ✅ Plugin loaded successfully: emoji_template
+2025-08-29 13:16:20,820 - plugin_loader - INFO - Plugin loading complete: 21/26 loaded successfully
+2025-08-29 13:16:20,820 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:16:20,821 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 13:16:20,821 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 13:16:20,822 - plugin_loader - INFO -    📊 Total found: 26
+2025-08-29 13:16:20,822 - plugin_loader - INFO -    ✅ Successfully loaded: 21
+2025-08-29 13:16:20,823 - plugin_loader - INFO -    ❌ Failed to load: 5
+2025-08-29 13:16:20,823 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast, test_handler, channel_logger, emoji_template
+2025-08-29 13:16:20,824 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:16:20,825 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 13:16:20,825 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 13:16:20,826 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 13:16:20,826 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 13:16:20,826 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 13:16:20,826 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 13:16:20,827 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 13:16:20,828 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 13:16:20,829 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 13:16:20,830 - plugin_loader - INFO -       - help: help, .help
+2025-08-29 13:16:20,830 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 13:16:20,831 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 13:16:20,832 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 13:16:20,832 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 13:16:20,833 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 13:16:20,833 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 13:16:20,834 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 13:16:20,835 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 13:16:20,835 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 13:16:20,836 - plugin_loader - INFO -       - test_handler: .test, .emoji, .status, .premium
+2025-08-29 13:16:20,836 - plugin_loader - INFO -       - channel_logger: .logtest, .logstatus, .setchannel
+2025-08-29 13:16:20,837 - __main__ - INFO - ✅ Plugins loaded: 21/26
+2025-08-29 13:16:20,837 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:16:20,845 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 13:16:20,846 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 13:16:20,847 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 13:16:20,847 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 13:16:35,368 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:16:41,844 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:16:41,894 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:16:55,401 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:17:07,610 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:17:13,830 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:17:29,080 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:17:53,693 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 13:18:12,640 - telethon.client.updates - INFO - Got difference for channel 2846734856 updates
+2025-08-29 13:18:26,214 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:18:32,402 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:18:33,597 - telethon.client.updates - INFO - Got difference for channel 3058381426 updates
+2025-08-29 13:18:44,949 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:19:06,168 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:19:07,945 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:19:34,969 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:19:57,022 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:20:07,963 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:20:32,392 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:20:33,093 - telethon.client.updates - INFO - Got difference for channel 3058381426 updates
+2025-08-29 13:20:35,570 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:20:41,422 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:20:43,422 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:21:29,860 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:21:30,111 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:21:30,190 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 13:21:31,635 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:21:32,709 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:21:33,404 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:21:40,507 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:06,305 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:07,427 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:08,587 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:10,740 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:13,635 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:22:17,350 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:17,564 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:22:17,663 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 13:22:18,344 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:18,422 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:19,119 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:22:19,344 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:20,255 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:22,133 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:23,366 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:24,237 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:25,625 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:26,880 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:28,765 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:32,315 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:33,639 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:34,819 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:35,774 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:37,996 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:22:40,192 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:22:41,473 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:22:42,389 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:22:42,985 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:22:44,342 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:22:46,643 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:23:00,928 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:23:01,045 - telethon.network.connection.connection - WARNING - Server closed the connection: [Errno 103] Software caused connection abort
+2025-08-29 13:23:01,046 - telethon.network.mtprotosender - INFO - Connection closed while receiving data: [Errno 103] Software caused connection abort
+2025-08-29 13:23:01,048 - telethon.network.mtprotosender - INFO - Closing current connection to begin reconnect...
+2025-08-29 13:23:01,050 - telethon.network.connection.connection - INFO - <class 'ConnectionAbortedError'> during disconnect: [Errno 103] Software caused connection abort
+2025-08-29 13:23:01,052 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:24:11,670 - telethon.network.mtprotosender - WARNING - Attempt 1 at connecting failed: TimeoutError: 
+2025-08-29 13:24:12,710 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:24:15,741 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:24:15,918 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:24:16,678 - telethon.client.updates - INFO - Got difference for channel 1961920525 updates
+2025-08-29 13:24:18,045 - telethon.client.updates - INFO - Got difference for channel 1544238546 updates
+2025-08-29 13:24:32,932 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:24:33,505 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 13:24:33,841 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:24:40,326 - telethon.client.updates - INFO - Got difference for channel 1277245439 updates
+2025-08-29 13:24:44,771 - telethon.client.updates - INFO - Got difference for channel 1511422552 updates
+2025-08-29 13:24:50,145 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 13:24:52,706 - telethon.client.updates - INFO - Got difference for channel 2723069777 updates
+2025-08-29 13:24:53,298 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:25:04,019 - telethon.client.updates - INFO - Got difference for channel 2295374875 updates
+2025-08-29 13:25:09,581 - telethon.client.updates - INFO - Got difference for channel 2650521935 updates
+2025-08-29 13:25:12,405 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:25:45,293 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 13:25:45,304 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 13:25:45,306 - __main__ - INFO - 📋 Loaded 0 blacklisted chats
+2025-08-29 13:25:45,308 - __main__ - INFO - 📱 Loaded custom emoji configuration: 8 emojis
+2025-08-29 13:25:45,309 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 13:25:45,310 - telethon.network.mtprotosender - INFO - Connecting to 91.108.56.154:443/TcpFull...
+2025-08-29 13:25:45,349 - telethon.network.mtprotosender - INFO - Connection to 91.108.56.154:443/TcpFull complete!
+2025-08-29 13:25:45,786 - __main__ - INFO - ✅ Telegram Premium detected - Premium emojis enabled!
+2025-08-29 13:25:45,833 - __main__ - INFO - ✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!
+2025-08-29 13:25:45,834 - __main__ - INFO - 👤 Logged in as: 𝐕𝐳𝐨𝐞𝐥 𝐅𝐨𝐱'𝐬 (@VZLfxs)
+2025-08-29 13:25:45,835 - __main__ - INFO - 🆔 User ID: 7847025168
+2025-08-29 13:25:45,835 - __main__ - INFO - 💎 Premium Status: Active
+2025-08-29 13:25:45,836 - __main__ - INFO - 🔧 Enhanced Features: Reply Gcast, Auto Emoji Extract, UTF-16 Fix, Database Integration
+2025-08-29 13:25:45,836 - __main__ - INFO - 🐛 Bug Fixes: Premium emoji entity handling completely resolved
+2025-08-29 13:25:46,001 - __main__ - INFO - ✅ Enhanced startup message sent successfully
+2025-08-29 13:25:46,002 - __main__ - INFO - ✅ Core system started successfully
+2025-08-29 13:25:46,003 - __main__ - INFO - 🔌 Loading plugins...
+2025-08-29 13:25:46,003 - plugin_loader - INFO - 🔌 Initializing enhanced plugin system...
+2025-08-29 13:25:46,007 - plugin_loader - INFO - Loading plugin: aimode
+2025-08-29 13:25:46,011 - plugin_loader - ERROR - ❌ Failed to load plugin aimode: No module named 'aiohttp'
+2025-08-29 13:25:46,018 - plugin_loader - INFO - Loading plugin: assetjson
+2025-08-29 13:25:46,023 - assetjson.manager - INFO - AssetManager initialized (singleton pattern)
+2025-08-29 13:25:46,025 - plugin_loader - INFO - ✅ Plugin loaded successfully: assetjson
+2025-08-29 13:25:46,027 - plugin_loader - INFO - Loading plugin: blacklistgcast_fixed
+2025-08-29 13:25:46,036 - plugin_loader - INFO - ✅ Plugin loaded successfully: blacklistgcast_fixed
+2025-08-29 13:25:46,037 - plugin_loader - INFO - Loading plugin: cektogel
+2025-08-29 13:25:46,065 - plugin_loader - ERROR - ❌ Failed to load plugin cektogel: expected an indented block after function definition on line 96 (cektogel.py, line 97)
+2025-08-29 13:25:46,069 - plugin_loader - INFO - Loading plugin: checkid
+2025-08-29 13:25:46,073 - plugin_loader - INFO - ✅ Plugin checkid setup completed
+2025-08-29 13:25:46,073 - plugin_loader - INFO - ✅ Plugin loaded successfully: checkid
+2025-08-29 13:25:46,074 - plugin_loader - INFO - Loading plugin: grub
+2025-08-29 13:25:46,077 - plugin_loader - INFO - ✅ Plugin grub setup completed
+2025-08-29 13:25:46,078 - plugin_loader - INFO - ✅ Plugin loaded successfully: grub
+2025-08-29 13:25:46,079 - plugin_loader - INFO - Loading plugin: help
+2025-08-29 13:25:46,083 - plugin_loader - INFO - ✅ Plugin help setup completed
+2025-08-29 13:25:46,084 - plugin_loader - INFO - ✅ Plugin loaded successfully: help
+2025-08-29 13:25:46,085 - plugin_loader - INFO - Loading plugin: jlvc
+2025-08-29 13:25:46,089 - plugin_loader - ERROR - ❌ Failed to load plugin jlvc: 'NoneType' object has no attribute 'on'
+2025-08-29 13:25:46,094 - plugin_loader - INFO - Loading plugin: log
+2025-08-29 13:25:46,097 - plugin_loader - INFO - ✅ Plugin log setup completed
+2025-08-29 13:25:46,098 - plugin_loader - INFO - ✅ Plugin loaded successfully: log
+2025-08-29 13:25:46,099 - plugin_loader - INFO - Loading plugin: pink
+2025-08-29 13:25:46,102 - plugin_loader - INFO - ✅ Plugin pink setup completed
+2025-08-29 13:25:46,103 - plugin_loader - INFO - ✅ Plugin loaded successfully: pink
+2025-08-29 13:25:46,104 - plugin_loader - INFO - Loading plugin: sudo
+2025-08-29 13:25:46,107 - plugin_loader - INFO - ✅ Plugin sudo setup completed
+2025-08-29 13:25:46,108 - plugin_loader - INFO - ✅ Plugin loaded successfully: sudo
+2025-08-29 13:25:46,109 - plugin_loader - INFO - Loading plugin: vc_monitor
+2025-08-29 13:25:46,113 - plugin_loader - ERROR - ❌ Failed to load plugin vc_monitor: No module named 'assetjson'
+2025-08-29 13:25:46,118 - plugin_loader - INFO - Loading plugin: welcome
+2025-08-29 13:25:46,122 - plugin_loader - INFO - ✅ Plugin welcome setup completed
+2025-08-29 13:25:46,123 - plugin_loader - INFO - ✅ Plugin loaded successfully: welcome
+2025-08-29 13:25:46,125 - plugin_loader - INFO - Loading plugin: aimode_llama2
+2025-08-29 13:25:46,738 - plugin_loader - INFO - ✅ Plugin aimode_llama2 setup completed
+2025-08-29 13:25:46,739 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_llama2
+2025-08-29 13:25:46,740 - plugin_loader - INFO - Loading plugin: stalker_monitor
+2025-08-29 13:25:46,747 - plugin_loader - INFO - ✅ Plugin stalker_monitor setup completed
+2025-08-29 13:25:46,748 - plugin_loader - INFO - ✅ Plugin loaded successfully: stalker_monitor
+2025-08-29 13:25:46,749 - plugin_loader - INFO - Loading plugin: aimode_simple
+2025-08-29 13:25:46,760 - plugin_loader - INFO - ✅ Plugin aimode_simple setup completed
+2025-08-29 13:25:46,761 - plugin_loader - INFO - ✅ Plugin loaded successfully: aimode_simple
+2025-08-29 13:25:46,761 - plugin_loader - INFO - Loading plugin: voice_clone_auto_setup
+2025-08-29 13:25:46,766 - plugin_loader - ERROR - Plugin voice_clone_auto_setup setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:25:46,767 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_auto_setup
+2025-08-29 13:25:46,768 - plugin_loader - INFO - Loading plugin: auto_updater
+2025-08-29 13:25:46,772 - plugin_loader - ERROR - Plugin auto_updater setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:25:46,773 - plugin_loader - INFO - ✅ Plugin loaded successfully: auto_updater
+2025-08-29 13:25:46,774 - plugin_loader - INFO - Loading plugin: voice_clone_realtime
+2025-08-29 13:25:46,799 - plugin_loader - INFO - ✅ Plugin voice_clone_realtime setup completed
+2025-08-29 13:25:46,800 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_realtime
+2025-08-29 13:25:46,802 - plugin_loader - INFO - Loading plugin: custom_message_manager
+2025-08-29 13:25:46,806 - plugin_loader - ERROR - ❌ Failed to load plugin custom_message_manager: No module named 'psutil'
+2025-08-29 13:25:46,812 - plugin_loader - INFO - Loading plugin: file_cleaner
+2025-08-29 13:25:46,820 - plugin_loader - ERROR - Plugin file_cleaner setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:25:46,821 - plugin_loader - INFO - ✅ Plugin loaded successfully: file_cleaner
+2025-08-29 13:25:46,822 - plugin_loader - INFO - Loading plugin: voice_clone_validator
+2025-08-29 13:25:46,826 - plugin_loader - ERROR - Plugin voice_clone_validator setup error: setup() takes 0 positional arguments but 1 was given
+2025-08-29 13:25:46,827 - plugin_loader - INFO - ✅ Plugin loaded successfully: voice_clone_validator
+2025-08-29 13:25:46,828 - plugin_loader - INFO - Loading plugin: slow_gcast
+2025-08-29 13:25:46,833 - plugin_loader - INFO - ✅ Plugin slow_gcast setup completed
+2025-08-29 13:25:46,834 - plugin_loader - INFO - ✅ Plugin loaded successfully: slow_gcast
+2025-08-29 13:25:46,835 - plugin_loader - INFO - Loading plugin: test_handler
+2025-08-29 13:25:46,839 - plugin_loader - INFO - ✅ Plugin test_handler setup completed
+2025-08-29 13:25:46,840 - plugin_loader - INFO - ✅ Plugin loaded successfully: test_handler
+2025-08-29 13:25:46,841 - plugin_loader - INFO - Loading plugin: channel_logger
+2025-08-29 13:25:46,846 - plugin_loader - INFO - ✅ Plugin channel_logger setup completed
+2025-08-29 13:25:46,846 - plugin_loader - INFO - ✅ Plugin loaded successfully: channel_logger
+2025-08-29 13:25:46,848 - plugin_loader - INFO - Loading plugin: emoji_template
+2025-08-29 13:25:46,850 - plugin_loader - INFO - ✅ Plugin loaded successfully: emoji_template
+2025-08-29 13:25:46,852 - plugin_loader - INFO - Plugin loading complete: 21/26 loaded successfully
+2025-08-29 13:25:46,853 - plugin_loader - WARNING - Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:25:46,854 - plugin_loader - INFO - 🔌 Plugin system initialization complete:
+2025-08-29 13:25:46,854 - plugin_loader - INFO -    📁 Plugin directory: plugins
+2025-08-29 13:25:46,855 - plugin_loader - INFO -    📊 Total found: 26
+2025-08-29 13:25:46,856 - plugin_loader - INFO -    ✅ Successfully loaded: 21
+2025-08-29 13:25:46,857 - plugin_loader - INFO -    ❌ Failed to load: 5
+2025-08-29 13:25:46,858 - plugin_loader - INFO -    🎯 Loaded plugins: assetjson, blacklistgcast_fixed, checkid, grub, help, log, pink, sudo, welcome, aimode_llama2, stalker_monitor, aimode_simple, voice_clone_auto_setup, auto_updater, voice_clone_realtime, file_cleaner, voice_clone_validator, slow_gcast, test_handler, channel_logger, emoji_template
+2025-08-29 13:25:46,859 - plugin_loader - WARNING -    ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:25:46,860 - plugin_loader - WARNING -       - aimode: Load failed (check logs)
+2025-08-29 13:25:46,861 - plugin_loader - WARNING -       - cektogel: Load failed (check logs)
+2025-08-29 13:25:46,861 - plugin_loader - WARNING -       - jlvc: Load failed (check logs)
+2025-08-29 13:25:46,862 - plugin_loader - WARNING -       - vc_monitor: Load failed (check logs)
+2025-08-29 13:25:46,862 - plugin_loader - WARNING -       - custom_message_manager: Load failed (check logs)
+2025-08-29 13:25:46,863 - plugin_loader - INFO -    🎮 Available plugin commands:
+2025-08-29 13:25:46,864 - plugin_loader - INFO -       - blacklistgcast_fixed: addbl, rmbl, listbl, clearbl
+2025-08-29 13:25:46,865 - plugin_loader - INFO -       - checkid: .id, .id @username, .id (reply)
+2025-08-29 13:25:46,866 - plugin_loader - INFO -       - grub: .grup log, .grup blacklist <id>, .grup unblacklist <id>, .grup blacklistlist, .grup banlist
+2025-08-29 13:25:46,867 - plugin_loader - INFO -       - help: help, .help
+2025-08-29 13:25:46,867 - plugin_loader - INFO -       - log: .log show, .log query <keyword>, .log clear
+2025-08-29 13:25:46,868 - plugin_loader - INFO -       - pink: .pink
+2025-08-29 13:25:46,869 - plugin_loader - INFO -       - sudo: .sudo <username/reply> <durasi> <fitur>, .sudo list, .sudo revoke <user_id>
+2025-08-29 13:25:46,869 - plugin_loader - INFO -       - welcome: .welcome set, .welcome show, .welcome on, .welcome off
+2025-08-29 13:25:46,870 - plugin_loader - INFO -       - aimode_llama2: .ai <text>, .aimode on/off, .aimode status, .aiconfig, .aimodel <model>, .aillama <text>, .aigpt <text>, .aiclaude <text>
+2025-08-29 13:25:46,870 - plugin_loader - INFO -       - stalker_monitor: .stalker setup, .stalker start, .stalker stop, .stalker status, .stalker stats, .stalker list, .stalker info, .stalker help
+2025-08-29 13:25:46,871 - plugin_loader - INFO -       - aimode_simple: .aimode on, .aimode off, .aimode status, .ai <text>
+2025-08-29 13:25:46,871 - plugin_loader - INFO -       - voice_clone_realtime: .vclone setup, .vclone list, .vclone add <name>, .vclone use <name>, .vclone call <target>, .vclone note <text>, .vclone stream on/off, .vclone train <audio_file>, .vclone config, .vclone test <text>
+2025-08-29 13:25:46,872 - plugin_loader - INFO -       - slow_gcast: .sgcast, .slowgcast, .sgstatus
+2025-08-29 13:25:46,873 - plugin_loader - INFO -       - test_handler: .test, .emoji, .status, .premium
+2025-08-29 13:25:46,874 - plugin_loader - INFO -       - channel_logger: .logtest, .logstatus, .setchannel
+2025-08-29 13:25:46,875 - __main__ - INFO - ✅ Plugins loaded: 21/26
+2025-08-29 13:25:46,876 - __main__ - WARNING - ⚠️ Failed plugins: aimode, cektogel, jlvc, vc_monitor, custom_message_manager
+2025-08-29 13:25:46,885 - __main__ - INFO - 🔄 Auto-update system initialized
+2025-08-29 13:25:46,886 - __main__ - INFO - 🔥 VZOEL ASSISTANT Enhanced is now running...
+2025-08-29 13:25:46,886 - __main__ - INFO - 🔍 Press Ctrl+C to stop
+2025-08-29 13:25:46,887 - __main__ - INFO - 🚀 All enhanced features active and bug fixes applied!
+2025-08-29 13:25:50,452 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
+2025-08-29 13:25:51,681 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:25:59,574 - telethon.client.updates - INFO - Got difference for channel 1622393981 updates
+2025-08-29 13:26:05,500 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:26:29,586 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:26:29,902 - telethon.client.updates - INFO - Got difference for channel 1627389002 updates
+2025-08-29 13:26:37,807 - telethon.client.updates - INFO - Got difference for channel 2697529900 updates
+2025-08-29 13:26:44,415 - telethon.client.updates - INFO - Got difference for channel 2015139688 updates
+2025-08-29 13:27:36,472 - telethon.client.updates - INFO - Got difference for channel 1976816076 updates
+2025-08-29 13:27:52,047 - telethon.client.updates - INFO - Got difference for channel 2844371986 updates
