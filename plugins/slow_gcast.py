@@ -39,18 +39,28 @@ gcast_state = {
     "start_time": None
 }
 
+# ===== Premium Emojis =====
+PREMIUM_EMOJIS = {
+    'main': {'char': '🤩'}, 'check': {'char': '⚙️'}, 'adder1': {'char': '⛈'},
+    'adder2': {'char': '✅'}, 'adder3': {'char': '👽'}, 'adder4': {'char': '✈️'},
+    'adder5': {'char': '😈'}, 'adder6': {'char': '🎚️'}
+}
+
+def get_emoji(emoji_type):
+    return PREMIUM_EMOJIS.get(emoji_type, {}).get('char', '🤩')
+
 # ===== Animation Words =====
 ANIMATION_WORDS = [
-    "🔄 Memulai proses...",
-    "📡 Mengambil daftar grup...",
-    "🎯 Menganalisis target...",
-    "⚡ Mempersiapkan pesan...",
-    "🚀 Memulai pengiriman...",
-    "📤 Mengirim ke grup...",
-    "💫 Proses berlangsung...",
-    "✨ Hampir selesai...",
-    "🔥 Finalisasi...",
-    "✅ Selesai!"
+    f"{get_emoji('check')} Memulai proses...",
+    f"{get_emoji('adder1')} Mengambil daftar grup...",
+    f"{get_emoji('adder3')} Menganalisis target...",
+    f"{get_emoji('adder4')} Mempersiapkan pesan...",
+    f"{get_emoji('main')} Memulai pengiriman...",
+    f"{get_emoji('adder6')} Mengirim ke grup...",
+    f"{get_emoji('adder5')} Proses berlangsung...",
+    f"{get_emoji('adder2')} Hampir selesai...",
+    f"{get_emoji('check')} Finalisasi...",
+    f"{get_emoji('main')} Selesai!"
 ]
 
 # ===== Database Helper =====
@@ -148,18 +158,18 @@ async def slow_gcast_handler(event):
         message_text = event.raw_text.split(maxsplit=1)
         if len(message_text) < 2:
             help_text = (
-                "📝 **Cara Penggunaan Slow GCast:**\n\n"
-                "**Metode 1:** `.sgcast <pesan>` - Tulis pesan langsung\n"
-                "**Metode 2:** Reply ke pesan + `.sgcast` - Forward pesan yang direply\n"
-                "**Alias:** `.slowgcast` juga bisa digunakan\n"
-                "**Status:** `.sgstatus` - Lihat progress\n\n"
-                "**Fitur:**\n"
-                "• Delay 15 detik antar grup\n"
-                "• Animasi progress 10 kata\n"
-                "• Anti flood protection\n"
-                "• Support reply message\n"
-                "• Database logging\n"
-                "• Real-time statistics"
+                f"{get_emoji('main')} **Cara Penggunaan Slow GCast:**\n\n"
+                f"**Metode 1:** `.sgcast <pesan>` - Tulis pesan langsung\n"
+                f"**Metode 2:** Reply ke pesan + `.sgcast` - Forward pesan yang direply\n"
+                f"**Alias:** `.slowgcast` juga bisa digunakan\n"
+                f"**Status:** `.sgstatus` - Lihat progress\n\n"
+                f"{get_emoji('check')} **Fitur:**\n"
+                f"{get_emoji('adder2')} Delay 15 detik antar grup\n"
+                f"{get_emoji('adder3')} Animasi progress 10 kata\n"
+                f"{get_emoji('adder4')} Anti flood protection\n"
+                f"{get_emoji('adder5')} Support reply message\n"
+                f"{get_emoji('adder6')} Database logging\n"
+                f"{get_emoji('adder1')} Real-time statistics"
             )
             await env['safe_send_with_entities'](event, help_text)
             return
