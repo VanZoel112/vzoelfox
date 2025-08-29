@@ -29,6 +29,20 @@ except ImportError:
 env = None
 DB_FILE = "plugins/aimode.db"
 
+async def safe_send_message(event, text, use_env=True):
+    """Helper function to safely send messages with or without env"""
+    if use_env and env and 'safe_send_with_entities' in env:
+        await env['safe_send_with_entities'](event, text)
+    else:
+        await event.reply(text)
+
+def safe_get_emoji(emoji_type):
+    """Helper function to safely get emoji with fallback"""
+    if env and 'get_emoji' in env:
+        return env['get_emoji'](emoji_type)
+    emoji_fallbacks = {'main': '🤩', 'check': '⚙️', 'cross': '❌'}
+    return emoji_fallbacks.get(emoji_type, '🤩')
+
 DEFAULT_CONFIG = {
     "primary": {
         "type": "huggingface",
@@ -146,35 +160,41 @@ def set_config(new_cfg):
         return False
 
 async def aimode_handler(event):
+    # Check if env is properly initialized and has is_owner function
+    if env is None or 'is_owner' not in env:
+        return
     if not await env['is_owner'](event.sender_id): return
     chat = await event.get_chat()
     chat_id = chat.id
     args = event.text.split()
     if len(args) < 2:
         status = get_aimode(chat_id)
-        txt = f"{env['get_emoji']('main')} AIMode status: {'ON' if status else 'OFF'}"
-        await env['safe_send_with_entities'](event, txt)
+        txt = f"{safe_get_emoji('main')} AIMode status: {'ON' if status else 'OFF'}"
+        await safe_send_message(event, txt)
         return
     cmd = args[1].lower()
     if cmd == "on":
         set_aimode(chat_id, 1)
-        await env['safe_send_with_entities'](event, f"{env['get_emoji']('check')} AIMode *ON* di chat ini!")
+        await safe_send_message(event, f"{safe_get_emoji('check')} AIMode *ON* di chat ini!")
     elif cmd == "off":
         set_aimode(chat_id, 0)
-        await env['safe_send_with_entities'](event, f"{env['get_emoji']('cross')} AIMode *OFF* di chat ini!")
+        await safe_send_message(event, f"{safe_get_emoji('cross')} AIMode *OFF* di chat ini!")
     elif cmd == "status":
         status = get_aimode(chat_id)
-        await env['safe_send_with_entities'](event, f"{env['get_emoji']('main')} AIMode status: {'ON' if status else 'OFF'}")
+        await safe_send_message(event, f"{safe_get_emoji('main')} AIMode status: {'ON' if status else 'OFF'}")
     else:
-        await env['safe_send_with_entities'](event, "Format: `.aimode on` / `.aimode off` / `.aimode status`")
+        await safe_send_message(event, "Format: `.aimode on` / `.aimode off` / `.aimode status`")
 
 async def aiconfig_handler(event):
+    # Check if env is properly initialized and has is_owner function
+    if env is None or 'is_owner' not in env:
+        return
     if not await env['is_owner'](event.sender_id): return
     args = event.text.split(maxsplit=2)
     cfg = get_config()
     if len(args) == 1 or (len(args) == 2 and args[1] == "show"):
-        txt = f"{env['get_emoji']('main')} AIMode Config:\n\n<pre>{json.dumps(cfg, indent=2, ensure_ascii=False)}</pre>"
-        await env['safe_send_with_entities'](event, txt)
+        txt = f"{safe_get_emoji('main')} AIMode Config:\n\n<pre>{json.dumps(cfg, indent=2, ensure_ascii=False)}</pre>"
+        await safe_send_message(event, txt)
     elif len(args) >= 3:
         try:
             field, value = args[1], args[2]
@@ -185,11 +205,11 @@ async def aiconfig_handler(event):
                 else:
                     cfg[field] = value
                 set_config(cfg)
-                await env['safe_send_with_entities'](event, f"{env['get_emoji']('check')} Config `{field}` updated.")
+                await safe_send_message(event, f"{safe_get_emoji('check')} Config `{field}` updated.")
             else:
-                await env['safe_send_with_entities'](event, f"{env['get_emoji']('cross')} Field `{field}` not found.")
+                await safe_send_message(event, f"{safe_get_emoji('cross')} Field `{field}` not found.")
         except Exception as e:
-            await env['safe_send_with_entities'](event, f"❌ Config update error: {e}")
+            await safe_send_message(event, f"❌ Config update error: {e}")
 
 async def ai_autoreply_handler(event):
     chat = await event.get_chat()
@@ -198,7 +218,7 @@ async def ai_autoreply_handler(event):
         msg = event.message.message
         cfg = get_config()
         reply = await ai_generate(msg, cfg)
-        await env['safe_send_with_entities'](event, reply)
+        await safe_send_message(event, reply)
 
 # ---- AI API Call & Failover ---- #
 async def ai_generate(prompt, cfg):
@@ -207,7 +227,7 @@ async def ai_generate(prompt, cfg):
     if not reply or "error" in reply.lower() or reply.startswith("❌"):
         reply = await call_ai(cfg['backup'], prompt, cfg)
         if not reply:
-            reply = f"{env['get_emoji']('cross')} AI Error: All models failed."
+            reply = f"{safe_get_emoji('cross')} AI Error: All models failed."
     return reply
 
 async def call_ai(api_cfg, prompt, cfg):

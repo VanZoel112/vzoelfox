@@ -88,9 +88,18 @@ def save_id_log(user, chat, requester, method):
         return False
 
 async def id_handler(event):
+    # Check if env is properly initialized and has is_owner function
+    if env is None or 'is_owner' not in env:
+        return
     if not await env['is_owner'](event.sender_id):
         return
+    # Get client safely
+    if 'get_client' not in env:
+        return
     client = env['get_client']()
+    if client is None:
+        return
+        
     user = None
     method = None
     chat = await event.get_chat()
@@ -110,7 +119,10 @@ async def id_handler(event):
                 user = await client.get_entity(uname)
                 method = "username"
             except Exception as e:
-                await env['safe_send_with_entities'](event, f"❌ Tidak bisa menemukan user dengan username: @{uname}")
+                if env and 'safe_send_with_entities' in env:
+                    await env['safe_send_with_entities'](event, f"❌ Tidak bisa menemukan user dengan username: @{uname}")
+                else:
+                    await event.reply(f"❌ Tidak bisa menemukan user dengan username: @{uname}")
                 return
         else:
             # Jika tidak reply dan tidak username, cek id pengirim
@@ -122,13 +134,26 @@ async def id_handler(event):
     first_name = getattr(user, 'first_name', '')
     last_name = getattr(user, 'last_name', '')
     full_name = (first_name + " " + last_name).strip()
-    result_text = (
-        f"{env['get_emoji']('main')} {env['convert_font']('User Info', 'bold')}\n\n"
-        f"{env['get_emoji']('check')} ID: `{user_id}`\n"
-        f"{env['get_emoji']('check')} Username: @{username if username else '-'}\n"
-        f"{env['get_emoji']('check')} Name: `{full_name}`\n"
-    )
-    await env['safe_send_with_entities'](event, result_text)
+    # Build result text with fallbacks for missing env functions
+    if env and 'get_emoji' in env and 'convert_font' in env:
+        result_text = (
+            f"{env['get_emoji']('main')} {env['convert_font']('User Info', 'bold')}\n\n"
+            f"{env['get_emoji']('check')} ID: `{user_id}`\n"
+            f"{env['get_emoji']('check')} Username: @{username if username else '-'}\n"
+            f"{env['get_emoji']('check')} Name: `{full_name}`\n"
+        )
+    else:
+        result_text = (
+            f"🤩 **User Info**\n\n"
+            f"⚙️ ID: `{user_id}`\n"
+            f"⚙️ Username: @{username if username else '-'}\n"
+            f"⚙️ Name: `{full_name}`\n"
+        )
+    
+    if env and 'safe_send_with_entities' in env:
+        await env['safe_send_with_entities'](event, result_text)
+    else:
+        await event.reply(result_text)
     save_id_log(user, chat, requester, method)
 
 def get_plugin_info():

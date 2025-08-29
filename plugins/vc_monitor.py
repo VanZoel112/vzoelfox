@@ -11,6 +11,7 @@ from datetime import datetime
 from telethon import events
 from telethon.tl.types import MessageEntityCustomEmoji
 from telethon.tl.functions.phone import JoinGroupCallRequest, LeaveGroupCallRequest
+from telethon.tl.types import DataJSON
 from telethon.tl.functions.channels import GetFullChannelRequest
 from telethon.errors import ChatAdminRequiredError, UserAlreadyParticipantError, FloodWaitError
 from telethon.tl.types import Channel, Chat
@@ -271,11 +272,32 @@ async def join_vc_handler(event):
             return
 
         try:
-            await client(JoinGroupCallRequest(call=call, muted=False, video_stopped=True))
+            # Get the bot's info to use as join_as parameter
+            me = await client.get_me()
+            
+            # Create params as required by newer Telethon versions
+            params = DataJSON(data='{}')
+            
+            await client(JoinGroupCallRequest(
+                call=call,
+                join_as=me,
+                params=params,
+                muted=False,
+                video_stopped=True
+            ))
         except FloodWaitError as fe:
             await safe_send_premium(event, f"{get_emoji('adder1')} Flood wait, tunggu {fe.seconds} detik...")
             await asyncio.sleep(fe.seconds)
-            await client(JoinGroupCallRequest(call=call, muted=False, video_stopped=True))
+            # Retry with same parameters
+            me = await client.get_me()
+            params = DataJSON(data='{}')
+            await client(JoinGroupCallRequest(
+                call=call,
+                join_as=me,
+                params=params,
+                muted=False,
+                video_stopped=True
+            ))
         except UserAlreadyParticipantError:
             report = f"{get_emoji('adder5')} **Sudah berada di VC**\n\n{get_emoji('check')} Channel: {chat_title}"
             await safe_send_premium(event, report)
@@ -338,7 +360,26 @@ async def leave_vc_handler(event):
             save_vc_log("leave-failed", report)
             return
 
-        await client(LeaveGroupCallRequest())
+        # Try to get current call info for leaving
+        try:
+            # Get current chat where we might be in VC
+            if monitor_state.get("chat_id"):
+                chat = await client.get_entity(monitor_state["chat_id"])
+                full_chat = await client(GetFullChannelRequest(chat) if isinstance(chat, Channel) else chat)
+                call = getattr(full_chat.full_chat, 'call', None)
+                
+                if call:
+                    await client(LeaveGroupCallRequest(call=call))
+                else:
+                    # No active call, just update our state
+                    pass
+            else:
+                # Fallback: try without call parameter (older API)
+                await client(LeaveGroupCallRequest())
+        except Exception as leave_error:
+            print(f"[VC Monitor] Leave call error: {leave_error}")
+            # Even if leaving fails, update our state
+            pass
         monitor_state["vc_active"] = False
         duration = get_duration()
         topic = monitor_state["current_topic"] or "No topic"
