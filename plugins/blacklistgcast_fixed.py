@@ -44,7 +44,7 @@ async def safe_send_message(event, text, use_env=True):
     else:
         await event.reply(text)
 
-def safe_safe_get_emoji(emoji_type):
+def safe_get_emoji(emoji_type):
     """Helper function to safely get emoji with fallback"""
     if env and 'get_emoji' in env:
         return env['get_emoji'](emoji_type)
@@ -54,7 +54,7 @@ def safe_safe_get_emoji(emoji_type):
     }
     return emoji_fallbacks.get(emoji_type, '🤩')
 
-def safe_safe_convert_font(text, font_type='bold'):
+def safe_convert_font(text, font_type='bold'):
     """Helper function to safely convert fonts with fallback"""
     if env and 'convert_font' in env:
         return env['convert_font'](text, font_type)
@@ -181,13 +181,13 @@ async def add_blacklist_handler(event):
             chat_id_str = command_arg.strip()
             if not is_valid_chat_id(chat_id_str):
                 error_text = f"""
-{safe_safe_get_emoji('adder3')} {safe_safe_convert_font('INVALID CHAT ID', 'mono')}
+{safe_get_emoji('adder3')} {safe_convert_font('INVALID CHAT ID', 'mono')}
 
-{safe_safe_get_emoji('check')} Use valid chat ID format:
+{safe_get_emoji('check')} Use valid chat ID format:
 • Negative number for groups/channels
 • Example: -1001234567890
 
-{safe_safe_get_emoji('main')} Or use `{prefix}addbl` in target chat directly
+{safe_get_emoji('main')} Or use `{prefix}addbl` in target chat directly
                 """.strip()
                 await safe_send_message(event, error_text)
                 return
