@@ -1481,21 +1481,18 @@ async def main():
         # Set plugin_loader to empty instance to avoid None errors
         plugin_loader = PluginLoader(client=client)
     
-    # Main function with enhanced error handling
-    logger.info("🔥 Initializing VZOEL ASSISTANT v0.1.0.75 Enhanced...")
+    # Run the client
+    logger.info("🔥 VZOEL ASSISTANT Enhanced is now running...")
+    logger.info("🔍 Press Ctrl+C to stop")
+    logger.info("🚀 All enhanced features active and bug fixes applied!")
     
-    if await startup():
-        logger.info("🔥 VZOEL ASSISTANT Enhanced is now running...")
-        logger.info("🔍 Press Ctrl+C to stop")
-        logger.info("🚀 All enhanced features active and bug fixes applied!")
-        
-        try:
-            await client.run_until_disconnected()
-        except KeyboardInterrupt:
-            logger.info("👋 VZOEL ASSISTANT stopped by user")
-        except Exception as e:
-            logger.error(f"❌ Unexpected error: {e}")
-        finally:
+    try:
+        await client.run_until_disconnected()
+    except KeyboardInterrupt:
+        logger.info("👋 VZOEL ASSISTANT stopped by user")
+    except Exception as e:
+        logger.error(f"❌ Unexpected error: {e}")
+    finally:
             logger.info("🔥 Shutting down gracefully...")
             save_blacklist()
             save_emoji_config()

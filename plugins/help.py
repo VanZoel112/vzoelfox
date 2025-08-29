@@ -164,8 +164,7 @@ def get_prefix():
     except:
         return "."
 
-# HELP COMMAND HANDLER WITH PREMIUM EMOJI SUPPORT
-@client.on(events.NewMessage(pattern=rf'\.help(\s+(.+))?'))
+# HELP COMMAND HANDLER WITH PREMIUM EMOJI SUPPORT  
 async def help_handler(event):
     """Enhanced help command with premium emoji support"""
     if not await is_owner_check(event.sender_id):
@@ -462,7 +461,6 @@ Show founder and bot information
         await safe_send_with_entities(event, error_text)
 
 # Button callback handler
-@client.on(events.CallbackQuery(pattern=rb"help_(.+)"))
 async def help_callback_handler(event):
     """Handle inline button callbacks for help menu"""
     if not await is_owner_check(event.sender_id):
@@ -769,3 +767,11 @@ PLUGIN_INFO = {
 
 def get_plugin_info():
     return PLUGIN_INFO
+
+def setup(client):
+    """Setup function untuk register event handlers"""
+    client.add_event_handler(help_handler, events.NewMessage(pattern=rf'\.help(\s+(.+))?'))
+    client.add_event_handler(help_callback_handler, events.CallbackQuery(pattern=rb"help_(.+)"))
+    
+    # Set global client untuk functions yang membutuhkan
+    globals()['client'] = client

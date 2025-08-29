@@ -1,0 +1,11 @@
+2025-08-29 08:56:49,460 - __main__ - INFO - ✅ Telegram client initialized
+2025-08-29 08:56:49,512 - __main__ - INFO - ✅ Database initialized successfully
+2025-08-29 08:56:49,514 - __main__ - INFO - 📋 No blacklist file found, starting with empty blacklist
+2025-08-29 08:56:49,516 - __main__ - INFO - 💾 Saved 0 blacklisted chats
+2025-08-29 08:56:49,517 - __main__ - INFO - 📱 No custom emoji config found, using defaults
+2025-08-29 08:56:49,522 - __main__ - INFO - 💾 Saved emoji configuration: 8 emoji types
+2025-08-29 08:56:49,523 - __main__ - INFO - 🚀 Starting VZOEL ASSISTANT v0.1.0.75 Enhanced...
+2025-08-29 08:56:49,525 - telethon.network.mtprotosender - INFO - Connecting to 149.154.167.51:443/TcpFull...
+2025-08-29 08:56:52,660 - telethon.network.mtprotosender - INFO - Connection to 149.154.167.51:443/TcpFull complete!
+2025-08-29 08:56:53,514 - __main__ - ERROR - ❌ Error starting VZOEL ASSISTANT: EOF when reading a line
+2025-08-29 08:56:53,515 - __main__ - ERROR - ❌ Core system startup failed
