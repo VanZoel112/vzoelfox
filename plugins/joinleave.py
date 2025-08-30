@@ -16,7 +16,7 @@ from telethon.tl.types import DataJSON, MessageEntityCustomEmoji, InputPeerSelf
 # Plugin Info
 PLUGIN_INFO = {
     "name": "joinleave",
-    "version": "1.2.0", 
+    "version": "1.2.1", 
     "description": "Enhanced voice chat handling dengan proper detection dan premium emoji support",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".joinvc", ".leavevc", ".testvcemoji"],
@@ -92,16 +92,31 @@ def get_emoji(emoji_type):
     return emoji_data["emoji"]
 
 async def safe_send_message(event, text):
-    """Send message with premium emoji entities"""
+    """Send message with premium emoji entities - FIXED: Return message object"""
     try:
         entities = create_premium_emoji_entities(text)
         if entities:
-            await event.reply(text, formatting_entities=entities)
+            return await event.reply(text, formatting_entities=entities)
         else:
-            await event.reply(text)
+            return await event.reply(text)
     except Exception as e:
         # Fallback to regular message if premium emojis fail
-        await event.reply(text)
+        return await event.reply(text)
+
+async def safe_edit_message(message, text):
+    """Safely edit message dengan error handling"""
+    if not message:
+        return False
+    try:
+        entities = create_premium_emoji_entities(text)
+        if entities:
+            await message.edit(text, formatting_entities=entities)
+        else:
+            await message.edit(text)
+        return True
+    except Exception as e:
+        print(f"[JoinLeave] Edit message error: {e}")
+        return False
 
 def get_prefix():
     """Ambil prefix command dari environment atau default '.'"""
@@ -163,14 +178,11 @@ async def joinvc_handler(event):
 {get_emoji('slider')} Coba lagi setelah voice chat dimulai!
             """.strip()
             
-            await loading_msg.edit(text, formatting_entities=create_premium_emoji_entities(text))
+            await safe_edit_message(loading_msg, text)
             return
         
         # Update loading message
-        await loading_msg.edit(
-            f"{get_emoji('check')} Voice chat ditemukan! Bergabung...",
-            formatting_entities=create_premium_emoji_entities(f"{get_emoji('check')} Voice chat ditemukan! Bergabung...")
-        )
+        await safe_edit_message(loading_msg, f"{get_emoji('check')} Voice chat ditemukan! Bergabung...")
         
         # Join voice chat dengan parameter yang benar
         try:
@@ -194,7 +206,7 @@ async def joinvc_handler(event):
 {get_emoji('slider')} Gunakan `{get_prefix()}leavevc` untuk keluar
             """.strip()
             
-            await loading_msg.edit(success_text, formatting_entities=create_premium_emoji_entities(success_text))
+            await safe_edit_message(loading_msg, success_text)
             
         except Exception as join_error:
             # Method 2: Fallback dengan parameter minimal
@@ -215,7 +227,7 @@ async def joinvc_handler(event):
 {get_emoji('slider')} Gunakan `{get_prefix()}leavevc` untuk keluar
                 """.strip()
                 
-                await loading_msg.edit(fallback_text, formatting_entities=create_premium_emoji_entities(fallback_text))
+                await safe_edit_message(loading_msg, fallback_text)
                 
             except Exception as fallback_error:
                 error_text = f"""
@@ -236,7 +248,7 @@ async def joinvc_handler(event):
 • Periksa connection internet
                 """.strip()
                 
-                await loading_msg.edit(error_text, formatting_entities=create_premium_emoji_entities(error_text))
+                await safe_edit_message(loading_msg, error_text)
         
     except ChatAdminRequiredError:
         text = f"""
@@ -316,7 +328,7 @@ async def leavevc_handler(event):
 {get_emoji('slider')} Voice chat sudah inactive atau bot sudah keluar
             """.strip()
             
-            await loading_msg.edit(text, formatting_entities=create_premium_emoji_entities(text))
+            await safe_edit_message(loading_msg, text)
             return
         
         # Leave voice chat
@@ -333,7 +345,7 @@ async def leavevc_handler(event):
 {get_emoji('slider')} Gunakan `{get_prefix()}joinvc` untuk join lagi
             """.strip()
             
-            await loading_msg.edit(success_text, formatting_entities=create_premium_emoji_entities(success_text))
+            await safe_edit_message(loading_msg, success_text)
             
         except Exception as leave_error:
             error_text = f"""
@@ -350,7 +362,7 @@ async def leavevc_handler(event):
 {get_emoji('check')} Bot mungkin sudah keluar secara otomatis
             """.strip()
             
-            await loading_msg.edit(error_text, formatting_entities=create_premium_emoji_entities(error_text))
+            await safe_edit_message(loading_msg, error_text)
         
     except Exception as e:
         error_text = f"""
