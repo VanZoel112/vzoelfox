@@ -29,14 +29,14 @@ PLUGIN_INFO = {
 
 # ===== Auto Premium Emoji Mapping (UTF-16 auto-detection) =====
 PREMIUM_EMOJIS = {
-    "main":    {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
-    "check":   {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
-    "adder1":  {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
-    "adder2":  {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
-    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
-    "adder4":  {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
-    "adder5":  {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
-    "adder6":  {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
+    "main":    {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
+    "check":   {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}, 
+    "adder1":  {"emoji": "👽", "custom_emoji_id": "5321023901998801538"},
+    "adder2":  {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
+    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321023901998801538"},
+    "adder4":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
+    "adder5":  {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
+    "adder6":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}
 }
 
 # ===== Global Client Variable =====

@@ -23,13 +23,13 @@ PLUGIN_INFO = {
 
 # Auto Premium Emoji Mapping (UTF-16 auto-detection)
 PREMIUM_EMOJIS = {
-    "main": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
-    "storm": {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
-    "check": {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
-    "alien": {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
-    "plane": {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
-    "devil": {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
-    "slider": {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
+    "main": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
+    "storm": {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
+    "check": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
+    "alien": {"emoji": "👽", "custom_emoji_id": "5321023901998801538"},
+    "plane": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
+    "devil": {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
+    "slider": {"emoji": "👽", "custom_emoji_id": "5321023901998801538"}
 }
 
 def get_utf16_length(emoji_char):
