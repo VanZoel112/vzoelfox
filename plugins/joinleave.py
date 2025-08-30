@@ -28,6 +28,7 @@ PREMIUM_EMOJIS = {
     "main": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
     "storm": {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
     "check": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
+    "cross": {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
     "alien": {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
     "plane": {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
     "devil": {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
@@ -184,13 +185,13 @@ async def joinvc_handler(event):
         # Update loading message
         await safe_edit_message(loading_msg, f"{get_emoji('check')} Voice chat ditemukan! Bergabung...")
         
-        # Join voice chat dengan parameter yang benar
+        # Join voice chat - SIMPLE METHOD (userbot bukan bot musik)
         try:
-            # Method 1: Standard join
+            # Join sebagai akun sendiri ke voice chat
             await event.client(JoinGroupCallRequest(
                 call=active_call,
-                join_as=InputPeerSelf(),  # Join sebagai diri sendiri
-                params=DataJSON(data='{"ufrag":"","pwd":""}'),
+                join_as=InputPeerSelf(),  # Akun kita sendiri
+                params=DataJSON(data='{}'),  # Empty params - no WebRTC needed
                 muted=False,
                 video_stopped=True
             ))
@@ -209,12 +210,11 @@ async def joinvc_handler(event):
             await safe_edit_message(loading_msg, success_text)
             
         except Exception as join_error:
-            # Method 2: Fallback dengan parameter minimal
+            # Method 2: Simple fallback - basic join
             try:
                 await event.client(JoinGroupCallRequest(
                     call=active_call,
-                    join_as=await event.client.get_me(),
-                    params=DataJSON(data='{}')
+                    join_as=InputPeerSelf()
                 ))
                 
                 fallback_text = f"""

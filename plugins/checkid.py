@@ -162,80 +162,103 @@ def save_id_log(user, chat, requester, method):
             env['logger'].error(f"[CheckID] Log backup error: {e}")
         return False
 
+# Simple owner check
+async def is_owner_check(user_id):
+    """Simple owner check"""
+    OWNER_ID = 7847025168  # Replace with your actual owner ID
+    return user_id == OWNER_ID
+
 @events.register(events.NewMessage(pattern=r'^\.id(?:\s+@?(\w+))?$', outgoing=True))
 async def id_handler(event):
-    print(f"[CheckID] Handler triggered by: {event.text}")
-    print(f"[CheckID] Sender ID: {event.sender_id}")
-    print(f"[CheckID] Environment available: {env is not None}")
-    
-    # Check if env is properly initialized and has is_owner function
-    if env is None or 'is_owner' not in env:
-        print("[CheckID] Environment not available or missing is_owner function")
+    """CheckID handler with premium emoji support"""
+    # Owner check
+    if not await is_owner_check(event.sender_id):
         return
+    
+    # Get client from event
+    client = event.client
     
     try:
-        is_owner = await env['is_owner'](event.sender_id)
-        print(f"[CheckID] Is owner check result: {is_owner}")
-        if not is_owner:
-            print("[CheckID] User is not owner, returning")
-            return
-    except Exception as e:
-        print(f"[CheckID] Error checking owner: {e}")
-        return
-    # Get client safely
-    if 'get_client' not in env:
-        return
-    client = env['get_client']()
-    if client is None:
-        return
+        user = None
+        method = None
+        chat = await event.get_chat()
+        requester = await client.get_entity(event.sender_id)
         
-    user = None
-    method = None
-    chat = await event.get_chat()
-    requester = await client.get_entity(event.sender_id)
-
-    # Cek reply
-    if event.is_reply:
-        reply = await event.get_reply_message()
-        user = await client.get_entity(reply.sender_id)
-        method = "reply"
-    else:
-        # Cek argumen username
-        args = event.text.split()
-        if len(args) > 1:
-            uname = args[1].strip('@')
-            try:
-                user = await client.get_entity(uname)
-                method = "username"
-            except Exception as e:
-                error_text = f"{get_emoji('adder5')} {convert_font(f'Tidak bisa menemukan user dengan username: @{uname}')}"
-                await safe_send_message(event, error_text)
-                return
+        # Check if replying to a message
+        if event.is_reply:
+            reply_message = await event.get_reply_message()
+            if reply_message and reply_message.sender:
+                user = reply_message.sender
+                method = "reply"
         else:
-            # Jika tidak reply dan tidak username, cek id pengirim
+            # Check if username provided
+            text_parts = event.text.split()
+            if len(text_parts) > 1:
+                username = text_parts[1].strip('@')
+                try:
+                    user = await client.get_entity(username)
+                    method = "username"
+                except Exception as e:
+                    error_text = f"{get_emoji('adder5')} {convert_font(f'User @{username} tidak ditemukan!')}"
+                    await safe_send_message(event, error_text)
+                    return
+            else:
+                # Show usage if no username and not replying
+                usage_text = f"""
+{get_emoji('check')} {convert_font('Cara penggunaan CheckID:')}
+
+{get_emoji('adder3')} `.id @username` - Cek ID dari username
+{get_emoji('adder3')} `.id` (reply pesan) - Cek ID dari pengirim pesan
+{get_emoji('adder2')} `.id` (tanpa reply) - Cek ID diri sendiri
+                """.strip()
+                await safe_send_message(event, usage_text)
+                return
+
+        # If no user found, check self
+        if not user:
             user = requester
             method = "self"
-
-    user_id = getattr(user, 'id', None)
-    username = getattr(user, 'username', None)
-    first_name = getattr(user, 'first_name', '')
-    last_name = getattr(user, 'last_name', '')
-    full_name = (first_name + " " + last_name).strip()
-    # Build result text with premium emoji support
-    result_text = f"""
-{get_emoji('main')} {convert_font('User Info')}
+        
+        # Validate user exists
+        if not user:
+            error_text = f"{get_emoji('adder5')} {convert_font('User tidak ditemukan!')}"
+            await safe_send_message(event, error_text)
+            return
+        
+        # Extract user info
+        user_id = getattr(user, 'id', 'Unknown')
+        username = getattr(user, 'username', None) 
+        first_name = getattr(user, 'first_name', '')
+        last_name = getattr(user, 'last_name', '')
+        full_name = f"{first_name} {last_name}".strip() or 'Tidak ada'
+        is_bot = getattr(user, 'bot', False)
+        is_premium = getattr(user, 'premium', False)
+        
+        # Build result with premium emoji support
+        result_text = f"""
+{get_emoji('main')} {convert_font('User Information')}
 
 {get_emoji('check')} **ID:** `{user_id}`
 {get_emoji('adder2')} **Username:** @{username if username else 'Tidak ada'}
-{get_emoji('adder3')} **Name:** `{full_name if full_name else 'Tidak ada'}`
-{get_emoji('adder4')} **Bot:** {'Ya' if getattr(user, 'bot', False) else 'Tidak'}
-{get_emoji('adder1')} **Premium:** {'Ya' if getattr(user, 'premium', False) else 'Tidak'}
+{get_emoji('adder3')} **Name:** {full_name}
+{get_emoji('adder4')} **Bot:** {'Ya' if is_bot else 'Tidak'}
+{get_emoji('adder1')} **Premium:** {'Ya' if is_premium else 'Tidak'}
+{get_emoji('adder6')} **Method:** {method.title()}
 
-{get_emoji('adder6')} {convert_font('By Vzoel Fox Ltpn')}
-    """.strip()
+{get_emoji('adder5')} {convert_font('CheckID by Vzoel Fox')}
+        """.strip()
+        
+        await safe_send_message(event, result_text)
+        
+        # Save to log
+        try:
+            save_id_log(user, chat, requester, method)
+        except Exception as log_error:
+            print(f"[CheckID] Log save failed: {log_error}")
     
-    await safe_send_message(event, result_text)
-    save_id_log(user, chat, requester, method)
+    except Exception as e:
+        error_text = f"{get_emoji('adder5')} {convert_font(f'Error: {str(e)}')}"
+        await safe_send_message(event, error_text)
 
 def setup(client):
     """Setup function to register event handlers with client"""
