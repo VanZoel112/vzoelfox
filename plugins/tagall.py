@@ -68,39 +68,49 @@ def convert_font(text):
     return f"**{text}**"
 
 def create_premium_entities(text):
-    """Create premium emoji entities for text with UTF-16 support"""
-    entities = []
-    
-    for emoji_name, emoji_data in PREMIUM_EMOJIS.items():
-        emoji = emoji_data["emoji"]
-        custom_emoji_id = int(emoji_data["custom_emoji_id"])
+    """Create premium emoji entities for text with UTF-16 support (FIXED VERSION)"""
+    try:
+        entities = []
+        current_offset = 0
+        i = 0
         
-        start = 0
-        while True:
-            pos = text.find(emoji, start)
-            if pos == -1:
-                break
+        while i < len(text):
+            found_emoji = False
             
-            # Calculate UTF-16 offset and length
-            utf16_offset = len(text[:pos].encode('utf-16le')) // 2
+            for emoji_name, emoji_data in PREMIUM_EMOJIS.items():
+                emoji = emoji_data["emoji"]
+                custom_emoji_id = int(emoji_data["custom_emoji_id"])
+                
+                if text[i:].startswith(emoji):
+                    try:
+                        # Calculate UTF-16 length properly
+                        emoji_bytes = emoji.encode('utf-16le')
+                        utf16_length = len(emoji_bytes) // 2
+                        
+                        entities.append(MessageEntityCustomEmoji(
+                            offset=current_offset,
+                            length=utf16_length,
+                            document_id=custom_emoji_id
+                        ))
+                        
+                        i += len(emoji)
+                        current_offset += utf16_length
+                        found_emoji = True
+                        break
+                        
+                    except Exception:
+                        break
             
-            # Handle compound characters like ⚙️ (gear + variation selector)
-            if emoji == "⚙️":
-                utf16_length = 2  # U+2699 + U+FE0F = 2 UTF-16 units
-            elif emoji == "✈️":
-                utf16_length = 2  # U+2708 + U+FE0F = 2 UTF-16 units  
-            else:
-                utf16_length = len(emoji.encode('utf-16le')) // 2
-            
-            entities.append(MessageEntityCustomEmoji(
-                offset=utf16_offset,
-                length=utf16_length,
-                document_id=custom_emoji_id
-            ))
-            
-            start = pos + len(emoji)
-    
-    return entities
+            if not found_emoji:
+                char = text[i]
+                char_bytes = char.encode('utf-16le')
+                char_utf16_length = len(char_bytes) // 2
+                current_offset += char_utf16_length
+                i += 1
+        
+        return entities
+    except Exception:
+        return []
 
 # ===== Tag All Command =====
 @events.register(events.NewMessage(pattern=r'^\.tagall(?:\s+(.*))?$', outgoing=True))

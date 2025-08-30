@@ -1,30 +1,105 @@
 """
-CheckID Plugin for Vzoel Assistant
+CheckID Plugin for Vzoel Assistant - Enhanced UTF-16 Premium Edition
 Fitur: Cek ID Telegram seseorang dengan mereply pesan atau menulis username.
 Kompatibel: main.py, plugin_loader.py, assetjson.py (v3+), backup log ke SQLite jika gagal akses database utama.
 Founder Userbot: Vzoel Fox's Ltpn 🤩
-Version: 1.0.0
+Version: 1.1.0 (Enhanced Premium Emoji Support)
 """
 
 import sqlite3
 import os
 from datetime import datetime
 from telethon import events
+from telethon.tl.types import MessageEntityCustomEmoji, User
 
 # ===== Plugin Info (Untuk plugin loader) =====
 PLUGIN_INFO = {
     "name": "checkid",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Cek ID Telegram seseorang dengan reply atau username, backup log ke SQLite jika gagal akses database utama.",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".id", ".id @username", ".id (reply)"],
-    "features": ["check user id", "log to sql if needed"]
+    "features": ["check user id", "log to sql if needed", "premium emojis"]
 }
+
+# Premium Emoji Mapping - Updated with UTF-16 support
+PREMIUM_EMOJIS = {
+    "main":    {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
+    "check":   {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
+    "adder1":  {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
+    "adder2":  {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
+    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
+    "adder4":  {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
+    "adder5":  {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
+    "adder6":  {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
+}
+
+def get_emoji(emoji_name):
+    """Get emoji from premium mapping"""
+    return PREMIUM_EMOJIS.get(emoji_name, {}).get("emoji", "❓")
+
+def convert_font(text):
+    """Convert text to bold font"""
+    return f"**{text}**"
+
+def create_premium_entities(text):
+    """Create premium emoji entities for text with UTF-16 support"""
+    try:
+        entities = []
+        current_offset = 0
+        i = 0
+        
+        while i < len(text):
+            found_emoji = False
+            
+            for emoji_name, emoji_data in PREMIUM_EMOJIS.items():
+                emoji = emoji_data["emoji"]
+                custom_emoji_id = int(emoji_data["custom_emoji_id"])
+                
+                if text[i:].startswith(emoji):
+                    try:
+                        # Calculate UTF-16 length properly
+                        emoji_bytes = emoji.encode('utf-16le')
+                        utf16_length = len(emoji_bytes) // 2
+                        
+                        entities.append(MessageEntityCustomEmoji(
+                            offset=current_offset,
+                            length=utf16_length,
+                            document_id=custom_emoji_id
+                        ))
+                        
+                        i += len(emoji)
+                        current_offset += utf16_length
+                        found_emoji = True
+                        break
+                        
+                    except Exception:
+                        break
+            
+            if not found_emoji:
+                char = text[i]
+                char_bytes = char.encode('utf-16le')
+                char_utf16_length = len(char_bytes) // 2
+                current_offset += char_utf16_length
+                i += 1
+        
+        return entities
+    except Exception:
+        return []
 
 try:
     from assetjson import create_plugin_environment
 except ImportError:
     def create_plugin_environment(client=None): return {}
+
+async def safe_send_message(event, text):
+    """Send message with premium emoji entities"""
+    try:
+        entities = create_premium_entities(text)
+        await event.reply(text, formatting_entities=entities)
+    except Exception as e:
+        # Fallback to regular message if premium emojis fail
+        await event.reply(text)
 
 env = None
 DB_FILE = "plugins/checkid.db"
@@ -132,10 +207,8 @@ async def id_handler(event):
                 user = await client.get_entity(uname)
                 method = "username"
             except Exception as e:
-                if env and 'safe_send_with_entities' in env:
-                    await env['safe_send_with_entities'](event, f"❌ Tidak bisa menemukan user dengan username: @{uname}")
-                else:
-                    await event.reply(f"❌ Tidak bisa menemukan user dengan username: @{uname}")
+                error_text = f"{get_emoji('adder5')} {convert_font(f'Tidak bisa menemukan user dengan username: @{uname}')}"
+                await safe_send_message(event, error_text)
                 return
         else:
             # Jika tidak reply dan tidak username, cek id pengirim
@@ -147,26 +220,20 @@ async def id_handler(event):
     first_name = getattr(user, 'first_name', '')
     last_name = getattr(user, 'last_name', '')
     full_name = (first_name + " " + last_name).strip()
-    # Build result text with fallbacks for missing env functions
-    if env and 'get_emoji' in env and 'convert_font' in env:
-        result_text = (
-            f"{env['get_emoji']('main')} {env['convert_font']('User Info', 'bold')}\n\n"
-            f"{env['get_emoji']('check')} ID: `{user_id}`\n"
-            f"{env['get_emoji']('check')} Username: @{username if username else '-'}\n"
-            f"{env['get_emoji']('check')} Name: `{full_name}`\n"
-        )
-    else:
-        result_text = (
-            f"🤩 **User Info**\n\n"
-            f"⚙️ ID: `{user_id}`\n"
-            f"⚙️ Username: @{username if username else '-'}\n"
-            f"⚙️ Name: `{full_name}`\n"
-        )
+    # Build result text with premium emoji support
+    result_text = f"""
+{get_emoji('main')} {convert_font('User Info')}
+
+{get_emoji('check')} **ID:** `{user_id}`
+{get_emoji('adder2')} **Username:** @{username if username else 'Tidak ada'}
+{get_emoji('adder3')} **Name:** `{full_name if full_name else 'Tidak ada'}`
+{get_emoji('adder4')} **Bot:** {'Ya' if getattr(user, 'bot', False) else 'Tidak'}
+{get_emoji('adder1')} **Premium:** {'Ya' if getattr(user, 'premium', False) else 'Tidak'}
+
+{get_emoji('adder6')} {convert_font('By Vzoel Fox Ltpn')}
+    """.strip()
     
-    if env and 'safe_send_with_entities' in env:
-        await env['safe_send_with_entities'](event, result_text)
-    else:
-        await event.reply(result_text)
+    await safe_send_message(event, result_text)
     save_id_log(user, chat, requester, method)
 
 def get_plugin_info():
