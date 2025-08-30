@@ -162,6 +162,7 @@ def save_id_log(user, chat, requester, method):
             env['logger'].error(f"[CheckID] Log backup error: {e}")
         return False
 
+@events.register(events.NewMessage(pattern=r'^\.id(?:\s+@?(\w+))?$', outgoing=True))
 async def id_handler(event):
     print(f"[CheckID] Handler triggered by: {event.text}")
     print(f"[CheckID] Sender ID: {event.sender_id}")
@@ -235,6 +236,12 @@ async def id_handler(event):
     
     await safe_send_message(event, result_text)
     save_id_log(user, chat, requester, method)
+
+def setup(client):
+    """Setup function to register event handlers with client"""
+    if client:
+        client.add_event_handler(id_handler)
+        print("⚙️ CheckID handler registered to client")
 
 def get_plugin_info():
     return PLUGIN_INFO

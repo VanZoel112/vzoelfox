@@ -260,5 +260,12 @@ async def cekid_handler(event):
         error_text = f"{get_emoji('adder5')} {convert_font(f'Error: {str(e)}')}"
         await event.reply(error_text, formatting_entities=create_premium_entities(error_text))
 
+def setup(client):
+    """Setup function to register event handlers with client"""
+    if client:
+        client.add_event_handler(tagall_handler)
+        client.add_event_handler(cekid_handler)
+        print("⚙️ Tagall handlers registered to client")
+
 print("🤩 Tag All Plugin dengan Premium Emoji Support berhasil dimuat!")
 print("Commands: .tagall [pesan] | .cekid [@username atau reply]")
