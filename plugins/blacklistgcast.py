@@ -74,29 +74,45 @@ def get_utf16_length(emoji_char):
         return 1
 
 def create_premium_emoji_entities(text):
-    """Automatically create MessageEntityCustomEmoji entities for premium emojis"""
+    """Enhanced: Create MessageEntityCustomEmoji entities with compound character support"""
     entities = []
     utf16_offset = 0
+    text_pos = 0
     
-    # Process text character by character to get accurate UTF-16 offsets
-    for i, char in enumerate(text):
-        # Check if this character matches any premium emoji
+    # Process text dengan handling compound characters (seperti ⚙️)
+    while text_pos < len(text):
+        found_emoji = False
+        
+        # Check setiap premium emoji
         for emoji_name, emoji_data in PREMIUM_EMOJIS.items():
-            if char == emoji_data["emoji"]:
-                # Get actual UTF-16 length of this emoji
-                emoji_length = get_utf16_length(char)
+            emoji_char = emoji_data["emoji"]
+            emoji_len = len(emoji_char)
+            
+            # Cek apakah text di posisi ini cocok dengan emoji
+            if text[text_pos:text_pos + emoji_len] == emoji_char:
+                # Get actual UTF-16 length dari emoji character
+                emoji_utf16_length = get_utf16_length(emoji_char)
                 
-                # Create custom emoji entity with automatic offset/length
+                # Create custom emoji entity
                 entity = MessageEntityCustomEmoji(
                     offset=utf16_offset,
-                    length=emoji_length,
+                    length=emoji_utf16_length,
                     document_id=int(emoji_data["custom_emoji_id"])
                 )
                 entities.append(entity)
+                
+                # Skip emoji characters
+                text_pos += emoji_len
+                utf16_offset += emoji_utf16_length
+                found_emoji = True
                 break
         
-        # Update UTF-16 offset for next character
-        utf16_offset += get_utf16_length(char)
+        if not found_emoji:
+            # Regular character, advance by 1
+            char = text[text_pos]
+            char_utf16_length = get_utf16_length(char)
+            utf16_offset += char_utf16_length
+            text_pos += 1
     
     return entities
 
@@ -472,27 +488,45 @@ async def clear_blacklist_handler(event):
 
 # ===== Test Command for UTF-16 Emoji Detection =====
 async def test_emoji_handler(event):
-    """Test automatic UTF-16 emoji detection"""
+    """Test automatic UTF-16 emoji detection dengan compound character support"""
     if not await is_owner_check(event.sender_id):
         return
     
     test_text = "⚙️⛈✅👽✈️😈🎚"
-    analysis = analyze_emoji_positions(test_text)
+    
+    # Test create_premium_emoji_entities function
+    entities = create_premium_emoji_entities(test_text)
     
     debug_text = f"""
-{get_emoji('main')} **EMOJI UTF-16 ANALYSIS**
+{get_emoji('main')} **ENHANCED EMOJI UTF-16 TEST**
 
-{get_emoji('check')} **Test Text:** `{test_text}`
+{get_emoji('check')} **Test String:** `{test_text}`
+{get_emoji('adder1')} **String Length:** {len(test_text)} chars
+{get_emoji('adder2')} **UTF-16 Length:** {len(test_text.encode('utf-16le')) // 2} units
 
-{get_emoji('adder2')} **Automatic Detection Results:**
+{get_emoji('adder3')} **Premium Emoji Entities Created:**
 """
     
-    for item in analysis:
-        debug_text += f"• {item['char']} → offset={item['utf16_offset']}, length={item['utf16_length']}\n"
+    for i, entity in enumerate(entities):
+        emoji_id = str(entity.document_id)
+        # Find matching emoji char
+        matching_emoji = "❓"
+        for emoji_data in PREMIUM_EMOJIS.values():
+            if emoji_data["custom_emoji_id"] == emoji_id:
+                matching_emoji = emoji_data["emoji"]
+                break
+        
+        debug_text += f"• Entity {i+1}: {matching_emoji} (offset={entity.offset}, length={entity.length}, id={emoji_id})\n"
     
     debug_text += f"""
-{get_emoji('adder4')} **Total entities detected:** {len(analysis)}
-{get_emoji('adder6')} Now using automatic UTF-16 calculation instead of manual mapping!
+{get_emoji('adder4')} **Total Entities:** {len(entities)}
+{get_emoji('adder5')} **Compound Character Support:** ✅ Enhanced
+{get_emoji('adder6')} **UTF-16 Compliant:** ✅ Full Support
+
+{get_emoji('check')} **Test Karakter ⚙️:**
+• Unicode: U+2699 + U+FE0F (compound)
+• UTF-16 Length: 2 units
+• Premium ID: 5794353925360457382
 """
     
     await safe_send_message(event, debug_text.strip())

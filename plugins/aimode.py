@@ -47,22 +47,45 @@ def get_utf16_length(emoji_char):
         return 1
 
 def create_premium_emoji_entities(text):
-    """Automatically create MessageEntityCustomEmoji entities for premium emojis"""
+    """Enhanced: Create MessageEntityCustomEmoji entities with compound character support"""
     entities = []
     utf16_offset = 0
+    text_pos = 0
     
-    for i, char in enumerate(text):
+    # Process text dengan handling compound characters (seperti ⚙️)
+    while text_pos < len(text):
+        found_emoji = False
+        
+        # Check setiap premium emoji
         for emoji_name, emoji_data in PREMIUM_EMOJIS.items():
-            if char == emoji_data["emoji"]:
-                emoji_length = get_utf16_length(char)
+            emoji_char = emoji_data["emoji"]
+            emoji_len = len(emoji_char)
+            
+            # Cek apakah text di posisi ini cocok dengan emoji
+            if text[text_pos:text_pos + emoji_len] == emoji_char:
+                # Get actual UTF-16 length dari emoji character
+                emoji_utf16_length = get_utf16_length(emoji_char)
+                
+                # Create custom emoji entity
                 entity = MessageEntityCustomEmoji(
                     offset=utf16_offset,
-                    length=emoji_length,
+                    length=emoji_utf16_length,
                     document_id=int(emoji_data["custom_emoji_id"])
                 )
                 entities.append(entity)
+                
+                # Skip emoji characters
+                text_pos += emoji_len
+                utf16_offset += emoji_utf16_length
+                found_emoji = True
                 break
-        utf16_offset += get_utf16_length(char)
+        
+        if not found_emoji:
+            # Regular character, advance by 1
+            char = text[text_pos]
+            char_utf16_length = get_utf16_length(char)
+            utf16_offset += char_utf16_length
+            text_pos += 1
     
     return entities
 
