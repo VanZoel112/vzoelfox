@@ -15,21 +15,21 @@ from telethon.tl.types import DataJSON, MessageEntityCustomEmoji
 PLUGIN_INFO = {
     "name": "joinleave",
     "version": "1.1.0", 
-    "description": "Join/Leave voice chat with automatic UTF-16 premium emoji support.",
+    "description": "Join/Leave voice chat with main premium emoji support",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".joinvc", ".leavevc", ".testvcemoji"],
     "features": ["join voice chat", "leave voice chat", "auto UTF-16 premium emoji"]
 }
 
-# Auto Premium Emoji Mapping (UTF-16 auto-detection)
+# Main Premium Emoji Mapping (UTF-16 auto-detection)
 PREMIUM_EMOJIS = {
     "main": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "storm": {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
+    "storm": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
     "check": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "alien": {"emoji": "👽", "custom_emoji_id": "5321023901998801538"},
+    "alien": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
     "plane": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "devil": {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
-    "slider": {"emoji": "👽", "custom_emoji_id": "5321023901998801538"}
+    "devil": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
+    "slider": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}
 }
 
 def get_utf16_length(emoji_char):

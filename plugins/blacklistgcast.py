@@ -21,21 +21,21 @@ from telethon.errors import ChatAdminRequiredError, UserNotParticipantError
 PLUGIN_INFO = {
     "name": "blacklistgcast_premium",
     "version": "1.1.1",
-    "description": "Blacklist management with Premium Emoji support (manual mapping)",
+    "description": "Blacklist management with main premium emoji support",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".addbl", ".rmbl", ".listbl", ".clearbl"],
     "features": ["blacklist management", "gcast protection", "premium emojis"]
 }
 
-# ===== Auto Premium Emoji Mapping (UTF-16 auto-detection) =====
+# Main Premium Emoji Mapping (UTF-16 auto-detection)
 PREMIUM_EMOJIS = {
     "main":    {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
     "check":   {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}, 
-    "adder1":  {"emoji": "👽", "custom_emoji_id": "5321023901998801538"},
-    "adder2":  {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
-    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321023901998801538"},
+    "adder1":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
+    "adder2":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
+    "adder3":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
     "adder4":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "adder5":  {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
+    "adder5":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
     "adder6":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}
 }
 
