@@ -155,7 +155,7 @@ client = None
 async def send_to_log_channel(message, event_type="info"):
     """Send message to log channel with error handling"""
     global client
-    if not CHANNEL_ID:
+    if not CHANNEL_ID or client is None:
         return False
     
     try:
@@ -422,6 +422,11 @@ def setup(client_instance):
     # Send startup notification to channel
     async def startup_notify():
         try:
+            # Wait a bit to ensure client is fully initialized
+            await asyncio.sleep(2)
+            if client is None:
+                print(f"[Channel Logger] Client not initialized, skipping startup notification")
+                return
             startup_msg = f"{get_emoji('main')} **VZOEL ASSISTANT Started v2.0**\n• Plugin: Channel Logger\n• Version: v{PLUGIN_INFO['version']}\n• Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n• System: Standalone (no deps)\n\n{get_emoji('check')} Auto-logging active!"
             await send_to_log_channel(startup_msg, "startup")
         except Exception as e:
