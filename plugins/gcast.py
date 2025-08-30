@@ -408,7 +408,8 @@ async def gcast_handler(event):
                 message_text = reply_message.text or reply_message.message or ""
                 
             if not message_text:
-                await event.reply(f"❌ {convert_font('No text found in replied message!', 'bold')}")
+                error_text = f"❌ {convert_font('No text found in replied message!', 'bold')}"
+                await event.reply(error_text, formatting_entities=create_premium_entities(error_text))
                 return
                 
         else:
@@ -430,18 +431,21 @@ Reply to message + `{prefix}gcast <additional text>`
 {get_emoji('check')} Concurrent broadcasting
 {get_emoji('check')} Advanced error handling
                 """.strip()
-                await event.reply(usage_text)
+                await event.reply(usage_text, formatting_entities=create_premium_entities(usage_text))
                 return
                 
             message_text = event.pattern_match.group(2).strip()
         
-        # Show enhanced progress message
-        progress_msg = await event.reply(f"""
+        # Show enhanced progress message dengan premium emoji
+        progress_text = f"""
 {get_emoji('adder1')} {convert_font('Gcast Gacor by Vzoel')}
 
 {get_emoji('check')} {convert_font('Mode:', 'bold')} {'Reply + Entity Preservation' if reply_message else 'Standard Text'}
 {get_emoji('adder1')} {convert_font('Status:', 'bold')} Gasss...
-        """.strip())
+        """.strip()
+        
+        # Send dengan premium emoji support
+        progress_msg = await event.reply(progress_text, formatting_entities=create_premium_entities(progress_text))
         
         # Progress callback for updates
         async def progress_update(completed, total, gcast_id):
@@ -508,7 +512,8 @@ Reply to message + `{prefix}gcast <additional text>`
             await safe_edit_message(progress_msg, error_text)
         
     except Exception as e:
-        await event.reply(f"❌ {convert_font('Gcast Error:', 'bold')} {str(e)}")
+        error_text = f"❌ {convert_font('Gcast Error:', 'bold')} {str(e)}"
+        await event.reply(error_text, formatting_entities=create_premium_entities(error_text))
         print(f"[Gcast] Enhanced gcast command error: {e}")
 
 # ============= PLUGIN INFO =============
