@@ -75,7 +75,7 @@ async def safe_send_message(event, text):
     except Exception as e:
         await event.reply(text)
 
-def safe_get_emoji(emoji_type):
+def get_emoji(emoji_type):
     """Get premium emoji with automatic mapping"""
     emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
     return emoji_data["emoji"]
@@ -195,19 +195,19 @@ async def aimode_handler(event):
     args = event.text.split()
     if len(args) < 2:
         status = get_aimode(chat_id)
-        txt = f"{safe_get_emoji('main')} AIMode status: {'ON' if status else 'OFF'}"
+        txt = f"{get_emoji('main')} AIMode status: {'ON' if status else 'OFF'}"
         await safe_send_message(event, txt)
         return
     cmd = args[1].lower()
     if cmd == "on":
         set_aimode(chat_id, 1)
-        await safe_send_message(event, f"{safe_get_emoji('check')} AIMode *ON* di chat ini!")
+        await safe_send_message(event, f"{get_emoji('check')} AIMode *ON* di chat ini!")
     elif cmd == "off":
         set_aimode(chat_id, 0)
-        await safe_send_message(event, f"{safe_get_emoji('cross')} AIMode *OFF* di chat ini!")
+        await safe_send_message(event, f"{get_emoji('cross')} AIMode *OFF* di chat ini!")
     elif cmd == "status":
         status = get_aimode(chat_id)
-        await safe_send_message(event, f"{safe_get_emoji('main')} AIMode status: {'ON' if status else 'OFF'}")
+        await safe_send_message(event, f"{get_emoji('main')} AIMode status: {'ON' if status else 'OFF'}")
     else:
         await safe_send_message(event, "Format: `.aimode on` / `.aimode off` / `.aimode status`")
 
@@ -219,7 +219,7 @@ async def aiconfig_handler(event):
     args = event.text.split(maxsplit=2)
     cfg = get_config()
     if len(args) == 1 or (len(args) == 2 and args[1] == "show"):
-        txt = f"{safe_get_emoji('main')} AIMode Config:\n\n<pre>{json.dumps(cfg, indent=2, ensure_ascii=False)}</pre>"
+        txt = f"{get_emoji('main')} AIMode Config:\n\n<pre>{json.dumps(cfg, indent=2, ensure_ascii=False)}</pre>"
         await safe_send_message(event, txt)
     elif len(args) >= 3:
         try:
@@ -231,9 +231,9 @@ async def aiconfig_handler(event):
                 else:
                     cfg[field] = value
                 set_config(cfg)
-                await safe_send_message(event, f"{safe_get_emoji('check')} Config `{field}` updated.")
+                await safe_send_message(event, f"{get_emoji('check')} Config `{field}` updated.")
             else:
-                await safe_send_message(event, f"{safe_get_emoji('cross')} Field `{field}` not found.")
+                await safe_send_message(event, f"{get_emoji('cross')} Field `{field}` not found.")
         except Exception as e:
             await safe_send_message(event, f"❌ Config update error: {e}")
 
@@ -253,7 +253,7 @@ async def ai_generate(prompt, cfg):
     if not reply or "error" in reply.lower() or reply.startswith("❌"):
         reply = await call_ai(cfg['backup'], prompt, cfg)
         if not reply:
-            reply = f"{safe_get_emoji('cross')} AI Error: All models failed."
+            reply = f"{get_emoji('cross')} AI Error: All models failed."
     return reply
 
 async def call_ai(api_cfg, prompt, cfg):
@@ -340,22 +340,22 @@ async def test_ai_emoji_handler(event):
         return
     
     test_text = f"""
-{safe_get_emoji('main')} **AIMODE EMOJI TEST**
+{get_emoji('main')} **AIMODE EMOJI TEST**
 
-{safe_get_emoji('check')} AI Mode commands:
+{get_emoji('check')} AI Mode commands:
 • `.aimode on` - Enable AI mode
 • `.aimode off` - Disable AI mode  
 • `.aimode status` - Check status
 • `.aiconfig` - Show configuration
 
-{safe_get_emoji('success')} Status emojis:
-• {safe_get_emoji('success')} AI enabled
-• {safe_get_emoji('cross')} AI disabled
-• {safe_get_emoji('storm')} Processing
-• {safe_get_emoji('devil')} Error
-• {safe_get_emoji('plane')} API call
+{get_emoji('success')} Status emojis:
+• {get_emoji('success')} AI enabled
+• {get_emoji('cross')} AI disabled
+• {get_emoji('storm')} Processing
+• {get_emoji('devil')} Error
+• {get_emoji('plane')} API call
 
-{safe_get_emoji('slider')} Auto UTF-16 premium emoji detection active!
+{get_emoji('slider')} Auto UTF-16 premium emoji detection active!
 """
     
     await safe_send_message(event, test_text.strip())

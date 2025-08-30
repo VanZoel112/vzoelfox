@@ -66,7 +66,7 @@ def create_premium_emoji_entities(text):
     
     return entities
 
-async def safe_send_with_premium_emojis(event, text):
+async def safe_send_message(event, text):
     """Send message with premium emoji entities"""
     try:
         entities = create_premium_emoji_entities(text)
@@ -238,18 +238,18 @@ async def gban_handler(event):
     user = await get_user_info(event, user_identifier)
     if not user:
         text = f"{get_emoji('error')} **GBan Error:** User tidak ditemukan!\n\n{get_emoji('info')} **Usage:** `.gban <user_id/@username/reply> [reason]`"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
         return
     
     # Don't ban yourself or bot accounts
     if user.id == event.sender_id:
         text = f"{get_emoji('warning')} **GBan Warning:** Tidak bisa gban diri sendiri!"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
         return
     
     if user.bot:
         text = f"{get_emoji('warning')} **GBan Warning:** Tidak bisa gban bot accounts!"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
         return
     
     # Add to global ban list
@@ -325,7 +325,7 @@ async def gban_handler(event):
     
     else:
         text = f"{get_emoji('error')} **GBan Error:** Failed to add user to ban database"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
 
 async def ungban_handler(event):
     """Global unban handler"""
@@ -338,14 +338,14 @@ async def ungban_handler(event):
     user = await get_user_info(event, user_identifier)
     if not user:
         text = f"{get_emoji('error')} **UnGBan Error:** User tidak ditemukan!\n\n{get_emoji('info')} **Usage:** `.ungban <user_id/@username/reply>`"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
         return
     
     # Check if user is gbanned
     gban_info = get_gban_info(user.id)
     if not gban_info:
         text = f"{get_emoji('warning')} **UnGBan Warning:** User tidak ada dalam global ban list!"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
         return
     
     # Remove from global ban list
@@ -409,7 +409,7 @@ async def ungban_handler(event):
     
     else:
         text = f"{get_emoji('error')} **UnGBan Error:** Failed to remove user from ban database"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
 
 async def gbanlist_handler(event):
     """List all globally banned users"""
@@ -419,7 +419,7 @@ async def gbanlist_handler(event):
     gbanned_users = get_all_gbanned()
     if not gbanned_users:
         text = f"{get_emoji('info')} **GBan List:** Tidak ada user yang di-gban"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
         return
     
     text = f"""
@@ -457,7 +457,7 @@ async def gbancheck_handler(event):
     user = await get_user_info(event, user_identifier)
     if not user:
         text = f"{get_emoji('error')} **GBan Check Error:** User tidak ditemukan!\n\n{get_emoji('info')} **Usage:** `.gbancheck <user_id/@username/reply>`"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
         return
     
     gban_info = get_gban_info(user.id)

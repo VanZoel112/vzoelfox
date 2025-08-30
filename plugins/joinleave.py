@@ -73,7 +73,7 @@ def get_emoji(emoji_type):
     emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
     return emoji_data["emoji"]
 
-async def safe_send_with_premium_emojis(event, text):
+async def safe_send_message(event, text):
     """Send message with premium emoji entities"""
     try:
         entities = create_premium_emoji_entities(text)
@@ -101,7 +101,7 @@ async def joinvc_handler(event):
         # Check if there's an active voice chat
         if not hasattr(chat, 'call') or chat.call is None:
             text = f"{get_emoji('main')} Tidak ada voice chat aktif di grup ini!"
-            await safe_send_with_premium_emojis(event, text)
+            await safe_send_message(event, text)
             return
         
         # Join voice chat with corrected parameters
@@ -120,17 +120,17 @@ async def joinvc_handler(event):
             ))
         
         text = f"{get_emoji('check')} Berhasil join voice chat!"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
         
     except ChatAdminRequiredError:
         text = f"{get_emoji('devil')} Butuh admin untuk join voice chat!"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
     except UserAlreadyInvitedError:
         text = f"{get_emoji('storm')} Sudah join di voice chat!"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
     except Exception as e:
         text = f"{get_emoji('alien')} Error join VC: {str(e)}"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
 
 async def leavevc_handler(event):
     """Handler for .leavevc command"""
@@ -143,7 +143,7 @@ async def leavevc_handler(event):
         # Check if there's an active voice chat
         if not hasattr(chat, 'call') or chat.call is None:
             text = f"{get_emoji('main')} Tidak ada voice chat aktif di grup ini!"
-            await safe_send_with_premium_emojis(event, text)
+            await safe_send_message(event, text)
             return
         
         # Leave voice chat
@@ -152,11 +152,11 @@ async def leavevc_handler(event):
         ))
         
         text = f"{get_emoji('plane')} Berhasil leave voice chat!"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
         
     except Exception as e:
         text = f"{get_emoji('alien')} Error leave VC: {str(e)}"
-        await safe_send_with_premium_emojis(event, text)
+        await safe_send_message(event, text)
 
 async def test_vc_emoji_handler(event):
     """Test UTF-16 emoji detection for VC plugin"""
@@ -179,7 +179,7 @@ async def test_vc_emoji_handler(event):
 {get_emoji('slider')} Auto UTF-16 premium emoji detection active!
 """
     
-    await safe_send_with_premium_emojis(event, test_text.strip())
+    await safe_send_message(event, test_text.strip())
 
 def get_plugin_info():
     """Return plugin info for plugin loader"""
