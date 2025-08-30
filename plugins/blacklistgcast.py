@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Blacklist GCast Plugin dengan Premium Emoji Support
-File: plugins/blacklistgcast_premium.py
-Founder : Vzoel Fox's Ltpn ( mapping by Kiya )
+Blacklist GCast Plugin dengan Premium Emoji Support - Enhanced UTF-16 Edition
+File: plugins/blacklistgcast.py
+Founder : Vzoel Fox's Ltpn (Enhanced Premium Emoji Mapping)
 Description:
-    Plugin ini menjaga blacklist GCast dan menambahkan dukungan 
-    untuk emoji premium. Komentar diperjelas agar alur bot terlihat.
+    Plugin advanced untuk manajemen blacklist GCast dengan dukungan premium emoji 
+    yang sudah diperbarui menggunakan mapping UTF-16 terbaru dari formorgan.py.
+    Semua emoji premium sudah dipetakan dengan benar untuk performa optimal.
 """
 
 import re
@@ -27,16 +28,16 @@ PLUGIN_INFO = {
     "features": ["blacklist management", "gcast protection", "premium emojis"]
 }
 
-# Main Premium Emoji Mapping (UTF-16 auto-detection)
+# Premium Emoji Mapping - Updated with UTF-16 support (mapping dari formorgan.py)
 PREMIUM_EMOJIS = {
     "main":    {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "check":   {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}, 
-    "adder1":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "adder2":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "adder3":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "adder4":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "adder5":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "adder6":  {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}
+    "check":   {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
+    "adder1":  {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
+    "adder2":  {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
+    "adder3":  {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
+    "adder4":  {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
+    "adder5":  {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
+    "adder6":  {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
 }
 
 # ===== Global Client Variable =====

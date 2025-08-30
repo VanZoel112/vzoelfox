@@ -1,8 +1,9 @@
 """
-JoinLeave Plugin for Vzoel Assistant
-Fitur: Join/Leave voice chat sederhana tanpa monitoring, mapping emoji manual premium support.
+JoinLeave Plugin for Vzoel Assistant - Enhanced UTF-16 Premium Edition
+Fitur: Join/Leave voice chat dengan dukungan premium emoji mapping terbaru
+dari formorgan.py dengan UTF-16 encoding yang sudah diperbaiki.
 Founder Userbot: Vzoel Fox's Ltpn 🤩
-Version: 1.0.0
+Version: 1.1.1 (Enhanced Premium Mapping)
 """
 
 import asyncio
@@ -14,22 +15,22 @@ from telethon.tl.types import DataJSON, MessageEntityCustomEmoji
 # Plugin Info
 PLUGIN_INFO = {
     "name": "joinleave",
-    "version": "1.1.0", 
-    "description": "Join/Leave voice chat with main premium emoji support",
+    "version": "1.1.1", 
+    "description": "Join/Leave voice chat dengan enhanced premium emoji mapping support",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".joinvc", ".leavevc", ".testvcemoji"],
     "features": ["join voice chat", "leave voice chat", "auto UTF-16 premium emoji"]
 }
 
-# Main Premium Emoji Mapping (UTF-16 auto-detection)
+# Premium Emoji Mapping - Enhanced dari formorgan.py (UTF-16 compliant)
 PREMIUM_EMOJIS = {
     "main": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "storm": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "check": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "alien": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "plane": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "devil": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "slider": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}
+    "storm": {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
+    "check": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
+    "alien": {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
+    "plane": {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
+    "devil": {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
+    "slider": {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
 }
 
 def get_utf16_length(emoji_char):

@@ -1,7 +1,9 @@
 """
-AIMode & AI Responder Plugin for Vzoel Assistant
-Fitur: Mode AI otomatis dengan premium emoji support, env assetjson, config & status persist di SQLite, model failover otomatis.
+AIMode & AI Responder Plugin for Vzoel Assistant - Enhanced UTF-16 Premium Edition
+Fitur: Mode AI otomatis dengan premium emoji support yang sudah diperbarui,
+menggunakan mapping terbaru dari formorgan.py dengan UTF-16 encoding yang diperbaiki.
 Founder Userbot: Vzoel Fox's Ltpn 🤩
+Version: 2.1.1 (Enhanced Premium Mapping)
 """
 
 import sqlite3
@@ -15,23 +17,23 @@ import aiohttp
 
 PLUGIN_INFO = {
     "name": "aimode",
-    "version": "2.1.0",
-    "description": "AI Mode & Responder with OpenAI GPT, auto UTF-16 premium emoji detection, SQLite persistence.",
+    "version": "2.1.1",
+    "description": "AI Mode & Responder dengan enhanced premium emoji mapping dari formorgan.py, UTF-16 compliant.",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".aimode on", ".aimode off", ".aimode status", ".aiconfig", ".testaiemoji"],
     "features": ["ai mode", "auto reply ai", "status/config in sqlite", "auto UTF-16 premium emoji"]
 }
 
-# Auto Premium Emoji Mapping (UTF-16 auto-detection)
+# Premium Emoji Mapping - Enhanced dari formorgan.py (UTF-16 compliant)
 PREMIUM_EMOJIS = {
     "main": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "check": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}, 
-    "cross": {"emoji": "👽", "custom_emoji_id": "5321023901998801538"},
-    "storm": {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
-    "success": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
-    "plane": {"emoji": "👽", "custom_emoji_id": "5321023901998801538"},
-    "devil": {"emoji": "👽", "custom_emoji_id": "5309914999152467011"},
-    "slider": {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"}
+    "check": {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"}, 
+    "cross": {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
+    "storm": {"emoji": "⛈", "custom_emoji_id": "5794407002566300853"},
+    "success": {"emoji": "✅", "custom_emoji_id": "5793913811471700779"},
+    "plane": {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
+    "devil": {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
+    "slider": {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
 }
 
 DB_FILE = "plugins/aimode.db"
