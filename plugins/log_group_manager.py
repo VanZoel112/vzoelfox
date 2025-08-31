@@ -1,16 +1,24 @@
 """
-Log Group Manager Plugin for VzoelFox - Permanent Group Creator & Environment Manager
-Fitur: Membuat grup log permanen, simpan ID ke environment, kelola semua aktivitas userbot
-Founder Userbot: Vzoel Fox's Ltpn 🤩
-Version: 1.0.0 - Permanent Log Group Management
+Log Group Manager Plugin for VzoelFox - Permanent Group Creator & Environment Manager with Bot Integration
+Fitur: Membuat grup log permanen, integrasi bot manager, simpan ID ke environment, kelola semua aktivitas userbot
+Founder Userbot: Vzoel Fox's Ltpn 🤩  
+Version: 2.0.0 - Bot-Integrated Log Group Management
 """
 
 import sqlite3
 import os
 import json
+import asyncio
 from datetime import datetime
-from telethon import events, functions, types
+from telethon import events, functions, types, TelegramClient
 from telethon.errors import ChatAdminRequiredError, FloodWaitError, PeerIdInvalidError
+
+# Import bot manager integration
+try:
+    from bot_manager import load_bot_config, save_bot_config
+    BOT_MANAGER_AVAILABLE = True
+except ImportError:
+    BOT_MANAGER_AVAILABLE = False
 
 # Import database compatibility layer
 try:
@@ -23,11 +31,11 @@ except ImportError:
 
 PLUGIN_INFO = {
     "name": "log_group_manager", 
-    "version": "1.0.0",
-    "description": "Permanent log group creator & environment manager untuk menyimpan semua aktivitas userbot",
+    "version": "2.0.0",
+    "description": "Permanent log group creator & environment manager dengan bot integration untuk logging system",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
-    "commands": [".loggroup create", ".loggroup status", ".loggroup set <id>", ".loggroup test"],
-    "features": ["permanent log group", "environment integration", "auto blacklist sync", "activity forwarding"]
+    "commands": [".loggroup create", ".loggroup status", ".loggroup set <id>", ".loggroup test", ".loggroup auto", ".loggroup bot"],
+    "features": ["permanent log group", "bot integration", "environment integration", "auto blacklist sync", "activity forwarding", "centralized database"]
 }
 
 # Premium Emoji Mapping
