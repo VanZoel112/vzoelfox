@@ -32,6 +32,7 @@ from telethon.tl.functions.phone import JoinGroupCallRequest, LeaveGroupCallRequ
 from telethon.tl.functions.channels import GetFullChannelRequest
 from dotenv import load_dotenv
 from plugin_loader import setup_plugins, PluginLoader
+from database import DatabaseManager
 
 
 
@@ -97,6 +98,14 @@ database_file = "vzoel_assistant.db"
 blacklisted_chats = set()
 premium_status = None
 voice_call_active = False
+
+# Initialize Database Manager
+try:
+    db_manager = DatabaseManager()
+    logger.info("✅ Database manager initialized")
+except Exception as e:
+    logger.error(f"❌ Failed to initialize database: {e}")
+    db_manager = None
 
 # Statistics tracking
 stats = {
@@ -641,6 +650,33 @@ async def get_user_info(event, user_input=None):
     except Exception as e:
         logger.error(f"Error getting user info: {e}")
         return None
+
+# ============= DATABASE HELPER FUNCTIONS =============
+# Note: Database functionality provided by database.py DatabaseManager
+
+def get_database():
+    """Get database manager instance"""
+    return db_manager
+
+def log_to_database(table: str, data: dict, db_name: str = 'vzoel_assistant'):
+    """Helper function to log data to database"""
+    if db_manager:
+        try:
+            return db_manager.insert(table, data, db_name)
+        except Exception as e:
+            logger.error(f"Database log error: {e}")
+            return False
+    return False
+
+def get_from_database(table: str, where_clause: str = None, params: tuple = None, db_name: str = 'vzoel_assistant'):
+    """Helper function to get data from database"""
+    if db_manager:
+        try:
+            return db_manager.select(table, where_clause, params, db_name)
+        except Exception as e:
+            logger.error(f"Database get error: {e}")
+            return []
+    return []
 
 # ============= GCAST FUNCTIONALITY REMOVED =============
 # Note: Gcast functionality moved to plugins/gcast.py to prevent command duplication
