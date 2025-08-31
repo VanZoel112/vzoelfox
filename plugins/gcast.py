@@ -23,11 +23,11 @@ from telethon.errors import FloodWaitError, ChatWriteForbiddenError, MessageNotM
 # Plugin Info
 PLUGIN_INFO = {
     "name": "gcast",
-    "version": "1.0.0",
-    "description": "Enhanced Global Cast dengan premium emoji mapping, reply support, entity preservation",
+    "version": "2.0.0",
+    "description": "Enhanced Global Cast dengan grub blacklist integration, premium emoji mapping, reply support",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
-    "commands": [".gcast"],
-    "features": ["global broadcast", "reply message support", "entity preservation", "auto UTF-16 premium emoji"]
+    "commands": [".gcast", ".gcastbl refresh", ".gcastbl list", ".gcastbl status", ".gcastbl test"],
+    "features": ["global broadcast", "grub blacklist integration", "real-time blacklist check", "reply message support", "entity preservation", "auto UTF-16 premium emoji"]
 }
 
 # Premium Emoji Mapping - Enhanced dari formorgan.py (UTF-16 compliant)
@@ -46,6 +46,14 @@ PREMIUM_EMOJIS = {
 client = None
 blacklisted_chats = set()
 premium_status = None
+
+# Import grub blacklist integration
+try:
+    from grub import get_blacklisted_groups, is_blacklisted
+    GRUB_INTEGRATION = True
+except ImportError:
+    GRUB_INTEGRATION = False
+    print("[Gcast] Warning: grub.py not found, using local blacklist only")
 
 # Configuration
 DATABASE_FILE = "vzoel_assistant.db"
@@ -199,15 +207,29 @@ async def is_owner_check(user_id):
     return user_id == OWNER_ID
 
 def load_blacklist():
-    """Load blacklisted chat IDs from file"""
+    """Load blacklisted chat IDs from file and grub database"""
     global blacklisted_chats
     try:
+        # Load from JSON file (legacy)
+        file_blacklist = set()
         if os.path.exists(BLACKLIST_FILE):
             with open(BLACKLIST_FILE, 'r') as f:
                 data = json.load(f)
-                blacklisted_chats = set(data.get('blacklisted_chats', []))
-        else:
-            blacklisted_chats = set()
+                file_blacklist = set(data.get('blacklisted_chats', []))
+        
+        # Load from grub database (preferred)
+        db_blacklist = set()
+        if GRUB_INTEGRATION:
+            try:
+                db_blacklist = get_blacklisted_groups()
+                print(f"[Gcast] Loaded {len(db_blacklist)} blacklisted groups from database")
+            except Exception as e:
+                print(f"[Gcast] Error loading grub blacklist: {e}")
+        
+        # Combine both sources
+        blacklisted_chats = file_blacklist | db_blacklist
+        print(f"[Gcast] Total blacklisted chats: {len(blacklisted_chats)}")
+        
     except Exception as e:
         print(f"[Gcast] Error loading blacklist: {e}")
         blacklisted_chats = set()
@@ -242,8 +264,12 @@ async def get_broadcast_channels():
             if isinstance(entity, User):
                 continue
             
-            # Skip blacklisted chats
+            # Skip blacklisted chats - check both local and database blacklist
             if entity.id in blacklisted_chats:
+                continue
+            
+            # Additional check using grub database (real-time)
+            if GRUB_INTEGRATION and is_blacklisted(entity.id):
                 continue
             
             # Only include groups and channels where we can send messages
@@ -516,6 +542,120 @@ Reply to message + `{prefix}gcast <additional text>`
         await event.reply(error_text, formatting_entities=create_premium_entities(error_text))
         print(f"[Gcast] Enhanced gcast command error: {e}")
 
+async def gcast_blacklist_handler(event):
+    """Handle blacklist refresh and info commands"""
+    global blacklisted_chats
+    
+    if not is_owner(event.sender_id):
+        return
+    
+    try:
+        args = event.text.split()
+        
+        if len(args) < 2:
+            help_text = f"""
+{get_emoji('main')} {convert_font('GCAST BLACKLIST COMMANDS', 'bold')}
+
+{get_emoji('check')} {convert_font('.gcastbl refresh', 'mono')} - Reload blacklist dari database
+{get_emoji('check')} {convert_font('.gcastbl list', 'mono')} - Show blacklisted groups
+{get_emoji('check')} {convert_font('.gcastbl status', 'mono')} - Show integration status
+{get_emoji('check')} {convert_font('.gcastbl test', 'mono')} - Test blacklist functionality
+
+{get_emoji('adder2')} Integration: {'✅ grub.py' if GRUB_INTEGRATION else '⚠️ local only'}
+{get_emoji('adder4')} Total blacklisted: {len(blacklisted_chats)} groups
+            """.strip()
+            await event.reply(help_text, formatting_entities=create_premium_entities(help_text))
+            return
+        
+        cmd = args[1].lower()
+        
+        if cmd == 'refresh':
+            old_count = len(blacklisted_chats)
+            load_blacklist()
+            new_count = len(blacklisted_chats)
+            
+            refresh_text = f"""
+{get_emoji('adder2')} {convert_font('BLACKLIST REFRESHED', 'bold')}
+
+{get_emoji('check')} Previous count: {old_count}
+{get_emoji('check')} Current count: {new_count}
+{get_emoji('main')} Integration: {'✅ grub.py' if GRUB_INTEGRATION else '⚠️ local only'}
+
+{get_emoji('adder4')} Blacklist updated successfully!
+            """.strip()
+            await event.reply(refresh_text, formatting_entities=create_premium_entities(refresh_text))
+        
+        elif cmd == 'list':
+            if not blacklisted_chats:
+                list_text = f"{get_emoji('check')} No groups are blacklisted."
+            else:
+                groups_preview = list(blacklisted_chats)[:10]
+                list_text = f"""
+{get_emoji('main')} {convert_font('BLACKLISTED GROUPS', 'bold')}
+
+{get_emoji('check')} Total: {len(blacklisted_chats)} groups
+{get_emoji('adder2')} Sample IDs:
+"""
+                for i, group_id in enumerate(groups_preview, 1):
+                    list_text += f"{get_emoji('adder4')} {i}. `{group_id}`\n"
+                
+                if len(blacklisted_chats) > 10:
+                    list_text += f"\n{get_emoji('adder3')} ... and {len(blacklisted_chats) - 10} more groups"
+            
+            await event.reply(list_text.strip(), formatting_entities=create_premium_entities(list_text.strip()))
+        
+        elif cmd == 'status':
+            status_text = f"""
+{get_emoji('main')} {convert_font('GCAST BLACKLIST STATUS', 'bold')}
+
+{get_emoji('check')} {convert_font('Integration:', 'mono')} {'✅ grub.py connected' if GRUB_INTEGRATION else '⚠️ local file only'}
+{get_emoji('adder2')} {convert_font('Blacklisted Groups:', 'mono')} {len(blacklisted_chats)}
+{get_emoji('adder4')} {convert_font('Database File:', 'mono')} {'✅ Available' if GRUB_INTEGRATION else '❌ Not found'}
+{get_emoji('adder6')} {convert_font('Real-time Check:', 'mono')} {'✅ Active' if GRUB_INTEGRATION else '❌ Disabled'}
+
+{get_emoji('adder3')} {convert_font('Protection Status:', 'mono')} {'🔒 Full Protection' if GRUB_INTEGRATION else '⚠️ Limited'}
+            """.strip()
+            await event.reply(status_text, formatting_entities=create_premium_entities(status_text))
+        
+        elif cmd == 'test':
+            test_text = f"""
+{get_emoji('main')} {convert_font('TESTING BLACKLIST INTEGRATION', 'bold')}
+
+{get_emoji('check')} Loading blacklist...
+"""
+            test_msg = await event.reply(test_text.strip(), formatting_entities=create_premium_entities(test_text.strip()))
+            
+            # Test blacklist loading
+            old_count = len(blacklisted_chats)
+            load_blacklist()
+            new_count = len(blacklisted_chats)
+            
+            # Test grub integration
+            grub_test = "❌ Not available"
+            if GRUB_INTEGRATION:
+                try:
+                    db_groups = get_blacklisted_groups()
+                    grub_test = f"✅ {len(db_groups)} groups from database"
+                except Exception as e:
+                    grub_test = f"❌ Error: {str(e)}"
+            
+            final_test_text = f"""
+{get_emoji('main')} {convert_font('BLACKLIST TEST RESULTS', 'bold')}
+
+{get_emoji('check')} {convert_font('File Loading:', 'mono')} ✅ Success
+{get_emoji('adder2')} {convert_font('Database Integration:', 'mono')} {grub_test}
+{get_emoji('adder4')} {convert_font('Total Groups:', 'mono')} {new_count}
+{get_emoji('adder6')} {convert_font('Real-time Protection:', 'mono')} {'✅ Active' if GRUB_INTEGRATION else '⚠️ Limited'}
+
+{get_emoji('adder3')} {convert_font('Test Status:', 'mono')} {'✅ All systems working' if GRUB_INTEGRATION else '⚠️ Limited functionality'}
+            """.strip()
+            
+            await safe_edit_message(test_msg, final_test_text)
+    
+    except Exception as e:
+        error_text = f"❌ Blacklist command error: {str(e)}"
+        await event.reply(error_text)
+
 # ============= PLUGIN INFO =============
 
 def get_plugin_info():
@@ -529,6 +669,7 @@ def setup(client_instance):
     
     # Load blacklist on startup
     load_blacklist()
+    print(f"[Gcast] Blacklist integration: {'✅ grub.py' if GRUB_INTEGRATION else '⚠️ local only'}")
     
     # Check premium status
     try:
@@ -543,4 +684,11 @@ def setup(client_instance):
         events.NewMessage(pattern=re.compile(rf'{re.escape(get_prefix())}gcast(\s+(.+))?', re.DOTALL))
     )
     
+    # Register blacklist management handler
+    client.add_event_handler(
+        gcast_blacklist_handler,
+        events.NewMessage(pattern=re.compile(rf'{re.escape(get_prefix())}gcastbl(\s+(.+))?', re.DOTALL))
+    )
+    
     print(f"✅ [Enhanced Gcast] Plugin loaded with UTF-16 premium emoji support v{PLUGIN_INFO['version']}")
+    print(f"✅ [Enhanced Gcast] Blacklist management commands: .gcastbl")

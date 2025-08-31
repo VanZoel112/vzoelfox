@@ -246,6 +246,39 @@ async def remove_blacklist(chat_id):
         print(f"[Grub] Remove blacklist error: {e}")
         return False
 
+def get_blacklisted_groups():
+    """Get all blacklisted group IDs for gcast integration"""
+    try:
+        db = get_db_conn()
+        if not db:
+            return set()
+        
+        blacklisted_ids = set()
+        
+        if DB_COMPATIBLE and plugin_db:
+            # Use centralized database
+            rows = db.select('grup_blacklist', columns=['chat_id'])
+            blacklisted_ids = {row['chat_id'] for row in rows}
+        else:
+            # Legacy database operations
+            cursor = db.execute("SELECT chat_id FROM grup_blacklist")
+            blacklisted_ids = {row[0] for row in cursor.fetchall()}
+            db.close()
+        
+        return blacklisted_ids
+    except Exception as e:
+        print(f"[Grub] Get blacklist error: {e}")
+        return set()
+
+def is_blacklisted(chat_id):
+    """Check if chat_id is blacklisted"""
+    try:
+        blacklisted_ids = get_blacklisted_groups()
+        return chat_id in blacklisted_ids
+    except Exception as e:
+        print(f"[Grub] Check blacklist error: {e}")
+        return False
+
 def get_blacklist():
     """Get blacklist dengan database compatibility"""
     try:
