@@ -110,7 +110,6 @@ except Exception as e:
 # Statistics tracking
 stats = {
     'commands_executed': 0,
-    'gcast_sent': 0,
     'emojis_extracted': 0,
     'errors_handled': 0,
     'uptime_start': None
@@ -774,7 +773,7 @@ async def alive_handler(event):
 {get_emoji('adder1')}{get_emoji('adder1')}{get_emoji('adder1')}{get_emoji('adder1')}
 {get_emoji('adder3')} {convert_font('Statistics:', 'bold')}
 {get_emoji('check')} Commands: `{stats['commands_executed']}`
-{get_emoji('check')} Gcast Sent: `{stats['gcast_sent']}`  
+{get_emoji('check')} Plugins Loaded: Active  
 {get_emoji('check')} Emojis Extracted: `{stats['emojis_extracted']}`
 {get_emoji('check')} Blacklisted: `{len(blacklisted_chats)}`
 
@@ -797,136 +796,9 @@ async def alive_handler(event):
         await event.reply(f"❌ {convert_font('Error:', 'bold')} {str(e)}")
         logger.error(f"Alive command error: {e}")
 
-# 2. ENHANCED GCAST COMMAND - NEW REPLY SUPPORT
-@client.on(events.NewMessage(pattern=re.compile(rf'{re.escape(COMMAND_PREFIX)}gcast(\s+(.+))?', re.DOTALL)))
-async def gcast_handler(event):
-    """
-    NEW: Enhanced Global Broadcast dengan reply message support dan entity preservation
-    """
-    if not await is_owner(event.sender_id):
-        return
-    
-    await log_command(event, "gcast")
-    
-    try:
-        # Determine message source
-        reply_message = None
-        message_text = ""
-        
-        if event.is_reply:
-            reply_message = await event.get_reply_message()
-            # Check if there's additional text in the command
-            command_text = event.pattern_match.group(2)
-            if command_text:
-                message_text = command_text.strip()
-            else:
-                # Use the replied message text
-                message_text = reply_message.text or reply_message.message or ""
-                
-            if not message_text:
-                await event.reply(f"❌ {convert_font('No text found in replied message!', 'bold')}")
-                return
-                
-        else:
-            # Standard gcast with text
-            if not event.pattern_match.group(2):
-                usage_text = f"""
-{get_emoji('main')} {convert_font('ENHANCED GCAST USAGE', 'mono')}
-
-{get_emoji('check')} {convert_font('Text Gcast:', 'bold')}
-`{COMMAND_PREFIX}gcast <your message>`
-
-{get_emoji('adder1')} {convert_font('Reply Gcast (NEW!):', 'bold')}
-Reply to any message + `{COMMAND_PREFIX}gcast`
-Reply to message + `{COMMAND_PREFIX}gcast <additional text>`
-
-{get_emoji('adder2')} {convert_font('Premium Features:', 'bold')}
-{get_emoji('check')} Auto premium emoji preservation
-{get_emoji('check')} Entity formatting preservation
-{get_emoji('check')} Concurrent broadcasting
-{get_emoji('check')} Advanced error handling
-                """.strip()
-                await event.reply(usage_text)
-                return
-                
-            message_text = event.pattern_match.group(2).strip()
-        
-        # Show enhanced progress message
-        progress_msg = await event.reply(f"""
-{get_emoji('adder1')} {convert_font('Gcast Gacor by Vzoel')}
-
-{get_emoji('check')} {convert_font('Mode:', 'bold')} {'Reply + Entity Preservation' if reply_message else 'Standard Text'}
-{get_emoji('adder1')} {convert_font('Status:', 'bold')} Gasss...
-        """.strip())
-        
-        # Progress callback for updates
-        async def progress_update(completed, total, gcast_id):
-            try:
-                progress_text = f"""
-{get_emoji('adder2')} {convert_font('BROADCASTING IN PROGRESS', 'bold')}
-
-{get_emoji('check')} {convert_font('Progress:', 'bold')} `{completed}/{total}` ({(completed/total)*100:.1f}%)
-{get_emoji('adder1')} {convert_font('Gcast ID:', 'bold')} `{gcast_id}`
-{get_emoji('main')} {convert_font('Status:', 'bold')} Processing...
-                """.strip()
-                await safe_edit_message(progress_msg, progress_text)
-            except Exception as e:
-                logger.error(f"Error updating progress: {e}")
-        
-        # Execute enhanced gcast
-        result = await enhanced_gcast(
-            message_text=message_text,
-            reply_message=reply_message,
-            preserve_entities=True,
-            progress_callback=progress_update
-        )
-        
-        # Show final results
-        if result['success']:
-            success_rate = (result['channels_success'] / result['channels_total'] * 100) if result['channels_total'] > 0 else 0
-            
-            final_text = f"""
-{get_emoji('adder2')} {convert_font('GCAST COMPLETED!', 'mono')}
-
-     {convert_font('BROADCAST RESULTS', 'mono')} 
-
-{get_emoji('adder4')} {convert_font('Statistics:', 'bold')}
-{get_emoji('check')} Total Channels: `{result['channels_total']}`
-{get_emoji('check')} Successful: `{result['channels_success']}`
-{get_emoji('adder3')} Failed: `{result['channels_failed']}`
-{get_emoji('adder1')} Success Rate: `{success_rate:.1f}%`
-{get_emoji('main')} Gcast ID: `{result['gcast_id']}`
-
-{get_emoji('adder5')} {convert_font('Features Used:', 'bold')}
-{get_emoji('check')} {'Entity Preservation: ✅' if reply_message else 'Standard Mode: ✅'}
-{get_emoji('check')} Concurrent Broadcasting: ✅
-{get_emoji('check')} Rate Limiting: ✅
-{get_emoji('check')} Error Recovery: ✅
-
-{get_emoji('check')} {convert_font('Message delivered successfully!', 'bold')}
-            """.strip()
-            
-            # Show errors if any (limited to first 5)
-            if result['errors']:
-                error_preview = '\n'.join(result['errors'][:3])
-                final_text += f"\n\n{get_emoji('adder3')} {convert_font('Sample Errors:', 'bold')}\n```{error_preview}```"
-                if len(result['errors']) > 3:
-                    final_text += f"\n{get_emoji('check')} ... and {len(result['errors']) - 3} more errors"
-            
-            await safe_edit_message(progress_msg, final_text)
-        else:
-            error_text = f"""
-{get_emoji('adder3')} {convert_font('GCAST FAILED', 'bold')}
-
-{get_emoji('check')} {convert_font('Error:', 'bold')} {result.get('error', 'Unknown error')}
-{get_emoji('main')} {convert_font('Channels Found:', 'bold')} `{result['channels_total']}`
-            """.strip()
-            await safe_edit_message(progress_msg, error_text)
-        
-    except Exception as e:
-        stats['errors_handled'] += 1
-        await event.reply(f"❌ {convert_font('Gcast Error:', 'bold')} {str(e)}")
-        logger.error(f"Enhanced gcast command error: {e}")
+# ============= GCAST COMMAND REMOVED =============
+# Note: Gcast functionality moved to plugins/gcast.py to prevent command duplication
+# The gcast handler has been removed from main.py to avoid conflicts with the plugin system
 
 # 3. ENHANCED SETEMOJI COMMAND - AUTO EXTRACTION
 @client.on(events.NewMessage(pattern=re.compile(rf'{re.escape(COMMAND_PREFIX)}setemoji(\s+(.+))?', re.DOTALL)))
@@ -1203,7 +1075,7 @@ async def ping_handler(event):
 
 {get_emoji('adder5')} {convert_font('Performance Metrics:', 'bold')}
 {get_emoji('check')} Commands Executed: `{stats['commands_executed']}`
-{get_emoji('check')} Gcast Sent: `{stats['gcast_sent']}`
+{get_emoji('check')} Plugins Loaded: Active
 {get_emoji('check')} Voice Chat: {'Active' if voice_call_active else 'Inactive'}`
 {get_emoji('main')} {convert_font('Userbot by. Ltpn', 'bold')}{get_emoji('main')}
 {get_emoji('check')} {convert_font('Bot performance optimal!', 'bold')}
