@@ -1,7 +1,7 @@
 """
 Custom Welcome Plugin (SQL3 + Emoji Premium Support)
 Author: Vzoel Fox's (Enhanced by Morgan)
-Version: 2.0.0 - Premium Emoji Support
+Version: 2.1.0 - Database Compatibility Support
 """
 
 import sqlite3
@@ -11,13 +11,22 @@ import logging
 from telethon import events
 from telethon.tl.types import MessageEntityCustomEmoji
 
+# Import database compatibility layer
+try:
+    from database_helper import get_plugin_db
+    plugin_db = get_plugin_db('welcome')
+    DB_COMPATIBLE = True
+except ImportError:
+    plugin_db = None
+    DB_COMPATIBLE = False
+
 PLUGIN_INFO = {
     "name": "welcome",
-    "version": "2.0.0",
-    "description": "Custom welcome dengan emoji premium support, UTF-16 handling, dan SQL3.",
+    "version": "2.1.0",
+    "description": "Custom welcome dengan emoji premium support, UTF-16 handling, dan centralized database.",
     "author": "Vzoel Fox's (Enhanced by Morgan)",
     "commands": [".welcome set", ".welcome show", ".welcome on", ".welcome off"],
-    "features": ["custom welcome", "premium emoji support", "utf-16 handling", "sql3 direct", "font conversion"]
+    "features": ["custom welcome", "premium emoji support", "utf-16 handling", "centralized database", "font conversion"]
 }
 
 EMOJI_JSON = "data/emoji.json"
@@ -208,57 +217,91 @@ def render_emoji_in_text(text):
     return text
 
 def get_db_conn():
-    """Get database connection"""
-    try:
-        os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
-        conn = sqlite3.connect(DB_FILE)
-        conn.row_factory = sqlite3.Row
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS welcome (
-                chat_id INTEGER PRIMARY KEY,
-                enabled INTEGER DEFAULT 1,
-                message TEXT DEFAULT '',
-                use_premium INTEGER DEFAULT 1,
-                updated_at TEXT
-            );
-        """)
-        conn.commit()
-        return conn
-    except Exception as e:
-        if logger:
-            logger.error(f"[Welcome] Database error: {e}")
-        return None
+    """Get database connection with compatibility layer"""
+    if DB_COMPATIBLE and plugin_db:
+        # Initialize table with centralized database
+        table_schema = """
+            chat_id INTEGER PRIMARY KEY,
+            enabled INTEGER DEFAULT 1,
+            message TEXT DEFAULT '',
+            use_premium INTEGER DEFAULT 1,
+            updated_at TEXT
+        """
+        plugin_db.create_table('welcome', table_schema)
+        return plugin_db
+    else:
+        # Fallback to legacy individual database
+        try:
+            os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
+            conn = sqlite3.connect(DB_FILE)
+            conn.row_factory = sqlite3.Row
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS welcome (
+                    chat_id INTEGER PRIMARY KEY,
+                    enabled INTEGER DEFAULT 1,
+                    message TEXT DEFAULT '',
+                    use_premium INTEGER DEFAULT 1,
+                    updated_at TEXT
+                );
+            """)
+            conn.commit()
+            return conn
+        except Exception as e:
+            if logger:
+                logger.error(f"[Welcome] Database error: {e}")
+            return None
 
 def set_welcome(chat_id, message=None, enabled=None, use_premium=None):
-    """Set welcome configuration"""
+    """Set welcome configuration with database compatibility"""
     try:
-        conn = get_db_conn()
-        if not conn:
+        db = get_db_conn()
+        if not db:
             return False
             
         from datetime import datetime
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
-        # Check if exists
-        cur = conn.execute("SELECT * FROM welcome WHERE chat_id = ?", (chat_id,))
-        row = cur.fetchone()
-        
-        if row:
-            msg = message if message is not None else row['message']
-            en = enabled if enabled is not None else row['enabled']
-            up = use_premium if use_premium is not None else row.get('use_premium', 1)
-            conn.execute("UPDATE welcome SET message=?, enabled=?, use_premium=?, updated_at=? WHERE chat_id=?",
-                         (msg, en, up, now, chat_id))
+        if DB_COMPATIBLE and plugin_db:
+            # Use centralized database
+            existing = db.select('welcome', 'chat_id = ?', (chat_id,))
+            
+            data = {
+                'chat_id': chat_id,
+                'updated_at': now
+            }
+            
+            if existing:
+                row = existing[0]
+                data['message'] = message if message is not None else row.get('message', '')
+                data['enabled'] = enabled if enabled is not None else row.get('enabled', 1)
+                data['use_premium'] = use_premium if use_premium is not None else row.get('use_premium', 1)
+                return db.update('welcome', data, 'chat_id = ?', (chat_id,))
+            else:
+                data['message'] = message if message is not None else ''
+                data['enabled'] = enabled if enabled is not None else 1
+                data['use_premium'] = use_premium if use_premium is not None else 1
+                return db.insert('welcome', data)
         else:
-            msg = message if message is not None else ''
-            en = enabled if enabled is not None else 1
-            up = use_premium if use_premium is not None else 1
-            conn.execute("INSERT INTO welcome (chat_id, enabled, message, use_premium, updated_at) VALUES (?, ?, ?, ?, ?)",
-                         (chat_id, en, msg, up, now))
-        
-        conn.commit()
-        conn.close()
-        return True
+            # Legacy database operations
+            cur = db.execute("SELECT * FROM welcome WHERE chat_id = ?", (chat_id,))
+            row = cur.fetchone()
+            
+            if row:
+                msg = message if message is not None else row['message']
+                en = enabled if enabled is not None else row['enabled']
+                up = use_premium if use_premium is not None else row.get('use_premium', 1)
+                db.execute("UPDATE welcome SET message=?, enabled=?, use_premium=?, updated_at=? WHERE chat_id=?",
+                             (msg, en, up, now, chat_id))
+            else:
+                msg = message if message is not None else ''
+                en = enabled if enabled is not None else 1
+                up = use_premium if use_premium is not None else 1
+                db.execute("INSERT INTO welcome (chat_id, enabled, message, use_premium, updated_at) VALUES (?, ?, ?, ?, ?)",
+                             (chat_id, en, msg, up, now))
+            
+            db.commit()
+            db.close()
+            return True
         
     except Exception as e:
         if logger:
@@ -266,16 +309,22 @@ def set_welcome(chat_id, message=None, enabled=None, use_premium=None):
         return False
 
 def get_welcome(chat_id):
-    """Get welcome configuration"""
+    """Get welcome configuration with database compatibility"""
     try:
-        conn = get_db_conn()
-        if not conn:
+        db = get_db_conn()
+        if not db:
             return None
             
-        cur = conn.execute("SELECT * FROM welcome WHERE chat_id = ?", (chat_id,))
-        row = cur.fetchone()
-        conn.close()
-        return row
+        if DB_COMPATIBLE and plugin_db:
+            # Use centralized database
+            results = db.select('welcome', 'chat_id = ?', (chat_id,))
+            return results[0] if results else None
+        else:
+            # Legacy database operations
+            cur = db.execute("SELECT * FROM welcome WHERE chat_id = ?", (chat_id,))
+            row = cur.fetchone()
+            db.close()
+            return row
         
     except Exception as e:
         if logger:

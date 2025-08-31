@@ -87,6 +87,15 @@ def create_premium_entities(text):
     except Exception:
         return []
 
+# Database compatibility import
+try:
+    from database_helper import get_plugin_db
+    plugin_db = get_plugin_db('checkid')
+    DB_COMPATIBLE = True
+except ImportError:
+    plugin_db = None
+    DB_COMPATIBLE = False
+
 try:
     from assetjson import create_plugin_environment
 except ImportError:
@@ -102,7 +111,7 @@ async def safe_send_message(event, text):
         await event.reply(text)
 
 env = None
-DB_FILE = "plugins/checkid.db"
+DB_FILE = "plugins/checkid.db"  # Legacy fallback path
 
 def get_db_conn():
     # Coba ambil dari assetjson environment
@@ -138,28 +147,55 @@ def get_db_conn():
     return None
 
 def save_id_log(user, chat, requester, method):
+    """Save ID check log with database compatibility"""
     try:
-        conn = get_db_conn()
-        if not conn:
-            return False
-        user_id = getattr(user, 'id', 0)
-        username = getattr(user, 'username', None)
-        full_name = f"{getattr(user, 'first_name', '')} {getattr(user, 'last_name', '')}".strip()
-        chat_id = getattr(chat, 'id', 0)
-        chat_title = getattr(chat, 'title', 'Unknown')
-        requester_id = getattr(requester, 'id', 0)
-        requester_username = getattr(requester, 'username', None)
-        created_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        conn.execute(
-            "INSERT INTO id_logs (user_id, username, full_name, chat_id, chat_title, requester_id, requester_username, method, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (user_id, username, full_name, chat_id, chat_title, requester_id, requester_username, method, created_at)
-        )
-        conn.commit()
-        conn.close()
-        return True
+        # Prepare log data
+        log_data = {
+            'user_id': getattr(user, 'id', 0),
+            'username': getattr(user, 'username', None),
+            'full_name': f"{getattr(user, 'first_name', '')} {getattr(user, 'last_name', '')}".strip(),
+            'chat_id': getattr(chat, 'id', 0),
+            'chat_title': getattr(chat, 'title', 'Unknown'),
+            'requester_id': getattr(requester, 'id', 0),
+            'requester_username': getattr(requester, 'username', None),
+            'method': method,
+            'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        # Use database compatibility layer
+        if DB_COMPATIBLE and plugin_db:
+            # Initialize table if needed
+            table_schema = """
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                username TEXT,
+                full_name TEXT,
+                chat_id INTEGER,
+                chat_title TEXT,
+                requester_id INTEGER,
+                requester_username TEXT,
+                method TEXT,
+                created_at TEXT
+            """
+            plugin_db.create_table('id_logs', table_schema)
+            return plugin_db.insert('id_logs', log_data)
+        else:
+            # Fallback to legacy database method
+            conn = get_db_conn()
+            if not conn:
+                return False
+            conn.execute(
+                "INSERT INTO id_logs (user_id, username, full_name, chat_id, chat_title, requester_id, requester_username, method, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                tuple(log_data.values())
+            )
+            conn.commit()
+            conn.close()
+            return True
+            
     except Exception as e:
         if env and 'logger' in env:
-            env['logger'].error(f"[CheckID] Log backup error: {e}")
+            env['logger'].error(f"[CheckID] Log save error: {e}")
+        print(f"[CheckID] Database error: {e}")
         return False
 
 # Simple owner check

@@ -2,7 +2,7 @@
 Pink Plugin for Vzoel Assistant - FIXED & ENHANCED VERSION
 Fitur: Respon PING minimalis dengan 2 baris, premium emoji independent (tanpa assetjson), font fallback, owner check
 Author: Vzoel Fox's (Enhanced by Morgan)
-Version: 2.2.0 - Independent premium emoji mapping + entity generator
+Version: 2.3.0 - Database compatibility support
 """
 
 import sqlite3
@@ -11,14 +11,23 @@ import logging
 from datetime import datetime
 from telethon import events, types
 
+# Import database compatibility layer
+try:
+    from database_helper import get_plugin_db
+    plugin_db = get_plugin_db('pink')
+    DB_COMPATIBLE = True
+except ImportError:
+    plugin_db = None
+    DB_COMPATIBLE = False
+
 # Plugin Info
 PLUGIN_INFO = {
     "name": "pink",
-    "version": "2.2.0",
-    "description": "PING minimalis dengan premium emoji independent, owner check, database logging",
+    "version": "2.3.0",
+    "description": "PING minimalis dengan premium emoji independent, owner check, centralized database logging",
     "author": "Vzoel Fox's (Enhanced by Morgan)",
     "commands": [".pink"],
-    "features": ["minimal ping", "independent premium emoji", "owner check", "database logging", "premium entity generator"]
+    "features": ["minimal ping", "independent premium emoji", "owner check", "centralized database", "premium entity generator"]
 }
 
 # Global variables
@@ -51,43 +60,73 @@ def setup_logger():
         logger.setLevel(logging.INFO)
 
 def get_db_conn():
-    """Get database connection dengan enhanced error handling"""
-    try:
-        os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
-        conn = sqlite3.connect(DB_FILE)
-        conn.row_factory = sqlite3.Row
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS pink_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER,
-                username TEXT,
-                chat_id INTEGER,
-                chat_title TEXT,
-                response_time REAL,
-                created_at TEXT
-            )
-        """)
-        conn.commit()
-        return conn
-    except Exception as e:
-        if logger:
-            logger.error(f"[Pink] Local SQLite error: {e}")
-    return None
+    """Get database connection with compatibility layer"""
+    if DB_COMPATIBLE and plugin_db:
+        # Initialize table with centralized database
+        table_schema = """
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            username TEXT,
+            chat_id INTEGER,
+            chat_title TEXT,
+            response_time REAL,
+            created_at TEXT
+        """
+        plugin_db.create_table('pink_log', table_schema)
+        return plugin_db
+    else:
+        # Fallback to legacy individual database
+        try:
+            os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
+            conn = sqlite3.connect(DB_FILE)
+            conn.row_factory = sqlite3.Row
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS pink_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    username TEXT,
+                    chat_id INTEGER,
+                    chat_title TEXT,
+                    response_time REAL,
+                    created_at TEXT
+                )
+            """)
+            conn.commit()
+            return conn
+        except Exception as e:
+            if logger:
+                logger.error(f"[Pink] Local SQLite error: {e}")
+        return None
 
 def log_ping_usage(user_id, username, chat_id, chat_title, response_time):
-    """Enhanced ping logging with more details"""
+    """Enhanced ping logging with database compatibility"""
     try:
-        conn = get_db_conn()
-        if not conn:
+        db = get_db_conn()
+        if not db:
             return False
         
-        conn.execute(
-            "INSERT INTO pink_log (user_id, username, chat_id, chat_title, response_time, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-            (user_id, username, chat_id, chat_title, response_time, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        )
-        conn.commit()
-        conn.close()
-        return True
+        data = {
+            'user_id': user_id,
+            'username': username,
+            'chat_id': chat_id,
+            'chat_title': chat_title,
+            'response_time': response_time,
+            'created_at': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        
+        if DB_COMPATIBLE and plugin_db:
+            # Use centralized database
+            return db.insert('pink_log', data)
+        else:
+            # Legacy database operations
+            db.execute(
+                "INSERT INTO pink_log (user_id, username, chat_id, chat_title, response_time, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                tuple(data.values())
+            )
+            db.commit()
+            db.close()
+            return True
+            
     except Exception as e:
         if logger:
             logger.error(f"[Pink] Logging error: {e}")

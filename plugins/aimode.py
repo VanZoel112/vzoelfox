@@ -3,7 +3,7 @@ AIMode & AI Responder Plugin for Vzoel Assistant - Enhanced UTF-16 Premium Editi
 Fitur: Mode AI otomatis dengan premium emoji support yang sudah diperbarui,
 menggunakan mapping terbaru dari formorgan.py dengan UTF-16 encoding yang diperbaiki.
 Founder Userbot: Vzoel Fox's Ltpn 🤩
-Version: 2.1.1 (Enhanced Premium Mapping)
+Version: 2.2.0 (Database Compatibility Support)
 """
 
 import sqlite3
@@ -15,13 +15,22 @@ from telethon.tl.types import MessageEntityCustomEmoji
 import asyncio
 import aiohttp
 
+# Import database compatibility layer
+try:
+    from database_helper import get_plugin_db
+    plugin_db = get_plugin_db('aimode')
+    DB_COMPATIBLE = True
+except ImportError:
+    plugin_db = None
+    DB_COMPATIBLE = False
+
 PLUGIN_INFO = {
     "name": "aimode",
-    "version": "2.1.1",
-    "description": "AI Mode & Responder dengan enhanced premium emoji mapping dari formorgan.py, UTF-16 compliant.",
+    "version": "2.2.0",
+    "description": "AI Mode & Responder dengan enhanced premium emoji mapping dari formorgan.py, UTF-16 compliant, centralized database.",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
     "commands": [".aimode on", ".aimode off", ".aimode status", ".aiconfig", ".testaiemoji"],
-    "features": ["ai mode", "auto reply ai", "status/config in sqlite", "auto UTF-16 premium emoji"]
+    "features": ["ai mode", "auto reply ai", "centralized database", "auto UTF-16 premium emoji"]
 }
 
 # Premium Emoji Mapping - Enhanced dari formorgan.py (UTF-16 compliant)
@@ -125,87 +134,161 @@ DEFAULT_CONFIG = {
 }
 
 def get_db_conn():
-    try:
-        os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
-        conn = sqlite3.connect(DB_FILE)
-        conn.row_factory = sqlite3.Row
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS aimode_status (
-                chat_id INTEGER PRIMARY KEY,
-                enabled INTEGER DEFAULT 0,
-                updated_at TEXT
-            );
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS aimode_config (
-                id INTEGER PRIMARY KEY,
-                config TEXT,
-                updated_at TEXT
-            );
-        """)
-        return conn
-    except Exception as e:
-        print(f"[AIMode] Local SQLite error: {e}")
-    return None
+    """Get database connection with compatibility layer"""
+    if DB_COMPATIBLE and plugin_db:
+        # Initialize tables with centralized database
+        status_schema = """
+            chat_id INTEGER PRIMARY KEY,
+            enabled INTEGER DEFAULT 0,
+            updated_at TEXT
+        """
+        config_schema = """
+            id INTEGER PRIMARY KEY,
+            config TEXT,
+            updated_at TEXT
+        """
+        plugin_db.create_table('aimode_status', status_schema)
+        plugin_db.create_table('aimode_config', config_schema)
+        return plugin_db
+    else:
+        # Fallback to legacy individual database
+        try:
+            os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
+            conn = sqlite3.connect(DB_FILE)
+            conn.row_factory = sqlite3.Row
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS aimode_status (
+                    chat_id INTEGER PRIMARY KEY,
+                    enabled INTEGER DEFAULT 0,
+                    updated_at TEXT
+                );
+            """)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS aimode_config (
+                    id INTEGER PRIMARY KEY,
+                    config TEXT,
+                    updated_at TEXT
+                );
+            """)
+            return conn
+        except Exception as e:
+            print(f"[AIMode] Local SQLite error: {e}")
+        return None
 
 def set_aimode(chat_id, enabled):
+    """Set AI mode status with database compatibility"""
     try:
-        conn = get_db_conn()
-        if not conn: return False
+        db = get_db_conn()
+        if not db: return False
+        
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        conn.execute(
-            "INSERT OR REPLACE INTO aimode_status (chat_id, enabled, updated_at) VALUES (?, ?, ?)",
-            (chat_id, enabled, now)
-        )
-        conn.commit()
-        conn.close()
-        return True
+        data = {
+            'chat_id': chat_id,
+            'enabled': enabled,
+            'updated_at': now
+        }
+        
+        if DB_COMPATIBLE and plugin_db:
+            # Use centralized database
+            existing = db.select('aimode_status', 'chat_id = ?', (chat_id,))
+            if existing:
+                return db.update('aimode_status', data, 'chat_id = ?', (chat_id,))
+            else:
+                return db.insert('aimode_status', data)
+        else:
+            # Legacy database operations
+            db.execute(
+                "INSERT OR REPLACE INTO aimode_status (chat_id, enabled, updated_at) VALUES (?, ?, ?)",
+                (chat_id, enabled, now)
+            )
+            db.commit()
+            db.close()
+            return True
     except Exception as e:
         print(f"[AIMode] Set status error: {e}")
         return False
 
 def get_aimode(chat_id):
+    """Get AI mode status with database compatibility"""
     try:
-        conn = get_db_conn()
-        if not conn: return False
-        cur = conn.execute("SELECT enabled FROM aimode_status WHERE chat_id = ?", (chat_id,))
-        row = cur.fetchone()
-        conn.close()
-        return row and row['enabled'] == 1
+        db = get_db_conn()
+        if not db: return False
+        
+        if DB_COMPATIBLE and plugin_db:
+            # Use centralized database
+            results = db.select('aimode_status', 'chat_id = ?', (chat_id,))
+            return results and results[0].get('enabled') == 1
+        else:
+            # Legacy database operations
+            cur = db.execute("SELECT enabled FROM aimode_status WHERE chat_id = ?", (chat_id,))
+            row = cur.fetchone()
+            db.close()
+            return row and row['enabled'] == 1
     except Exception as e:
         print(f"[AIMode] Get status error: {e}")
         return False
 
 def get_config():
+    """Get AI configuration with database compatibility"""
     try:
-        conn = get_db_conn()
-        if not conn: return DEFAULT_CONFIG
-        cur = conn.execute("SELECT config FROM aimode_config WHERE id = 1")
-        row = cur.fetchone()
-        conn.close()
-        if row and row['config']:
-            cfg = json.loads(row['config'])
-            # merge missing with default
-            for k, v in DEFAULT_CONFIG.items():
-                if k not in cfg:
-                    cfg[k] = v
-            return cfg
+        db = get_db_conn()
+        if not db: return DEFAULT_CONFIG
+        
+        if DB_COMPATIBLE and plugin_db:
+            # Use centralized database
+            results = db.select('aimode_config', 'id = ?', (1,))
+            if results and results[0].get('config'):
+                cfg = json.loads(results[0]['config'])
+                # merge missing with default
+                for k, v in DEFAULT_CONFIG.items():
+                    if k not in cfg:
+                        cfg[k] = v
+                return cfg
+        else:
+            # Legacy database operations
+            cur = db.execute("SELECT config FROM aimode_config WHERE id = 1")
+            row = cur.fetchone()
+            db.close()
+            if row and row['config']:
+                cfg = json.loads(row['config'])
+                # merge missing with default
+                for k, v in DEFAULT_CONFIG.items():
+                    if k not in cfg:
+                        cfg[k] = v
+                return cfg
     except Exception as e:
         print(f"[AIMode] Load config error: {e}")
     return DEFAULT_CONFIG.copy()
 
 def set_config(new_cfg):
+    """Set AI configuration with database compatibility"""
     try:
-        conn = get_db_conn()
-        if not conn: return False
+        db = get_db_conn()
+        if not db: return False
+        
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        conn.execute(
-            "INSERT OR REPLACE INTO aimode_config (id, config, updated_at) VALUES (1, ?, ?)",
-            (json.dumps(new_cfg), now)
-        )
-        conn.commit()
-        conn.close()
-        return True
+        data = {
+            'id': 1,
+            'config': json.dumps(new_cfg),
+            'updated_at': now
+        }
+        
+        if DB_COMPATIBLE and plugin_db:
+            # Use centralized database
+            existing = db.select('aimode_config', 'id = ?', (1,))
+            if existing:
+                return db.update('aimode_config', data, 'id = ?', (1,))
+            else:
+                return db.insert('aimode_config', data)
+        else:
+            # Legacy database operations
+            db.execute(
+                "INSERT OR REPLACE INTO aimode_config (id, config, updated_at) VALUES (1, ?, ?)",
+                (json.dumps(new_cfg), now)
+            )
+            db.commit()
+            db.close()
+            return True
     except Exception as e:
         print(f"[AIMode] Set config error: {e}")
         return False
