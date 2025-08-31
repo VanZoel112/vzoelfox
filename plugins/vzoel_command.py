@@ -236,6 +236,14 @@ async def send_premium_message(event, text):
     entities = create_premium_entities(text)
     return await event.reply(text, formatting_entities=entities)
 
+# ===== SETUP FUNCTION FOR PLUGIN LOADER =====
+def setup(client):
+    """Setup function to register event handlers with client"""
+    if client:
+        client.add_event_handler(vzoel_command_handler)
+        print("⚙️ Vzoel command handler registered to client")
+
 print("🤩 Vzoel Custom Command dengan Premium Emoji Template berhasil dimuat!")
 print("Command: .vzoel - Animated text editing dengan timing sequence custom")
 print("Template functions available: get_premium_emoji_template(), create_premium_text_with_entities(), send_premium_message()")
+print("✅ Event handler registration ready for plugin loader")
