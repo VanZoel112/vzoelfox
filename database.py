@@ -105,15 +105,64 @@ class DatabaseManager:
     
     @contextmanager
     def get_connection(self, db_name: str = "main"):
-        """Get database connection with automatic cleanup"""
+        """Get database connection with automatic cleanup and better locking"""
         conn = None
         try:
             db_path = self.get_db_path(db_name)
-            conn = sqlite3.connect(db_path, timeout=30.0)
+            
+            # Clean up any stale lock files before connecting
+            for suffix in ['-wal', '-shm']:
+                lock_file = db_path + suffix
+                if os.path.exists(lock_file):
+                    try:
+                        os.remove(lock_file)
+                        logger.info(f"Removed stale lock file: {lock_file}")
+                    except OSError:
+                        pass  # File may be in use by another process
+            
+            conn = sqlite3.connect(
+                db_path, 
+                timeout=60.0,  # Increase timeout
+                check_same_thread=False
+            )
             conn.row_factory = sqlite3.Row
+            
+            # Configure database settings for better concurrency
+            conn.execute("PRAGMA busy_timeout = 60000")  # 60 seconds
             conn.execute("PRAGMA foreign_keys = ON")
             conn.execute("PRAGMA journal_mode = WAL")
+            conn.execute("PRAGMA synchronous = NORMAL")
+            conn.execute("PRAGMA wal_autocheckpoint = 1000")
+            
             yield conn
+            
+        except sqlite3.OperationalError as e:
+            if "database is locked" in str(e):
+                logger.warning(f"Database {db_name} is locked, retrying...")
+                # Try to force unlock by cleaning WAL files again
+                try:
+                    import time
+                    time.sleep(1)  # Wait briefly
+                    
+                    # Force cleanup
+                    for suffix in ['-wal', '-shm']:
+                        lock_file = self.get_db_path(db_name) + suffix
+                        if os.path.exists(lock_file):
+                            os.remove(lock_file)
+                    
+                    # Retry connection
+                    if conn:
+                        conn.close()
+                    conn = sqlite3.connect(self.get_db_path(db_name), timeout=60.0)
+                    conn.row_factory = sqlite3.Row
+                    conn.execute("PRAGMA busy_timeout = 60000")
+                    yield conn
+                except Exception as retry_error:
+                    logger.error(f"Retry failed for {db_name}: {retry_error}")
+                    raise e
+            else:
+                logger.error(f"Database connection error for {db_name}: {e}")
+                raise
         except Exception as e:
             logger.error(f"Database connection error for {db_name}: {e}")
             if conn:
@@ -121,7 +170,10 @@ class DatabaseManager:
             raise
         finally:
             if conn:
-                conn.close()
+                try:
+                    conn.close()
+                except Exception:
+                    pass  # Ignore close errors
     
     def execute_query(self, query: str, params: tuple = (), db_name: str = "main", 
                      fetch: str = None) -> Union[List[sqlite3.Row], sqlite3.Row, int, None]:
