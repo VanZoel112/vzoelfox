@@ -249,6 +249,190 @@ def count_loaded_plugins():
     except:
         return 25  # fallback
 
+def get_all_plugins_info():
+    """Get info from all available plugins"""
+    try:
+        import glob
+        import sys
+        import importlib
+        
+        plugins_info = {}
+        plugins_dir = "plugins"
+        
+        # Get all plugin files
+        plugin_files = glob.glob(f"{plugins_dir}/*.py")
+        
+        for plugin_file in plugin_files:
+            plugin_name = plugin_file.replace(f"{plugins_dir}/", "").replace(".py", "")
+            
+            # Skip special files
+            if plugin_name in ['__init__', 'test', 'database_helper']:
+                continue
+            
+            try:
+                # Add plugins directory to path if not already there
+                if plugins_dir not in sys.path:
+                    sys.path.append(plugins_dir)
+                
+                # Import plugin module
+                plugin_module = importlib.import_module(plugin_name)
+                
+                # Get plugin info
+                if hasattr(plugin_module, 'get_plugin_info'):
+                    info = plugin_module.get_plugin_info()
+                    plugins_info[plugin_name] = info
+                elif hasattr(plugin_module, 'PLUGIN_INFO'):
+                    plugins_info[plugin_name] = plugin_module.PLUGIN_INFO
+                else:
+                    # Create basic info
+                    plugins_info[plugin_name] = {
+                        'name': plugin_name,
+                        'commands': [],
+                        'description': 'No description available'
+                    }
+                    
+            except Exception as e:
+                print(f"[Help] Error loading plugin {plugin_name}: {e}")
+                continue
+        
+        return plugins_info
+    except Exception as e:
+        print(f"[Help] Error getting plugins info: {e}")
+        return {}
+
+def categorize_plugins_auto():
+    """Auto categorize plugins based on their commands and descriptions"""
+    plugins_info = get_all_plugins_info()
+    
+    auto_categories = {
+        "CORE": {
+            "description": "Essential userbot functions",
+            "plugins": {}
+        },
+        "COMMUNICATION": {
+            "description": "Messaging & broadcasting tools",
+            "plugins": {}
+        },
+        "MEDIA": {
+            "description": "Media processing & download",
+            "plugins": {}
+        },
+        "AUTOMATION": {
+            "description": "AI & automation features",
+            "plugins": {}
+        },
+        "MANAGEMENT": {
+            "description": "Group & user management",
+            "plugins": {}
+        },
+        "SECURITY": {
+            "description": "Security & privacy tools",
+            "plugins": {}
+        },
+        "SYSTEM": {
+            "description": "System utilities & monitoring",
+            "plugins": {}
+        },
+        "OTHER": {
+            "description": "Other useful plugins",
+            "plugins": {}
+        }
+    }
+    
+    # Categorization keywords
+    category_keywords = {
+        "CORE": ["help", "ping", "alive", "update", "restart"],
+        "COMMUNICATION": ["gcast", "broadcast", "tagall", "welcome", "message"],
+        "MEDIA": ["music", "video", "photo", "download", "curi", "secret"],
+        "AUTOMATION": ["ai", "auto", "bot", "smart", "llama"],
+        "MANAGEMENT": ["grup", "group", "admin", "ban", "kick", "blacklist"],
+        "SECURITY": ["spam", "limit", "bypass", "reset", "session"],
+        "SYSTEM": ["log", "database", "backup", "clean", "monitor"]
+    }
+    
+    # Categorize each plugin
+    for plugin_name, plugin_info in plugins_info.items():
+        plugin_desc = plugin_info.get('description', '').lower()
+        plugin_commands = plugin_info.get('commands', [])
+        
+        categorized = False
+        
+        # Check against category keywords
+        for category, keywords in category_keywords.items():
+            for keyword in keywords:
+                if (keyword in plugin_name.lower() or 
+                    keyword in plugin_desc or 
+                    any(keyword in str(cmd).lower() for cmd in plugin_commands)):
+                    auto_categories[category]["plugins"][plugin_name] = plugin_info
+                    categorized = True
+                    break
+            if categorized:
+                break
+        
+        # If not categorized, put in OTHER
+        if not categorized:
+            auto_categories["OTHER"]["plugins"][plugin_name] = plugin_info
+    
+    return auto_categories
+
+def get_auto_category_help_text(category_name, category_data):
+    """Generate help text for auto-detected category"""
+    plugins = category_data.get('plugins', {})
+    description = category_data.get('description', 'No description available')
+    
+    if not plugins:
+        return f"""{get_emoji('adder3')} **{category_name} Category**
+        
+{get_emoji('adder5')} **Description:** {description}
+{get_emoji('adder6')} **Status:** No plugins found in this category
+
+{get_vzoel_signature()}"""
+    
+    plugin_list = []
+    for plugin_name, plugin_info in plugins.items():
+        name = plugin_info.get('name', plugin_name)
+        desc = plugin_info.get('description', 'No description')
+        commands = plugin_info.get('commands', [])
+        
+        plugin_list.append(f"{get_emoji('check')} **{name.title()}**")
+        plugin_list.append(f"   {desc[:100]}{'...' if len(desc) > 100 else ''}")
+        
+        if commands:
+            cmd_list = []
+            for cmd in commands[:3]:  # Show max 3 commands
+                if isinstance(cmd, str):
+                    cmd_list.append(f"`{cmd}`")
+            if cmd_list:
+                plugin_list.append(f"   Commands: {', '.join(cmd_list)}")
+        plugin_list.append("")
+    
+    plugin_text = "\n".join(plugin_list)
+    
+    return f"""{get_emoji('main')} **{category_name} CATEGORY**
+
+{get_emoji('adder4')} **Description:** {description}
+{get_emoji('adder6')} **Plugins:** {len(plugins)} available
+
+{plugin_text}
+
+{get_vzoel_signature()}"""
+
+def get_auto_category_buttons(categories_dict):
+    """Generate buttons for auto-detected categories"""
+    buttons = []
+    
+    for category_name, category_data in categories_dict.items():
+        plugin_count = len(category_data.get('plugins', {}))
+        if plugin_count > 0:
+            button_text = f"{get_emoji('adder2')} {category_name} ({plugin_count})"
+            callback_data = f"help_autocat_{category_name}".encode()
+            buttons.append([Button.inline(button_text, callback_data)])
+    
+    # Add back button
+    buttons.append([Button.inline(f"{get_emoji('adder1')} Back to Main", b"help_main")])
+    
+    return buttons
+
 async def get_ping_ms():
     """Get ping measurement in milliseconds"""
     try:
@@ -263,8 +447,22 @@ async def get_ping_ms():
         return "N/A"
 
 def get_main_help_text():
-    """Generate main help menu text"""
+    """Generate main help menu text with auto plugin detection"""
     plugin_count = count_loaded_plugins()
+    auto_categories = categorize_plugins_auto()
+    
+    # Count plugins per category
+    category_counts = {}
+    for cat_name, cat_data in auto_categories.items():
+        plugin_count_in_cat = len(cat_data.get('plugins', {}))
+        if plugin_count_in_cat > 0:
+            category_counts[cat_name] = plugin_count_in_cat
+    
+    category_list = ""
+    for cat_name, count in category_counts.items():
+        if count > 0:
+            category_list += f"• {convert_font(cat_name, 'mono')} - {count} plugins ({auto_categories[cat_name]['description']})\n"
+    
     return f"""
 {get_emoji('adder1')} {convert_font('Vzoel Assistant', 'bold')}
 
@@ -281,20 +479,14 @@ Hak cipta sepenuhnya milik Vzoel..
 
 {get_emoji('adder3')} ©2025 ~ Vzoel Fox's (LTPN).
 
-{get_emoji('adder4')} {convert_font('CATEGORIES AVAILABLE:', 'bold')}
-• {convert_font('CORE', 'mono')} - Essential userbot functions
-• {convert_font('MESSAGING', 'mono')} - Broadcast & communication tools
-• {convert_font('AI & AUTOMATION', 'mono')} - Artificial intelligence features
-• {convert_font('GROUP MANAGEMENT', 'mono')} - Group & user management
-• {convert_font('LOG & MONITORING', 'mono')} - Activity logging & monitoring
-• {convert_font('SPAM & LIMITS', 'mono')} - Spam management & limit reset
-• {convert_font('SYSTEM', 'mono')} - System management & utilities
+{get_emoji('adder4')} {convert_font('AUTO-DETECTED CATEGORIES:', 'bold')}
+{category_list}
 
 {get_emoji('adder2')} {convert_font('QUICK START:', 'bold')}
-• {convert_font('.help core', 'mono')} - Essential commands
+• {convert_font('.help categories', 'mono')} - Browse all plugin categories
 • {convert_font('.pink', 'mono')} - Test userbot response  
-• {convert_font('.update check', 'mono')} - Check for updates
-• {convert_font('.loggroup create', 'mono')} - Setup log group
+• {convert_font('.secreton', 'mono')} - Activate secret saver
+• {convert_font('.play <song>', 'mono')} - Download music
     """.strip()
 
 def get_category_help_text(category):
@@ -373,10 +565,11 @@ async def help_handler(event):
         
         # Check if specific category requested
         if len(args) > 1:
-            category = args[1].upper().replace('_', ' & ')
-            if category in PLUGIN_CATEGORIES:
-                help_text = get_category_help_text(category)
-                buttons = get_category_back_buttons()
+            category = args[1].upper()
+            auto_categories = categorize_plugins_auto()
+            if category in auto_categories:
+                help_text = get_auto_category_help_text(category, auto_categories[category])
+                buttons = [[Button.inline(f"{get_emoji('adder1')} Back to Main", b"help_main")]]
                 await safe_send_premium(event, help_text, buttons)
                 return
         
@@ -420,29 +613,36 @@ async def help_callback_handler(event):
             await safe_edit_premium(event, help_text, buttons)
             
         elif data == "help_categories":
-            # Show category selection
-            help_text = f"""
-{get_emoji('main')} {convert_font('SELECT COMMAND CATEGORY', 'bold')}
-
-{get_emoji('check')} {convert_font('Choose a category to see available commands:', 'mono')}
-
-{get_emoji('adder2')} Setiap kategori berisi commands yang berkaitan
-{get_emoji('adder3')} Click button di bawah untuk melihat detail commands
-{get_emoji('adder4')} Use navigation buttons untuk kembali ke menu utama
-            """.strip()
+            # Show auto-detected category selection
+            auto_categories = categorize_plugins_auto()
             
-            buttons = get_category_buttons()
+            # Filter categories that have plugins
+            active_categories = {k: v for k, v in auto_categories.items() if v.get('plugins')}
+            
+            help_text = f"""{get_emoji('main')} **AUTO-DETECTED CATEGORIES**
+
+{get_emoji('check')} **Found {len(active_categories)} active categories with {sum(len(cat.get('plugins', {})) for cat in active_categories.values())} plugins**
+
+{get_emoji('adder2')} Click any category below to browse plugins
+{get_emoji('adder3')} Categories are automatically organized by functionality
+{get_emoji('adder4')} Use navigation buttons to return to main menu
+
+{get_vzoel_signature()}"""
+            
+            buttons = get_auto_category_buttons(active_categories)
             await safe_edit_premium(event, help_text, buttons)
             
-        elif data.startswith("help_cat_"):
-            # Show specific category
-            category_key = data.replace("help_cat_", "").replace("_", " ").upper()
-            if "_&_" in category_key:
-                category_key = category_key.replace("_&_", " & ")
+        elif data.startswith("help_autocat_"):
+            # Show specific auto-detected category
+            category_name = data.replace("help_autocat_", "")
+            auto_categories = categorize_plugins_auto()
             
-            if category_key in PLUGIN_CATEGORIES:
-                help_text = get_category_help_text(category_key)
-                buttons = get_category_back_buttons()
+            if category_name in auto_categories:
+                help_text = get_auto_category_help_text(category_name, auto_categories[category_name])
+                buttons = [
+                    [Button.inline(f"{get_emoji('adder2')} Back to Categories", b"help_categories")],
+                    [Button.inline(f"{get_emoji('adder1')} Back to Main", b"help_main")]
+                ]
                 await safe_edit_premium(event, help_text, buttons)
             
         elif data == "help_status":

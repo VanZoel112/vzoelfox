@@ -1,0 +1,39 @@
+{
+  "name": "vzoelfox-toggle-bot",
+  "version": "1.0.0",
+  "description": "VzoelFox Toggle Bot Assistant - Remote Control for Userbot System",
+  "main": "vzoel_toggle_bot.js",
+  "scripts": {
+    "start": "node vzoel_toggle_bot.js",
+    "dev": "nodemon vzoel_toggle_bot.js",
+    "install-deps": "npm install node-telegram-bot-api",
+    "setup": "npm install && node vzoel_toggle_bot.js"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "userbot",
+    "toggle",
+    "remote-control",
+    "vzoelfox"
+  ],
+  "author": "Vzoel Fox's (Enhanced by Morgan)",
+  "license": "MIT",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vzoelfox/userbot"
+  },
+  "bugs": {
+    "url": "https://github.com/vzoelfox/userbot/issues"
+  },
+  "homepage": "https://github.com/vzoelfox/userbot#readme"
+}

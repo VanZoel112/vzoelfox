@@ -151,8 +151,8 @@ async def safe_edit_premium(message, text):
         await message.edit(text)
 
 # Music Download Configuration
-DOWNLOAD_DIR = os.path.expanduser("~/vzoelfox_music")
-TEMP_DIR = os.path.expanduser("~/vzoelfox_temp")
+DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads", "music")
+TEMP_DIR = os.path.join(os.getcwd(), "downloads", "temp")
 
 def ensure_directories():
     """Ensure download directories exist"""
@@ -167,6 +167,131 @@ def get_vzoel_signature():
 {get_emoji('adder3')} {convert_font('Powered by Vzoel Fox\'s Premium System', 'mono')}
 {get_emoji('adder6')} {convert_font('© 2025 Vzoel Fox\'s (LTPN) - Premium Userbot', 'mono')}
     """.strip()
+
+async def search_and_download_music(query, quality='best'):
+    """Search and download music using yt-dlp"""
+    try:
+        # Ensure directories exist
+        ensure_directories()
+        
+        # Clean query for filename
+        clean_query = re.sub(r'[^\w\s-]', '', query).strip()
+        
+        # yt-dlp options
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'outtmpl': f'{DOWNLOAD_DIR}/%(title)s.%(ext)s',
+            'extractaudio': True,
+            'audioformat': 'mp3',
+            'audioquality': '192',
+            'embed_subs': False,
+            'writesubtitles': False,
+            'ignoreerrors': True,
+        }
+        
+        # Search query
+        search_query = f"ytsearch1:{query}"
+        
+        # Download using yt-dlp subprocess (try mp3 first, fallback to webm/ogg)
+        cmd = [
+            'yt-dlp',
+            '-f', 'bestaudio/best',
+            '--output', f'{DOWNLOAD_DIR}/%(title)s.%(ext)s',
+            '--no-playlist',
+            search_query
+        ]
+        
+        # Try to convert to mp3 if ffmpeg available
+        try:
+            ffmpeg_cmd = ['ffmpeg', '-version']
+            ffmpeg_process = await asyncio.create_subprocess_exec(
+                *ffmpeg_cmd, stdout=asyncio.subprocess.DEVNULL, stderr=asyncio.subprocess.DEVNULL
+            )
+            await ffmpeg_process.communicate()
+            
+            if ffmpeg_process.returncode == 0:
+                # FFmpeg available, can convert to mp3
+                cmd.extend(['--extract-audio', '--audio-format', 'mp3', '--audio-quality', '192K'])
+        except:
+            # FFmpeg not available, download in original format
+            pass
+        
+        # Run yt-dlp command
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        
+        stdout, stderr = await process.communicate()
+        
+        if process.returncode == 0:
+            # Find downloaded file
+            output = stdout.decode()
+            
+            # Extract info from output
+            title = "Unknown Title"
+            duration = "Unknown"
+            uploader = "Unknown"
+            
+            # Try to extract title from yt-dlp output
+            for line in output.split('\n'):
+                if '[download] Destination:' in line:
+                    filepath = line.split('Destination: ')[-1].strip()
+                    title = os.path.basename(filepath).replace('.mp3', '')
+                    break
+            
+            # Find the actual downloaded file (support multiple audio formats)
+            audio_extensions = ['.mp3', '.webm', '.ogg', '.m4a', '.opus']
+            downloaded_file = None
+            
+            for file in os.listdir(DOWNLOAD_DIR):
+                for ext in audio_extensions:
+                    if file.endswith(ext) and clean_query.lower() in file.lower():
+                        downloaded_file = os.path.join(DOWNLOAD_DIR, file)
+                        break
+                if downloaded_file:
+                    break
+            
+            # If no specific match, get the most recent audio file
+            if not downloaded_file:
+                audio_files = [f for f in os.listdir(DOWNLOAD_DIR) if any(f.endswith(ext) for ext in audio_extensions)]
+                if audio_files:
+                    audio_files.sort(key=lambda x: os.path.getmtime(os.path.join(DOWNLOAD_DIR, x)), reverse=True)
+                    downloaded_file = os.path.join(DOWNLOAD_DIR, audio_files[0])
+                    # Extract title from filename, removing extension
+                    title = audio_files[0]
+                    for ext in audio_extensions:
+                        if title.endswith(ext):
+                            title = title[:-len(ext)]
+                            break
+            
+            if downloaded_file and os.path.exists(downloaded_file):
+                return {
+                    'success': True,
+                    'file_path': downloaded_file,
+                    'title': title,
+                    'duration': duration,
+                    'uploader': uploader,
+                    'size': os.path.getsize(downloaded_file)
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': 'Downloaded file not found'
+                }
+        else:
+            error_msg = stderr.decode() if stderr else "Unknown error"
+            return {
+                'success': False,
+                'error': error_msg
+            }
+            
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }
 
 async def search_youtube_music(query, limit=5):
     """Search for music on YouTube using yt-dlp"""
@@ -395,47 +520,44 @@ async def play_music_handler(event):
         
         status_msg = await safe_send_premium(event, search_text)
         
-        # Search for music
-        search_results = await search_youtube_music(query, limit=3)
+        # Download music directly
+        download_result = await search_and_download_music(query)
         
-        if not search_results:
+        if not download_result['success']:
             error_text = f"""
-{get_emoji('adder5')} {convert_font('MUSIC NOT FOUND', 'bold')}
+{get_emoji('adder5')} {convert_font('DOWNLOAD FAILED', 'bold')}
 
 {get_emoji('check')} Query: {convert_font(query, 'mono')}
-{get_emoji('adder3')} Status: No results found
-{get_emoji('adder4')} Suggestion: Try different keywords
+{get_emoji('adder3')} Error: {download_result.get('error', 'Unknown error')}
+{get_emoji('adder4')} Suggestion: Try different keywords or check connection
 
 {get_vzoel_signature()}
             """.strip()
             await safe_edit_premium(status_msg, error_text)
             return
         
-        # Show search results
-        best_result = search_results[0]
+        # Show download success
         download_text = f"""
-{get_emoji('adder6')} {convert_font('DOWNLOADING MUSIC...', 'bold')}
+{get_emoji('adder6')} {convert_font('DOWNLOAD COMPLETE!', 'bold')}
 
-{get_emoji('check')} {convert_font('Title:', 'mono')} {best_result['title']}
-{get_emoji('adder4')} {convert_font('Channel:', 'mono')} {best_result['channel']}
-{get_emoji('adder2')} {convert_font('Duration:', 'mono')} {best_result['duration']}
+{get_emoji('check')} {convert_font('Title:', 'mono')} {download_result['title']}
+{get_emoji('adder4')} {convert_font('Size:', 'mono')} {download_result['size'] // 1024 // 1024:.1f} MB
 {get_emoji('main')} {convert_font('Format:', 'mono')} MP3 High Quality
 
-{get_emoji('adder3')} VzoelFox downloading engine active...
+{get_emoji('adder2')} Preparing to send audio file...
         """.strip()
         
         await safe_edit_premium(status_msg, download_text)
         
-        # Download audio
-        audio_file = await download_audio(best_result['url'], best_result['title'])
-        
+        # Get audio file info
+        audio_file = download_result['file_path']
         if not audio_file or not os.path.exists(audio_file):
             error_text = f"""
-{get_emoji('adder5')} {convert_font('DOWNLOAD FAILED', 'bold')}
+{get_emoji('adder5')} {convert_font('FILE ERROR', 'bold')}
 
-{get_emoji('check')} File: {best_result['title']}
-{get_emoji('adder3')} Error: Download process failed
-{get_emoji('adder4')} Status: Server error or network issue
+{get_emoji('check')} Download completed but file not found
+{get_emoji('adder3')} Path: {audio_file or 'None'}
+{get_emoji('adder4')} Status: File system error
 
 {get_vzoel_signature()}
             """.strip()

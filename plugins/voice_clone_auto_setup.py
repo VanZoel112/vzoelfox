@@ -10,10 +10,21 @@ import asyncio
 import json
 import os
 import random
+import sys
 import requests
 from datetime import datetime
 from telethon import events
 import sqlite3
+
+# Premium emoji helper
+sys.path.append('utils')
+try:
+    from premium_emoji_helper import get_emoji, safe_send_premium, safe_edit_premium, get_vzoel_signature
+except ImportError:
+    def get_emoji(emoji_type): return '🤩'
+    async def safe_send_premium(event, text, **kwargs): await event.reply(text, **kwargs)
+    async def safe_edit_premium(message, text, **kwargs): await message.edit(text, **kwargs)
+    def get_vzoel_signature(): return '🤩 VzoelFox Premium System'
 
 # ===== PLUGIN INFO =====
 PLUGIN_INFO = {
@@ -72,19 +83,7 @@ API_PROVIDERS = {
     }
 }
 
-# Premium emoji configuration
-PREMIUM_EMOJIS = {
-    'setup': {'id': '5794353925360457382', 'char': '🔧'},
-    'check': {'id': '5794407002566300853', 'char': '✅'},
-    'error': {'id': '5357404860566235955', 'char': '❌'},
-    'loading': {'id': '5793913811471700779', 'char': '⏳'},
-    'api': {'id': '5321412209992033736', 'char': '🔑'},
-    'voice': {'id': '5793973133559993740', 'char': '🎤'}
-}
-
-def create_premium_message(emoji_key, text):
-    emoji = PREMIUM_EMOJIS.get(emoji_key, {'char': '🔧'})
-    return f"<emoji id='{emoji['id']}'>{emoji['char']}</emoji> {text}"
+# Use standardized premium emoji system
 
 # ===== AUTO SETUP FUNCTIONS =====
 def create_default_config():
@@ -422,7 +421,7 @@ async def handle_key_input(event):
                     config = create_default_config()
                 
                 # Validate key
-                msg = await event.respond(create_premium_message('loading', f'**Validating {provider} API key...**'))
+                msg = await safe_send_premium(event, f"{get_emoji('main')} **Validating {provider} API key...**")
                 
                 is_valid = await validate_api_key(provider, api_key)
                 
@@ -432,15 +431,18 @@ async def handle_key_input(event):
                     config['api_keys'][provider]['status'] = 'valid'
                     save_config(config)
                     
-                    await msg.edit(create_premium_message('check', f"""**✅ {provider.title()} API key saved!**
+                    success_text = f"""{get_emoji('check')} **{provider.title()} API key saved!**
                     
-Ready to use voice cloning with {provider}!
-Test with: `.vclone jokowi Test suara!`"""))
+{get_emoji('adder4')} **Ready to use voice cloning with {provider}!**
+{get_emoji('adder2')} **Test with:** `.vclone jokowi Test suara!`
+
+{get_vzoel_signature()}"""
+                    await safe_edit_premium(msg, success_text)
                 else:
-                    await msg.edit(create_premium_message('error', f'**❌ Invalid {provider} API key!** Please check and try again.'))
+                    await safe_edit_premium(msg, f"{get_emoji('adder3')} **Invalid {provider} API key!** Please check and try again.\n\n{get_vzoel_signature()}")
         
         elif text.lower() == 'cancel':
-            await event.respond(create_premium_message('check', '**Setup cancelled.** Use `.vsetup keys` to try again.'))
+            await safe_send_premium(event, f"{get_emoji('check')} **Setup cancelled.** Use `.vsetup keys` to try again.\n\n{get_vzoel_signature()}")
             
     except Exception as e:
         # Silently handle non-key messages

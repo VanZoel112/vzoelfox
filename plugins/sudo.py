@@ -7,7 +7,18 @@ Version: 1.0.0
 import sqlite3
 import os
 import re
+import sys
 from telethon import events
+
+# Premium emoji helper
+sys.path.append('utils')
+try:
+    from premium_emoji_helper import get_emoji, safe_send_premium, safe_edit_premium, get_vzoel_signature
+except ImportError:
+    def get_emoji(emoji_type): return '🤩'
+    async def safe_send_premium(event, text, **kwargs): await event.reply(text, **kwargs)
+    async def safe_edit_premium(message, text, **kwargs): await message.edit(text, **kwargs)
+    def get_vzoel_signature(): return '🤩 VzoelFox Premium System'
 
 PLUGIN_INFO = {
     "name": "sudo",
@@ -110,26 +121,35 @@ def sudo_revoke(user_id, feature=None):
 async def sudo_cmd_handler(event):
     args = event.text.split()
     if len(args) == 1:
-        await event.reply("Format: reply/mention .sudo <durasi> <fitur>\n.sudo list\n.sudo revoke <user_id>")
+        help_text = f"""{get_emoji('main')} **Sudo Manager Commands**
+
+{get_emoji('check')} **Format:** reply/mention .sudo <durasi> <fitur>
+{get_emoji('adder1')} **List:** .sudo list
+{get_emoji('adder2')} **Revoke:** .sudo revoke <user_id>
+
+{get_vzoel_signature()}"""
+        await safe_send_premium(event, help_text)
         return
     if args[1] == "list":
         rows = sudo_list()
         if rows:
             from time import time
             now = int(time())
-            txt = "👑 Sudo aktif:\n"
+            txt = f"{get_emoji('main')} **Sudo Aktif:**\n\n"
             for row in rows:
                 sisa = int((row["expire_at"] - now) / 60)
-                txt += f"- {row['username'] or row['user_id']} | {row['feature']} | {sisa} menit lagi\n"
-            await event.reply(txt)
+                txt += f"{get_emoji('check')} **{row['username'] or row['user_id']}** | {row['feature']} | {sisa} menit lagi\n"
+            txt += f"\n{get_vzoel_signature()}"
+            await safe_send_premium(event, txt)
         else:
-            await event.reply("Tidak ada sudo aktif.")
+            await safe_send_premium(event, f"{get_emoji('adder3')} **Tidak ada sudo aktif.**\n\n{get_vzoel_signature()}")
         return
     if args[1] == "revoke" and len(args) >= 3:
         target_id = int(args[2])
         feature = args[3] if len(args) >= 4 else None
         sudo_revoke(target_id, feature)
-        await event.reply(f"Sudo untuk {target_id}{' fitur '+feature if feature else ''} direvoke.")
+        revoke_text = f"{get_emoji('check')} **Sudo Revoked**\n\n{get_emoji('adder2')} User: **{target_id}**{' | Fitur: **'+feature+'**' if feature else ''}\n\n{get_vzoel_signature()}"
+        await safe_send_premium(event, revoke_text)
         return
 
     # Grant sudo (reply/mention/ID)
@@ -162,10 +182,17 @@ async def sudo_cmd_handler(event):
             return
 
     if not user_id:
-        await event.reply("User ID tidak ditemukan.")
+        await safe_send_premium(event, f"{get_emoji('adder3')} **User ID tidak ditemukan.**\n\n{get_vzoel_signature()}")
         return
     add_sudo(user_id, username, feature, duration_sec)
-    await event.reply(f"User [{username or user_id}] diberikan sudo untuk fitur **{feature}** selama {int(duration_sec/60)} menit.")
+    success_text = f"""{get_emoji('main')} **Sudo Granted Successfully**
+
+{get_emoji('check')} **User:** {username or user_id}
+{get_emoji('adder4')} **Feature:** {feature}
+{get_emoji('adder5')} **Duration:** {int(duration_sec/60)} menit
+
+{get_vzoel_signature()}"""
+    await safe_send_premium(event, success_text)
 
 def get_plugin_info():
     return PLUGIN_INFO

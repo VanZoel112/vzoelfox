@@ -11,11 +11,22 @@ import subprocess
 import json
 import os
 import time
+import sys
 import requests
 from datetime import datetime, timedelta
 from telethon import events
 import sqlite3
 import threading
+
+# Premium emoji helper
+sys.path.append('utils')
+try:
+    from premium_emoji_helper import get_emoji, safe_send_premium, safe_edit_premium, get_vzoel_signature
+except ImportError:
+    def get_emoji(emoji_type): return '🤩'
+    async def safe_send_premium(event, text, **kwargs): await event.reply(text, **kwargs)
+    async def safe_edit_premium(message, text, **kwargs): await message.edit(text, **kwargs)
+    def get_vzoel_signature(): return '🤩 VzoelFox Premium System'
 
 # ===== PLUGIN INFO =====
 PLUGIN_INFO = {
@@ -39,19 +50,7 @@ UPDATE_DB = "auto_update.db"
 GIT_REPO_PATH = os.getcwd()
 UPDATE_LOG_FILE = "update_log.txt"
 
-# Premium emoji configuration
-PREMIUM_EMOJIS = {
-    'update': {'id': '5794353925360457382', 'char': '🔄'},
-    'check': {'id': '5794407002566300853', 'char': '✅'},
-    'git': {'id': '5793913811471700779', 'char': '🌿'},
-    'download': {'id': '5321412209992033736', 'char': '📥'},
-    'version': {'id': '5793973133559993740', 'char': '📋'},
-    'warning': {'id': '5357404860566235955', 'char': '⚠️'}
-}
-
-def create_premium_message(emoji_key, text):
-    emoji = PREMIUM_EMOJIS.get(emoji_key, {'char': '🔄'})
-    return f"<emoji id='{emoji['id']}'>{emoji['char']}</emoji> {text}"
+# Use standardized premium emoji system
 
 # ===== DATABASE FUNCTIONS =====
 def init_update_db():
@@ -374,65 +373,65 @@ def schedule_startup_update():
     thread.start()
 
 # ===== EVENT HANDLERS =====
-@client.on(events.NewMessage(pattern=r'^\.update$'))
 async def manual_update(event):
     """Manual update command"""
     try:
-        msg = await event.respond(create_premium_message('update', '**🔄 Starting manual update...**'))
+        msg = await safe_send_premium(event, f"{get_emoji('main')} **Starting manual update...**")
         
         # Check git status
-        await msg.edit(create_premium_message('git', '**📋 Checking git status...**'))
+        await safe_edit_premium(msg, f"{get_emoji('adder6')} **Checking git status...**")
         status = check_git_status()
         
         if status['status'] != 'ok':
-            await msg.edit(create_premium_message('warning', f'**Git Error:** {status.get("message", "Unknown error")}'))
+            await safe_edit_premium(msg, f"{get_emoji('adder3')} **Git Error:** {status.get('message', 'Unknown error')}\n\n{get_vzoel_signature()}")
             return
         
         if not status['needs_update']:
-            await msg.edit(create_premium_message('check', '**✅ Already up to date!**\n\nNo new commits available.'))
+            await safe_edit_premium(msg, f"{get_emoji('check')} **Already up to date!**\n\nNo new commits available.\n\n{get_vzoel_signature()}")
             return
         
         # Create backup
-        await msg.edit(create_premium_message('download', '**💾 Creating backup...**'))
+        await safe_edit_premium(msg, f"{get_emoji('adder1')} **Creating backup...**")
         backup_result = create_backup()
         
         # Perform update
-        await msg.edit(create_premium_message('update', f'**📥 Pulling {status["commits_behind"]} new commits...**'))
+        await safe_edit_premium(msg, f"{get_emoji('adder4')} **Pulling {status['commits_behind']} new commits...**")
         update_result = perform_git_pull()
         
         if update_result['success']:
             if update_result['updated']:
-                result_text = f"""**✅ Update Successful!**
+                result_text = f"""{get_emoji('check')} **Update Successful!**
 
-**📊 Changes:**
+{get_emoji('adder6')} **Changes:**
 • Old: `{update_result['old_commit']}`
 • New: `{update_result['new_commit']}`
 • Files changed: {update_result['files_changed']}
 • Duration: {update_result['duration']:.2f}s
 
-**💾 Backup:** {'✅ Created' if backup_result['success'] else '❌ Failed'}
+{get_emoji('adder1')} **Backup:** {'✅ Created' if backup_result['success'] else '❌ Failed'}
 
-**🔄 Restart bot to apply changes**"""
+{get_emoji('main')} **Restart bot to apply changes**
+
+{get_vzoel_signature()}"""
             else:
-                result_text = "**✅ Already up to date!**"
+                result_text = f"{get_emoji('check')} **Already up to date!**\n\n{get_vzoel_signature()}"
         else:
-            result_text = f"**❌ Update Failed!**\n\n**Error:** {update_result['error']}"
+            result_text = f"{get_emoji('adder3')} **Update Failed!**\n\n**Error:** {update_result['error']}\n\n{get_vzoel_signature()}"
         
-        await msg.edit(create_premium_message('check' if update_result['success'] else 'warning', result_text))
+        await safe_edit_premium(msg, result_text)
         
     except Exception as e:
-        await event.respond(create_premium_message('warning', f'**Update error:** {str(e)}'))
+        await safe_send_premium(event, f"{get_emoji('adder3')} **Update error:** {str(e)}\n\n{get_vzoel_signature()}")
 
-@client.on(events.NewMessage(pattern=r'^\.updatecheck$'))
 async def check_updates(event):
     """Check for available updates"""
     try:
-        msg = await event.respond(create_premium_message('git', '**📋 Checking for updates...**'))
+        msg = await safe_send_premium(event, f"{get_emoji('adder6')} **Checking for updates...**")
         
         status = check_git_status()
         
         if status['status'] != 'ok':
-            await msg.edit(create_premium_message('warning', f'**Git Error:** {status.get("message", "Unknown error")}'))
+            await safe_edit_premium(msg, f"{get_emoji('adder3')} **Git Error:** {status.get('message', 'Unknown error')}\n\n{get_vzoel_signature()}")
             return
         
         # Get commit info
@@ -444,35 +443,39 @@ async def check_updates(event):
             commit_list = []
             for commit in recent_commits[:3]:  # Show max 3 commits
                 if commit.strip():
-                    commit_list.append(f"• `{commit.strip()}`")
+                    commit_list.append(f"{get_emoji('adder2')} `{commit.strip()}`")
             
-            result_text = f"""**📥 Updates Available!**
+            result_text = f"""{get_emoji('adder4')} **Updates Available!**
 
-**📊 Status:**
+{get_emoji('adder6')} **Status:**
 • Branch: `{status['branch']}`
 • Current: `{status['commit']}`
 • Commits behind: **{status['commits_behind']}**
 
-**🔄 Recent Changes:**
-{chr(10).join(commit_list) if commit_list else '• No commit details available'}
+{get_emoji('main')} **Recent Changes:**
+{chr(10).join(commit_list) if commit_list else f'{get_emoji("adder2")} No commit details available'}
 
-**Commands:**
+{get_emoji('check')} **Commands:**
 • `.update` - Update now
-• `.updateauto on` - Enable auto update"""
-        else:
-            result_text = f"""**✅ Up to Date!**
+• `.updateauto on` - Enable auto update
 
-**📊 Status:**
+{get_vzoel_signature()}"""
+        else:
+            result_text = f"""{get_emoji('check')} **Up to Date!**
+
+{get_emoji('adder6')} **Status:**
 • Branch: `{status['branch']}`
 • Current: `{status['commit']}`
 • Remote: Connected
 
-**⚡ No updates available**"""
+{get_emoji('adder5')} **No updates available**
+
+{get_vzoel_signature()}"""
         
-        await msg.edit(create_premium_message('check', result_text))
+        await safe_edit_premium(msg, result_text)
         
     except Exception as e:
-        await event.respond(create_premium_message('warning', f'**Update check error:** {str(e)}'))
+        await safe_send_premium(event, f"{get_emoji('adder3')} **Update check error:** {str(e)}\n\n{get_vzoel_signature()}")
 
 @client.on(events.NewMessage(pattern=r'^\.updateauto (.+)$'))
 async def toggle_auto_update(event):
@@ -497,10 +500,10 @@ async def toggle_auto_update(event):
         conn.commit()
         conn.close()
         
-        await event.respond(create_premium_message('check', f'**Auto update {status}!**\n\nBot will {"" if status == "enabled" else "not "}auto-update on restart.'))
+        await safe_send_premium(event, f'{get_emoji("check")} **Auto update {status}!**\n\nBot will {"" if status == "enabled" else "not "}auto-update on restart.\n\n{get_vzoel_signature()}')
         
     except Exception as e:
-        await event.respond(create_premium_message('warning', f'**Auto update toggle error:** {str(e)}'))
+        await safe_send_premium(event, f"{get_emoji('adder3')} **Auto update toggle error:** {str(e)}\n\n{get_vzoel_signature()}")
 
 @client.on(events.NewMessage(pattern=r'^\.updatelog$'))
 async def show_update_log(event):
@@ -521,7 +524,7 @@ async def show_update_log(event):
         conn.close()
         
         if not logs:
-            await event.respond(create_premium_message('version', '**No update logs found.**'))
+            await safe_send_premium(event, f"{get_emoji('adder6')} **No update logs found.**\n\n{get_vzoel_signature()}")
             return
         
         log_entries = []
@@ -537,29 +540,30 @@ async def show_update_log(event):
             else:
                 log_entries.append(f"{status} **{dt.strftime('%m/%d %H:%M')}** - Failed: {error[:30]}...")
         
-        result_text = f"""**📋 Update History**
+        result_text = f"""{get_emoji('adder6')} **Update History**
 
 {chr(10).join(log_entries)}
 
-**Commands:**
+{get_emoji('check')} **Commands:**
 • `.update` - Manual update
-• `.updatecheck` - Check for updates"""
+• `.updatecheck` - Check for updates
+
+{get_vzoel_signature()}"""
         
-        await event.respond(create_premium_message('version', result_text))
+        await safe_send_premium(event, result_text)
         
     except Exception as e:
-        await event.respond(create_premium_message('warning', f'**Update log error:** {str(e)}'))
+        await safe_send_premium(event, f"{get_emoji('adder3')} **Update log error:** {str(e)}\n\n{get_vzoel_signature()}")
 
-@client.on(events.NewMessage(pattern=r'^\.gitinfo$'))
 async def show_git_info(event):
     """Show detailed git information"""
     try:
-        msg = await event.respond(create_premium_message('git', '**📋 Loading git information...**'))
+        msg = await safe_send_premium(event, f"{get_emoji('adder6')} **Loading git information...**")
         
         status = check_git_status()
         
         if status['status'] != 'ok':
-            await msg.edit(create_premium_message('warning', f'**Git Error:** {status.get("message", "Unknown error")}'))
+            await safe_edit_premium(msg, f"{get_emoji('adder3')} **Git Error:** {status.get('message', 'Unknown error')}\n\n{get_vzoel_signature()}")
             return
         
         # Get additional info
@@ -572,35 +576,44 @@ async def show_git_info(event):
         message_result = run_git_command("git log -1 --pretty=format:'%s'")
         last_message = message_result['output'] if message_result['success'] else 'No message'
         
-        result_text = f"""**🌿 Git Repository Information**
+        result_text = f"""{get_emoji('adder6')} **Git Repository Information**
 
-**📊 Current Status:**
+{get_emoji('main')} **Current Status:**
 • Branch: `{status['branch']}`
 • Commit: `{status['commit']}`
 • Behind: {status['commits_behind']} commits
 • Has changes: {'Yes' if status['has_changes'] else 'No'}
 
-**📝 Last Commit:**
+{get_emoji('adder2')} **Last Commit:**
 • Author: {author}
 • Date: {last_commit_date}
 • Message: "{last_message[:50]}{'...' if len(last_message) > 50 else ''}"
 
-**🌐 Remote:**
+{get_emoji('adder4')} **Remote:**
 • URL: `{status['remote']}`
-• Update needed: {'Yes' if status['needs_update'] else 'No'}"""
+• Update needed: {'Yes' if status['needs_update'] else 'No'}
+
+{get_vzoel_signature()}"""
         
-        await msg.edit(create_premium_message('git', result_text))
+        await safe_edit_premium(msg, result_text)
         
     except Exception as e:
-        await event.respond(create_premium_message('warning', f'**Git info error:** {str(e)}'))
+        await safe_send_premium(event, f"{get_emoji('adder3')} **Git info error:** {str(e)}\n\n{get_vzoel_signature()}")
 
 # ===== INITIALIZATION =====
-def setup():
+def setup(client):
     """Plugin setup function"""
     print("🔄 Auto Updater Plugin loaded!")
     
     # Initialize database
     init_update_db()
+    
+    # Register event handlers
+    client.add_event_handler(manual_update, events.NewMessage(pattern=r'^\.update$'))
+    client.add_event_handler(check_updates, events.NewMessage(pattern=r'^\.updatecheck$'))
+    client.add_event_handler(toggle_auto_update, events.NewMessage(pattern=r'^\.updateauto (.+)$'))
+    client.add_event_handler(show_update_log, events.NewMessage(pattern=r'^\.updatelog$'))
+    client.add_event_handler(show_git_info, events.NewMessage(pattern=r'^\.gitinfo$'))
     
     # Schedule auto update on startup
     schedule_startup_update()
