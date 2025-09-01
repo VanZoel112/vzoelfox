@@ -210,12 +210,21 @@ def load_blacklist():
     """Load blacklisted chat IDs from file and grub database"""
     global blacklisted_chats
     try:
-        # Load from JSON file (legacy)
+        # Load from JSON file - support both old and new formats
         file_blacklist = set()
         if os.path.exists(BLACKLIST_FILE):
             with open(BLACKLIST_FILE, 'r') as f:
                 data = json.load(f)
-                file_blacklist = set(data.get('blacklisted_chats', []))
+                
+                # New format: keys are chat IDs with metadata
+                for key, value in data.items():
+                    if key.lstrip('-').isdigit():  # Chat ID key
+                        file_blacklist.add(int(key))
+                
+                # Legacy format: blacklisted_chats array
+                if 'blacklisted_chats' in data:
+                    for chat_id in data['blacklisted_chats']:
+                        file_blacklist.add(int(chat_id))
         
         # Load from grub database (preferred)
         db_blacklist = set()
@@ -229,6 +238,10 @@ def load_blacklist():
         # Combine both sources
         blacklisted_chats = file_blacklist | db_blacklist
         print(f"[Gcast] Total blacklisted chats: {len(blacklisted_chats)}")
+        
+        # Show blacklisted IDs for debugging
+        if blacklisted_chats:
+            print(f"[Gcast] Blacklisted chat IDs: {sorted(list(blacklisted_chats))}")
         
     except Exception as e:
         print(f"[Gcast] Error loading blacklist: {e}")
@@ -266,10 +279,12 @@ async def get_broadcast_channels():
             
             # Skip blacklisted chats - check both local and database blacklist
             if entity.id in blacklisted_chats:
+                print(f"[Gcast] BLOCKED: {entity.title} (ID: {entity.id}) - in local blacklist")
                 continue
             
             # Additional check using grub database (real-time)
             if GRUB_INTEGRATION and is_blacklisted(entity.id):
+                print(f"[Gcast] BLOCKED: {entity.title} (ID: {entity.id}) - in grub blacklist")
                 continue
             
             # Only include groups and channels where we can send messages

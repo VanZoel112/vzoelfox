@@ -183,9 +183,29 @@ def load_blacklist():
 def save_blacklist(blacklist):
     """Simpan blacklist ke file JSON"""
     try:
+        # Save in new format with legacy support
         data = {str(k): v for k, v in blacklist.items()}
+        
+        # Add legacy format for backward compatibility
+        data['blacklisted_chats'] = list(blacklist.keys())
+        data['metadata'] = {
+            'last_updated': datetime.now().isoformat(),
+            'total_blacklisted': len(blacklist)
+        }
+        
         with open(BLACKLIST_FILE, 'w') as f:
             json.dump(data, f, indent=2)
+        
+        # Reload blacklist in gcast plugin if available
+        try:
+            from plugins.gcast import load_blacklist as gcast_load_blacklist
+            gcast_load_blacklist()
+            print(f"[Blacklist] Reloaded gcast blacklist - {len(blacklist)} chats")
+        except ImportError:
+            pass  # gcast plugin not available
+        except Exception as e:
+            print(f"[Blacklist] Error reloading gcast blacklist: {e}")
+            
         return True
     except Exception as e:
         print(f"Error saving blacklist: {e}")
