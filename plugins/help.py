@@ -9,6 +9,7 @@ Version: 3.0.0 - Complete Interactive Help System
 import re
 import os
 import sys
+import asyncio
 from telethon import events, Button
 from telethon.tl.types import MessageEntityCustomEmoji
 from datetime import datetime
@@ -16,11 +17,11 @@ from datetime import datetime
 # ===== Plugin Info =====
 PLUGIN_INFO = {
     "name": "help",
-    "version": "3.0.0",
-    "description": "Complete interactive help system dengan semua plugin terbaru dan navigasi button",
+    "version": "3.1.0",
+    "description": "Command-based navigation help system dengan .next/.back untuk browse plugins",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
-    "commands": [".help", ".help <category>"],
-    "features": ["interactive navigation", "premium emoji integration", "category system", "button navigation", "latest plugins"]
+    "commands": [".help", ".help <category>", ".next", ".back", ".help categories", ".help status"],
+    "features": ["command navigation", "premium emoji integration", "auto plugin detection", ".next/.back pagination", "category system"]
 }
 
 # ===== PREMIUM EMOJI CONFIGURATION =====
@@ -551,8 +552,38 @@ def get_category_back_buttons():
          Button.inline(f"{get_emoji('adder1')} Close", b"help_close")]
     ]
 
-# Global client reference
+# Global client reference and navigation state
 client = None
+
+# Navigation state untuk setiap user
+HELP_STATE = {
+    'current_page': 0,
+    'current_category': 'main',
+    'categories_list': [],
+    'plugins_per_page': 5
+}
+
+def get_vzoel_signature():
+    """Get VzoelFox signature"""
+    return f"""
+{get_emoji('main')} VzoelFox Premium System
+{get_emoji('adder3')} Powered by Vzoel Fox's Technology  
+{get_emoji('adder6')} © 2025 Vzoel Fox's (LTPN) - Premium Userbot
+    """.strip()
+
+def get_help_navigation_text():
+    """Get navigation help text"""
+    return f"""
+{get_emoji('adder4')} **Navigation Commands:**
+• {convert_font('.help', 'mono')} - Show main help menu
+• {convert_font('.next', 'mono')} - Next page of plugins/categories
+• {convert_font('.back', 'mono')} - Previous page or back to main
+• {convert_font('.help <category>', 'mono')} - Jump to specific category
+
+{get_emoji('adder2')} **Quick Commands:**
+• {convert_font('.help categories', 'mono')} - Browse all categories
+• {convert_font('.help status', 'mono')} - Show system status
+"""
 
 async def help_handler(event):
     """Enhanced help command handler"""
@@ -563,166 +594,279 @@ async def help_handler(event):
     try:
         args = event.text.split()
         
-        # Check if specific category requested
-        if len(args) > 1:
-            category = args[1].upper()
-            auto_categories = categorize_plugins_auto()
-            if category in auto_categories:
-                help_text = get_auto_category_help_text(category, auto_categories[category])
-                buttons = [[Button.inline(f"{get_emoji('adder1')} Back to Main", b"help_main")]]
-                await safe_send_premium(event, help_text, buttons)
-                return
+        # Reset navigation state untuk new help request
+        HELP_STATE['current_page'] = 0
+        HELP_STATE['current_category'] = 'main'
         
+        # Handle special commands
+        if len(args) > 1:
+            command = args[1].lower()
+            
+            if command == 'categories':
+                await show_categories_page(event, 0)
+                return
+            elif command == 'status':
+                await show_status_page(event)
+                return
+            else:
+                # Try to find category
+                auto_categories = categorize_plugins_auto()
+                category_upper = command.upper()
+                if category_upper in auto_categories:
+                    HELP_STATE['current_category'] = category_upper
+                    await show_category_page(event, category_upper, 0)
+                    return
+        
+        # Show main help menu
+        await show_main_help(event)
+        
+    except Exception as e:
+        await safe_send_premium(event, f"{get_emoji('adder5')} **Help error:** {str(e)}\n\n{get_vzoel_signature()}")
+
+async def show_main_help(event):
+    """Show main help menu"""
+    try:
         # Get dynamic ping measurement
         ping_ms = await get_ping_ms()
         
         # Show main help menu dengan dynamic values
         help_text = get_main_help_text().replace('{ping_placeholder}', str(ping_ms))
         
-        buttons = [
-            [Button.inline(f"{get_emoji('adder2')} Browse Categories", b"help_categories")],
-            [Button.inline(f"{get_emoji('check')} System Status", b"help_status")],
-            [Button.inline(f"{get_emoji('adder6')} Premium Features", b"help_premium")],
-            [Button.inline(f"{get_emoji('adder1')} Close Menu", b"help_close")]
-        ]
+        help_text += f"\n\n{get_help_navigation_text()}"
+        help_text += f"\n{get_vzoel_signature()}"
         
-        await safe_send_premium(event, help_text, buttons)
+        await safe_send_premium(event, help_text)
         
     except Exception as e:
-        await event.reply(f"{get_emoji('adder5')} Help error: {str(e)}")
+        await safe_send_premium(event, f"{get_emoji('adder5')} **Error:** {str(e)}\n\n{get_vzoel_signature()}")
 
-async def help_callback_handler(event):
-    """Handle help menu button callbacks"""
-    global client
-    if not await is_owner_check(client, event.sender_id):
-        await event.answer("❌ Access denied", alert=True)
-        return
-    
+async def show_categories_page(event, page=0):
+    """Show categories with pagination"""
     try:
-        data = event.data.decode('utf-8')
+        auto_categories = categorize_plugins_auto()
+        active_categories = {k: v for k, v in auto_categories.items() if v.get('plugins')}
         
-        if data == "help_main":
-            # Show main menu
-            help_text = get_main_help_text()
-            buttons = [
-                [Button.inline(f"{get_emoji('adder2')} Browse Categories", b"help_categories")],
-                [Button.inline(f"{get_emoji('check')} System Status", b"help_status")],
-                [Button.inline(f"{get_emoji('adder6')} Premium Features", b"help_premium")],
-                [Button.inline(f"{get_emoji('adder1')} Close Menu", b"help_close")]
-            ]
-            await safe_edit_premium(event, help_text, buttons)
-            
-        elif data == "help_categories":
-            # Show auto-detected category selection
-            auto_categories = categorize_plugins_auto()
-            
-            # Filter categories that have plugins
-            active_categories = {k: v for k, v in auto_categories.items() if v.get('plugins')}
-            
-            help_text = f"""{get_emoji('main')} **AUTO-DETECTED CATEGORIES**
+        categories_list = list(active_categories.items())
+        HELP_STATE['categories_list'] = categories_list
+        HELP_STATE['current_category'] = 'categories'
+        HELP_STATE['current_page'] = page
+        
+        categories_per_page = 3
+        start_idx = page * categories_per_page
+        end_idx = start_idx + categories_per_page
+        page_categories = categories_list[start_idx:end_idx]
+        
+        total_pages = (len(categories_list) - 1) // categories_per_page + 1
+        
+        help_text = f"""{get_emoji('main')} **PLUGIN CATEGORIES** (Page {page + 1}/{total_pages})
 
-{get_emoji('check')} **Found {len(active_categories)} active categories with {sum(len(cat.get('plugins', {})) for cat in active_categories.values())} plugins**
+{get_emoji('check')} **Found {len(active_categories)} categories with {sum(len(cat.get('plugins', {})) for cat in active_categories.values())} plugins**
 
-{get_emoji('adder2')} Click any category below to browse plugins
-{get_emoji('adder3')} Categories are automatically organized by functionality
-{get_emoji('adder4')} Use navigation buttons to return to main menu
+"""
+        
+        for idx, (cat_name, cat_data) in enumerate(page_categories, start_idx + 1):
+            plugin_count = len(cat_data.get('plugins', {}))
+            description = cat_data.get('description', 'No description')
+            
+            help_text += f"""{get_emoji('adder2')} **{idx}. {cat_name}** ({plugin_count} plugins)
+   {description[:80]}{'...' if len(description) > 80 else ''}
+   Use: {convert_font(f'.help {cat_name.lower()}', 'mono')}
 
-{get_vzoel_signature()}"""
-            
-            buttons = get_auto_category_buttons(active_categories)
-            await safe_edit_premium(event, help_text, buttons)
-            
-        elif data.startswith("help_autocat_"):
-            # Show specific auto-detected category
-            category_name = data.replace("help_autocat_", "")
-            auto_categories = categorize_plugins_auto()
-            
-            if category_name in auto_categories:
-                help_text = get_auto_category_help_text(category_name, auto_categories[category_name])
-                buttons = [
-                    [Button.inline(f"{get_emoji('adder2')} Back to Categories", b"help_categories")],
-                    [Button.inline(f"{get_emoji('adder1')} Back to Main", b"help_main")]
-                ]
-                await safe_edit_premium(event, help_text, buttons)
-            
-        elif data == "help_status":
-            # Show system status
-            status_text = f"""
+"""
+        
+        # Navigation info
+        nav_info = f"\n{get_emoji('adder4')} **Navigation:**\n"
+        if page > 0:
+            nav_info += f"• {convert_font('.back', 'mono')} - Previous page\n"
+        if page < total_pages - 1:
+            nav_info += f"• {convert_font('.next', 'mono')} - Next page\n"
+        nav_info += f"• {convert_font('.help', 'mono')} - Back to main menu"
+        
+        help_text += nav_info + f"\n\n{get_vzoel_signature()}"
+        
+        await safe_send_premium(event, help_text)
+        
+    except Exception as e:
+        await safe_send_premium(event, f"{get_emoji('adder5')} **Error:** {str(e)}\n\n{get_vzoel_signature()}")
+
+async def show_category_page(event, category_name, page=0):
+    """Show specific category with plugins pagination"""
+    try:
+        auto_categories = categorize_plugins_auto()
+        
+        if category_name not in auto_categories:
+            await safe_send_premium(event, f"{get_emoji('adder5')} **Category not found:** {category_name}\n\n{get_vzoel_signature()}")
+            return
+        
+        category_data = auto_categories[category_name]
+        plugins = list(category_data.get('plugins', {}).items())
+        
+        HELP_STATE['current_category'] = category_name
+        HELP_STATE['current_page'] = page
+        
+        plugins_per_page = HELP_STATE['plugins_per_page']
+        start_idx = page * plugins_per_page
+        end_idx = start_idx + plugins_per_page
+        page_plugins = plugins[start_idx:end_idx]
+        
+        total_pages = (len(plugins) - 1) // plugins_per_page + 1 if plugins else 1
+        
+        help_text = f"""{get_emoji('main')} **{category_name} PLUGINS** (Page {page + 1}/{total_pages})
+
+{get_emoji('adder4')} **Description:** {category_data.get('description', 'No description')}
+{get_emoji('check')} **Total Plugins:** {len(plugins)}
+
+"""
+        
+        if not plugins:
+            help_text += f"{get_emoji('adder3')} No plugins found in this category."
+        else:
+            for idx, (plugin_name, plugin_info) in enumerate(page_plugins, start_idx + 1):
+                name = plugin_info.get('name', plugin_name)
+                description = plugin_info.get('description', 'No description')
+                commands = plugin_info.get('commands', [])
+                
+                help_text += f"""{get_emoji('adder2')} **{idx}. {name.title()}**
+   {description[:100]}{'...' if len(description) > 100 else ''}
+"""
+                
+                if commands:
+                    cmd_list = []
+                    for cmd in commands[:3]:  # Show max 3 commands
+                        if isinstance(cmd, str):
+                            cmd_list.append(f"`{cmd}`")
+                    if cmd_list:
+                        help_text += f"   **Commands:** {', '.join(cmd_list)}"
+                        if len(commands) > 3:
+                            help_text += f" (+{len(commands) - 3} more)"
+                
+                help_text += "\n\n"
+        
+        # Navigation info
+        nav_info = f"{get_emoji('adder6')} **Navigation:**\n"
+        if page > 0:
+            nav_info += f"• {convert_font('.back', 'mono')} - Previous page\n"
+        if page < total_pages - 1:
+            nav_info += f"• {convert_font('.next', 'mono')} - Next page\n"
+        nav_info += f"• {convert_font('.help categories', 'mono')} - Back to categories\n"
+        nav_info += f"• {convert_font('.help', 'mono')} - Main menu"
+        
+        help_text += nav_info + f"\n\n{get_vzoel_signature()}"
+        
+        await safe_send_premium(event, help_text)
+        
+    except Exception as e:
+        await safe_send_premium(event, f"{get_emoji('adder5')} **Error:** {str(e)}\n\n{get_vzoel_signature()}")
+
+async def show_status_page(event):
+    """Show system status page"""
+    try:
+        plugin_count = count_loaded_plugins()
+        status_text = f"""
 {get_emoji('main')} {convert_font('SYSTEM STATUS', 'bold')}
 
 {get_emoji('check')} {convert_font('Bot Information:', 'bold')}
 • Status: {convert_font('Online & Running', 'mono')}
-• Version: {convert_font('v3.0.0 Complete', 'mono')}
+• Version: {convert_font('v3.0.0 Navigation Update', 'mono')}
 • Premium: {convert_font('Active Account', 'mono')}
 • Uptime: {convert_font(datetime.now().strftime('%H:%M:%S'), 'mono')}
 
 {get_emoji('adder2')} {convert_font('Plugin Status:', 'bold')}
-• Core Plugins: {convert_font('25+ loaded', 'mono')}
-• Latest Additions: {convert_font('updater, spam_reset, log_group', 'mono')}
+• Core Plugins: {convert_font(f'{plugin_count}+ loaded', 'mono')}
+• Latest: {convert_font('music_player, secret_saver, help v3.0', 'mono')}
 • Database: {convert_font('Centralized system active', 'mono')}
 
 {get_emoji('adder4')} {convert_font('Features Active:', 'bold')}
 • Premium emoji integration ✅
-• Auto-update system ✅
+• Command-based navigation ✅
+• Auto plugin detection ✅ 
+• Secret media saver ✅
+• Music download system ✅
 • Spam limit reset ✅
-• Log group management ✅
-• AI chat integration ✅
-• Interactive help navigation ✅
 
-{get_emoji('adder6')} {convert_font('Recent Updates:', 'bold')}
-• Added comprehensive updater system
-• Implemented spam limit reset functionality
-• Enhanced log group management
-• Updated help system dengan interactive navigation
+{get_emoji('adder6')} {convert_font('Navigation System:', 'bold')}
+• .help - Main menu
+• .next/.back - Page navigation
+• .help categories - Browse all
+• .help <category> - Direct access
 
 {get_emoji('main')} {convert_font('All systems operational!', 'mono')}
-            """.strip()
-            
-            buttons = [[Button.inline(f"{get_emoji('adder1')} Back", b"help_main")]]
-            await safe_edit_premium(event, status_text, buttons)
-            
-        elif data == "help_premium":
-            # Show premium features
-            premium_text = f"""
-{get_emoji('main')} {convert_font('PREMIUM FEATURES TEST', 'bold')}
 
-{get_emoji('check')} {convert_font('Premium Emojis Available:', 'bold')}
-{get_emoji('main')} Main: {get_emoji('main')} (Premium star emoji)
-{get_emoji('check')} Check: {get_emoji('check')} (Settings gear)
-{get_emoji('adder1')} Storm: {get_emoji('adder1')} (Weather storm)
-{get_emoji('adder2')} Success: {get_emoji('adder2')} (Check mark)
-{get_emoji('adder3')} Alien: {get_emoji('adder3')} (Alien face)
-{get_emoji('adder4')} Plane: {get_emoji('adder4')} (Airplane)
-{get_emoji('adder5')} Devil: {get_emoji('adder5')} (Devil face)
-{get_emoji('adder6')} Mixer: {get_emoji('adder6')} (Audio mixer)
-
-{get_emoji('adder2')} {convert_font('Premium Status:', 'bold')}
-• Emoji Integration: {convert_font('Active', 'mono')}
-• Custom Entities: {convert_font('UTF-16 handled', 'mono')}
-• Font Conversion: {convert_font('Bold & Mono available', 'mono')}
-• Interactive Buttons: {convert_font('Fully functional', 'mono')}
-
-{get_emoji('adder4')} {convert_font('Latest Features:', 'bold')}
-• Auto-update system dengan Git integration
-• Spam limit reset via SpamBot interaction
-• Permanent log group management
-• Interactive help dengan category navigation
-• Centralized database compatibility
-
-{get_emoji('main')} {convert_font('Premium features working perfectly!', 'mono')}
-            """.strip()
-            
-            buttons = [[Button.inline(f"{get_emoji('adder1')} Back", b"help_main")]]
-            await safe_edit_premium(event, premium_text, buttons)
-            
-        elif data == "help_close":
-            await event.delete()
-            return
-            
-        await event.answer()
+{get_vzoel_signature()}
+        """.strip()
+        
+        await safe_send_premium(event, status_text)
         
     except Exception as e:
-        await event.answer(f"Error: {str(e)}", alert=True)
+        await safe_send_premium(event, f"{get_emoji('adder5')} **Error:** {str(e)}\n\n{get_vzoel_signature()}")
+
+async def next_handler(event):
+    """Handle .next command for pagination"""
+    global client
+    if not await is_owner_check(client, event.sender_id):
+        return
+    
+    try:
+        current_category = HELP_STATE.get('current_category', 'main')
+        current_page = HELP_STATE.get('current_page', 0)
+        
+        if current_category == 'main':
+            await safe_send_premium(event, f"{get_emoji('adder5')} **Use .help categories first to browse pages**\n\n{get_vzoel_signature()}")
+            return
+        elif current_category == 'categories':
+            # Navigate categories
+            categories_list = HELP_STATE.get('categories_list', [])
+            categories_per_page = 3
+            total_pages = (len(categories_list) - 1) // categories_per_page + 1
+            
+            if current_page < total_pages - 1:
+                await show_categories_page(event, current_page + 1)
+            else:
+                await safe_send_premium(event, f"{get_emoji('adder5')} **Already at last page of categories**\n\n{get_vzoel_signature()}")
+        else:
+            # Navigate category plugins
+            auto_categories = categorize_plugins_auto()
+            if current_category in auto_categories:
+                plugins = list(auto_categories[current_category].get('plugins', {}).items())
+                plugins_per_page = HELP_STATE['plugins_per_page']
+                total_pages = (len(plugins) - 1) // plugins_per_page + 1 if plugins else 1
+                
+                if current_page < total_pages - 1:
+                    await show_category_page(event, current_category, current_page + 1)
+                else:
+                    await safe_send_premium(event, f"{get_emoji('adder5')} **Already at last page of {current_category}**\n\n{get_vzoel_signature()}")
+        
+    except Exception as e:
+        await safe_send_premium(event, f"{get_emoji('adder5')} **Next error:** {str(e)}\n\n{get_vzoel_signature()}")
+
+async def back_handler(event):
+    """Handle .back command for navigation"""
+    global client
+    if not await is_owner_check(client, event.sender_id):
+        return
+    
+    try:
+        current_category = HELP_STATE.get('current_category', 'main')
+        current_page = HELP_STATE.get('current_page', 0)
+        
+        if current_category == 'main':
+            await safe_send_premium(event, f"{get_emoji('adder5')} **Already at main menu**\n\n{get_vzoel_signature()}")
+            return
+        elif current_category == 'categories':
+            # Go back in categories or to main
+            if current_page > 0:
+                await show_categories_page(event, current_page - 1)
+            else:
+                await show_main_help(event)
+        else:
+            # Go back in category plugins or to categories
+            if current_page > 0:
+                await show_category_page(event, current_category, current_page - 1)
+            else:
+                await show_categories_page(event, 0)
+        
+    except Exception as e:
+        await safe_send_premium(event, f"{get_emoji('adder5')} **Back error:** {str(e)}\n\n{get_vzoel_signature()}")
 
 def get_plugin_info():
     return PLUGIN_INFO
@@ -733,9 +877,10 @@ def setup(client_instance):
     client = client_instance
     
     client.add_event_handler(help_handler, events.NewMessage(pattern=r'\.help(?:\s+(.+))?$'))
-    client.add_event_handler(help_callback_handler, events.CallbackQuery(pattern=rb"help_(.+)"))
+    client.add_event_handler(next_handler, events.NewMessage(pattern=r'\.next$'))
+    client.add_event_handler(back_handler, events.NewMessage(pattern=r'\.back$'))
     
-    print(f"✅ [Help] Interactive help system loaded v{PLUGIN_INFO['version']} - {len(PLUGIN_CATEGORIES)} categories available")
+    print(f"✅ [Help] Command-based navigation system loaded v{PLUGIN_INFO['version']} - .next/.back navigation active")
 
 def cleanup_plugin():
     """Cleanup plugin resources"""
@@ -748,4 +893,4 @@ def cleanup_plugin():
         print(f"[Help] Cleanup error: {e}")
 
 # Export functions
-__all__ = ['setup', 'cleanup_plugin', 'get_plugin_info', 'help_handler', 'help_callback_handler']
+__all__ = ['setup', 'cleanup_plugin', 'get_plugin_info', 'help_handler', 'next_handler', 'back_handler']
