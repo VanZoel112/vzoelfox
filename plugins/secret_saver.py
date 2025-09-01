@@ -9,6 +9,7 @@ Version: 1.0.0 - Extreme Secret Media Saver
 import os
 import asyncio
 import shutil
+import sys
 from datetime import datetime
 from telethon import events
 from telethon.tl.types import (
@@ -16,6 +17,16 @@ from telethon.tl.types import (
     DocumentAttributeAudio, DocumentAttributeAnimated, MessageMediaWebPage
 )
 from telethon.errors import FloodWaitError
+
+# Premium emoji helper
+sys.path.append('utils')
+try:
+    from premium_emoji_helper import get_emoji, safe_send_premium, safe_edit_premium, get_vzoel_signature
+except ImportError:
+    def get_emoji(emoji_type): return '🤩'
+    async def safe_send_premium(event, text, **kwargs): await event.reply(text, **kwargs)
+    async def safe_edit_premium(message, text, **kwargs): await message.edit(text, **kwargs)
+    def get_vzoel_signature(): return '🤩 VzoelFox Premium System'
 
 # Import database compatibility layer
 try:
@@ -78,7 +89,34 @@ SECRET_SAVER_STATE = {
 }
 
 SAVE_DIRECTORY = os.path.expanduser("~/VzoelFox_SecretSaver")
-GALLERY_DIR = os.path.expanduser("~/storage/pictures/VzoelFox_Secret")
+# Android gallery paths - try multiple locations
+POSSIBLE_GALLERY_PATHS = [
+    "/storage/emulated/0/DCIM/VzoelFox_Secret",
+    "/storage/emulated/0/Pictures/VzoelFox_Secret", 
+    "/storage/emulated/0/Download/VzoelFox_Secret",
+    os.path.expanduser("~/storage/pictures/VzoelFox_Secret"),
+    os.path.expanduser("~/storage/dcim/VzoelFox_Secret"),
+    os.path.expanduser("~/VzoelFox_Gallery")
+]
+
+# Find working gallery path
+GALLERY_DIR = None
+for path in POSSIBLE_GALLERY_PATHS:
+    try:
+        os.makedirs(path, exist_ok=True)
+        # Test write permission
+        test_file = os.path.join(path, '.test_write')
+        with open(test_file, 'w') as f:
+            f.write('test')
+        os.remove(test_file)
+        GALLERY_DIR = path
+        break
+    except:
+        continue
+
+# Fallback to local directory if all fail
+if not GALLERY_DIR:
+    GALLERY_DIR = os.path.expanduser("~/VzoelFox_Gallery")
 
 def ensure_directories():
     """Ensure save directories exist"""
@@ -146,69 +184,78 @@ async def is_owner_check(client, user_id):
     except Exception:
         return False
 
-async def save_media_to_gallery(client, message, media_type="unknown"):
-    """Save media to gallery dengan metadata"""
+async def save_media_to_saved_messages(client, message, media_type="unknown"):
+    """Save media to Saved Messages dengan caption info"""
     try:
-        ensure_directories()
-        
-        # Generate filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        chat_info = "unknown"
+        # Get chat info
+        timestamp = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        chat_info = "Unknown Chat"
         
         try:
             chat = await client.get_entity(message.chat_id)
-            chat_info = getattr(chat, 'title', getattr(chat, 'first_name', f'chat_{message.chat_id}'))
-            chat_info = "".join(c for c in chat_info if c.isalnum() or c in (' ', '-', '_')).strip()[:20]
+            if hasattr(chat, 'title'):
+                chat_info = chat.title
+            elif hasattr(chat, 'first_name'):
+                chat_info = f"{chat.first_name}" + (f" {chat.last_name}" if hasattr(chat, 'last_name') and chat.last_name else "")
+            else:
+                chat_info = f"Chat {message.chat_id}"
         except:
-            chat_info = f"chat_{message.chat_id}"
+            chat_info = f"Chat {message.chat_id}"
         
-        # Download media
-        if message.media:
-            file_extension = "jpg"  # default
-            
-            if isinstance(message.media, MessageMediaPhoto):
-                file_extension = "jpg"
-                media_type = "photo"
-            elif isinstance(message.media, MessageMediaDocument):
-                doc = message.media.document
-                file_extension = doc.mime_type.split('/')[-1] if doc.mime_type else "bin"
-                
-                # Check document attributes
-                for attr in doc.attributes:
-                    if isinstance(attr, DocumentAttributeVideo):
-                        media_type = "video"
-                        file_extension = "mp4"
-                    elif isinstance(attr, DocumentAttributeAudio):
-                        media_type = "audio" 
-                        file_extension = "mp3"
-                    elif isinstance(attr, DocumentAttributeAnimated):
-                        media_type = "gif"
-                        file_extension = "gif"
-            
-            # Create filename
-            filename = f"VzoelSecret_{timestamp}_{chat_info}_{media_type}.{file_extension}"
-            temp_path = os.path.join(SAVE_DIRECTORY, filename)
-            gallery_path = os.path.join(GALLERY_DIR, filename)
-            
-            # Download to temp first
-            await client.download_media(message, temp_path)
-            
-            # Copy to gallery
-            shutil.copy2(temp_path, gallery_path)
-            
-            # Update stats
-            SECRET_SAVER_STATE['save_count'] += 1
-            SECRET_SAVER_STATE['last_save'] = datetime.now().isoformat()
-            save_state()
-            
-            return {
-                'success': True,
-                'temp_path': temp_path,
-                'gallery_path': gallery_path,
-                'filename': filename,
-                'media_type': media_type,
-                'chat_info': chat_info
-            }
+        # Determine media type
+        if isinstance(message.media, MessageMediaPhoto):
+            media_type = "📷 Photo"
+        elif isinstance(message.media, MessageMediaDocument):
+            doc = message.media.document
+            for attr in doc.attributes:
+                if isinstance(attr, DocumentAttributeVideo):
+                    media_type = "🎥 Video"
+                    break
+                elif isinstance(attr, DocumentAttributeAudio):
+                    media_type = "🎵 Audio"
+                    break
+                elif isinstance(attr, DocumentAttributeAnimated):
+                    media_type = "🎬 GIF"
+                    break
+            else:
+                media_type = "📁 Document"
+        else:
+            media_type = "📎 Media"
+        
+        # Create caption with VzoelFox branding
+        caption = f"""{get_emoji('main')} **VzoelFox Secret Saver**
+
+{get_emoji('check')} **Media Type:** {media_type}
+{get_emoji('adder4')} **From Chat:** {chat_info}
+{get_emoji('adder6')} **Saved:** {timestamp}
+{get_emoji('adder5')} **Status:** Secret Media Bypassed
+
+{get_emoji('adder2')} **Auto-saved by VzoelFox Secret System**
+{get_emoji('adder3')} Download to gallery: Long press → Save to Gallery
+
+{get_vzoel_signature()}"""
+        
+        # Forward media to saved messages
+        me = await client.get_me()
+        await client.send_message(
+            me.id,  # Send to self (saved messages)
+            message.media,
+            caption=caption,
+            supports_streaming=True
+        )
+        
+        # Update stats
+        SECRET_SAVER_STATE['save_count'] += 1
+        SECRET_SAVER_STATE['last_save'] = timestamp
+        save_state()
+        
+        return {
+            'success': True,
+            'media_type': media_type,
+            'chat_info': chat_info,
+            'timestamp': timestamp,
+            'saved_to': 'Saved Messages'
+        }
     
     except Exception as e:
         print(f"[SecretSaver] Save media error: {e}")
@@ -245,17 +292,19 @@ async def handle_secret_media(client, event):
         
         # Always save if auto_save_gallery is enabled (extreme mode)
         if SECRET_SAVER_STATE['auto_save_gallery'] or is_secret:
-            result = await save_media_to_gallery(client, message)
+            result = await save_media_to_saved_messages(client, message)
             
             if result['success'] and not SECRET_SAVER_STATE['stealth_mode']:
                 # Send notification (only if not stealth)
                 notification = f"""
-{get_emoji('adder2')} {convert_font('SECRET MEDIA SAVED!', 'bold')}
+{get_emoji('adder2')} {convert_font('SECRET MEDIA AUTO-SAVED!', 'bold')}
 
 {get_emoji('check')} {convert_font('Type:', 'mono')} {result['media_type']}
 {get_emoji('adder4')} {convert_font('From:', 'mono')} {result['chat_info']}
-{get_emoji('adder6')} {convert_font('Saved to Gallery:', 'mono')} ✓
+{get_emoji('adder6')} {convert_font('Saved to:', 'mono')} {result['saved_to']}
 {get_emoji('main')} {convert_font('Total Saved:', 'mono')} {SECRET_SAVER_STATE['save_count']}
+
+{get_emoji('adder5')} **Auto-bypass by VzoelFox Secret System**
 
 {get_vzoel_signature()}
                 """.strip()
@@ -299,10 +348,10 @@ async def secreton_handler(event):
 {get_vzoel_signature()}
         """.strip()
         
-        await event.reply(response)
+        await safe_send_premium(event, response)
     
     except Exception as e:
-        await event.reply(f"❌ Error: {str(e)}")
+        await safe_send_premium(event, f"{get_emoji('adder3')} **Error:** {str(e)}\n\n{get_vzoel_signature()}")
 
 async def secretoff_handler(event):
     """Turn off secret saver"""
@@ -326,10 +375,10 @@ async def secretoff_handler(event):
 {get_vzoel_signature()}
         """.strip()
         
-        await event.reply(response)
+        await safe_send_premium(event, response)
     
     except Exception as e:
-        await event.reply(f"❌ Error: {str(e)}")
+        await safe_send_premium(event, f"{get_emoji('adder3')} **Error:** {str(e)}\n\n{get_vzoel_signature()}")
 
 async def secretstatus_handler(event):
     """Show secret saver status"""
@@ -362,10 +411,10 @@ async def secretstatus_handler(event):
 {get_vzoel_signature()}
         """.strip()
         
-        await event.reply(status_text)
+        await safe_send_premium(event, status_text)
     
     except Exception as e:
-        await event.reply(f"❌ Error: {str(e)}")
+        await safe_send_premium(event, f"{get_emoji('adder3')} **Error:** {str(e)}\n\n{get_vzoel_signature()}")
 
 async def secretmode_handler(event):
     """Toggle secret saver modes"""
@@ -480,35 +529,37 @@ async def gallerysave_handler(event):
     
     try:
         if not event.is_reply:
-            await event.reply(f"{get_emoji('adder5')} Reply to a media message to save it manually!")
+            await safe_send_premium(event, f"{get_emoji('adder5')} **Reply to a media message to save it manually!**\n\n{get_vzoel_signature()}")
             return
         
         reply_msg = await event.get_reply_message()
         if not reply_msg.media:
-            await event.reply(f"{get_emoji('adder3')} No media found in replied message!")
+            await safe_send_premium(event, f"{get_emoji('adder3')} **No media found in replied message!**\n\n{get_vzoel_signature()}")
             return
         
         # Save the media
-        result = await save_media_to_gallery(client, reply_msg)
+        result = await save_media_to_saved_messages(client, reply_msg)
         
         if result['success']:
             response = f"""
-{get_emoji('adder2')} {convert_font('MEDIA SAVED TO GALLERY!', 'bold')}
+{get_emoji('adder2')} {convert_font('MEDIA SAVED SUCCESSFULLY!', 'bold')}
 
-{get_emoji('check')} {convert_font('File:', 'mono')} {result['filename']}
-{get_emoji('adder4')} {convert_font('Type:', 'mono')} {result['media_type']}
-{get_emoji('adder6')} {convert_font('From:', 'mono')} {result['chat_info']}
-{get_emoji('main')} {convert_font('Gallery Path:', 'mono')} ✓
+{get_emoji('check')} {convert_font('Type:', 'mono')} {result['media_type']}
+{get_emoji('adder4')} {convert_font('From:', 'mono')} {result['chat_info']}
+{get_emoji('adder6')} {convert_font('Saved to:', 'mono')} {result['saved_to']}
+{get_emoji('main')} {convert_font('Time:', 'mono')} {result['timestamp']}
+
+{get_emoji('adder5')} **Check your Saved Messages to download to gallery!**
 
 {get_vzoel_signature()}
             """.strip()
         else:
             response = f"{get_emoji('adder5')} Save failed: {result.get('error', 'Unknown error')}"
         
-        await event.reply(response)
+        await safe_send_premium(event, response)
     
     except Exception as e:
-        await event.reply(f"❌ Error: {str(e)}")
+        await safe_send_premium(event, f"{get_emoji('adder3')} **Error:** {str(e)}\n\n{get_vzoel_signature()}")
 
 def get_plugin_info():
     return PLUGIN_INFO
