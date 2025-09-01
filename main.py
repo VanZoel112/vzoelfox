@@ -1044,7 +1044,7 @@ async def ping_handler(event):
     
     try:
         start = time.time()
-        msg = await event.reply(f"{get_emoji('main')} {convert_font('Testing response time...', 'bold')}")
+        msg = await event.reply(f"{get_emoji('main')} **Testing response time...**")
         end = time.time()
         
         ping_time = (end - start) * 1000
@@ -1064,27 +1064,27 @@ async def ping_handler(event):
             latency_emoji = get_emoji('adder3')
         
         ping_text = f"""
-{get_emoji('main')} {convert_font('PING RESULTS', 'mono')}
-   {get_emoji('main')} {convert_font('RESPONSE TIME ANALYSIS', 'mono')} {get_emoji('main')}
+{get_emoji('main')} `PING RESULTS`
+   {get_emoji('main')} `RESPONSE TIME ANALYSIS` {get_emoji('main')}
 
-{get_emoji('check')} {convert_font('Response Time:', 'bold')} `{ping_time:.2f}ms`
-{latency_emoji} {convert_font('Latency Status:', 'bold')} {latency_status}
-{get_emoji('adder4')} {convert_font('Connection:', 'bold')} Stable
-{get_emoji('check')} {convert_font('Server:', 'bold')} Online
-{get_emoji('main')} {convert_font('Premium Status:', 'bold')} {'Active' if premium_status else 'Standard'}
+{get_emoji('check')} **Response Time:** `{ping_time:.2f}ms`
+{latency_emoji} **Latency Status:** {latency_status}
+{get_emoji('adder4')} **Connection:** Stable
+{get_emoji('check')} **Server:** Online
+{get_emoji('main')} **Premium Status:** {'Active' if premium_status else 'Standard'}
 
-{get_emoji('adder5')} {convert_font('Performance Metrics:', 'bold')}
+{get_emoji('adder5')} **Performance Metrics:**
 {get_emoji('check')} Commands Executed: `{stats['commands_executed']}`
 {get_emoji('check')} Plugins Loaded: Active
-{get_emoji('check')} Voice Chat: {'Active' if voice_call_active else 'Inactive'}`
-{get_emoji('main')} {convert_font('Userbot by. Ltpn', 'bold')}{get_emoji('main')}
-{get_emoji('check')} {convert_font('Bot performance optimal!', 'bold')}
+{get_emoji('check')} Voice Chat: Ready
+{get_emoji('main')} **Userbot by. Ltpn** {get_emoji('main')}
+{get_emoji('check')} **Bot performance optimal!**
         """.strip()
         
         await safe_edit_message(msg, ping_text)
         
     except Exception as e:
-        await event.reply(f"❌ {convert_font('Error:', 'bold')} {str(e)}")
+        await event.reply(f"❌ **Error:** {str(e)}")
         logger.error(f"Ping error: {e}")
 
 # [Continue with all remaining commands...]
