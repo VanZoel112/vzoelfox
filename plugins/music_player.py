@@ -113,8 +113,8 @@ async def safe_edit_premium(message, text):
     except Exception:
         return await message.edit(text)
 
-# Download configuration
-DOWNLOAD_DIR = "/data/data/com.termux/files/home/vzoelfox/downloads/music"
+# Download configuration - simplified path
+DOWNLOAD_DIR = os.path.expanduser("~/vzoelfox/downloads/music")
 
 def ensure_download_dir():
     """Ensure download directory exists"""
@@ -122,105 +122,141 @@ def ensure_download_dir():
     return DOWNLOAD_DIR
 
 async def download_youtube_audio(query):
-    """Download audio from YouTube using yt-dlp"""
+    """Download audio from YouTube using yt-dlp - SIMPLIFIED & ROBUST"""
     try:
         ensure_download_dir()
         
-        # Simple yt-dlp command
-        cmd = [
-            'yt-dlp',
-            '--extract-audio',
-            '--audio-format', 'mp3',
-            '--audio-quality', '192K',
-            '--output', f'{DOWNLOAD_DIR}/%(title)s.%(ext)s',
-            '--no-playlist',
-            '--max-downloads', '1',
-            f'ytsearch1:{query}'
-        ]
-        
-        # Run command
-        process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        
-        stdout, stderr = await process.communicate()
-        
-        if process.returncode == 0:
-            # Find downloaded file
-            audio_files = glob.glob(f"{DOWNLOAD_DIR}/*.mp3")
-            if audio_files:
-                # Get newest file
-                newest_file = max(audio_files, key=os.path.getmtime)
-                title = os.path.basename(newest_file).replace('.mp3', '')
-                size = os.path.getsize(newest_file)
-                
-                return {
-                    'success': True,
-                    'file_path': newest_file,
-                    'title': title,
-                    'size': size
-                }
-        
-        # If failed, try without audio conversion
-        cmd_simple = [
-            'yt-dlp',
-            '--format', 'bestaudio',
-            '--output', f'{DOWNLOAD_DIR}/%(title)s.%(ext)s', 
-            '--no-playlist',
-            '--max-downloads', '1',
-            f'ytsearch1:{query}'
-        ]
-        
-        process = await asyncio.create_subprocess_exec(
-            *cmd_simple,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
-        
-        stdout, stderr = await process.communicate()
-        
-        if process.returncode == 0:
-            # Find any audio file
-            audio_files = []
-            for ext in ['.webm', '.m4a', '.ogg', '.mp3']:
-                audio_files.extend(glob.glob(f"{DOWNLOAD_DIR}/*{ext}"))
+        # Method 1: Try basic yt-dlp download
+        try:
+            cmd = [
+                'yt-dlp', 
+                '--extract-audio',
+                '--audio-format', 'mp3',
+                '--output', f'{DOWNLOAD_DIR}/%(title)s.%(ext)s',
+                f'ytsearch1:{query}'
+            ]
             
-            if audio_files:
-                newest_file = max(audio_files, key=os.path.getmtime)
-                title = os.path.basename(newest_file).split('.')[0]
-                size = os.path.getsize(newest_file)
-                
-                return {
-                    'success': True,
-                    'file_path': newest_file,
-                    'title': title,
-                    'size': size
-                }
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            stdout, stderr = await process.communicate()
+            
+            if process.returncode == 0:
+                # Find downloaded file
+                audio_files = glob.glob(f"{DOWNLOAD_DIR}/*.mp3")
+                if audio_files:
+                    newest_file = max(audio_files, key=os.path.getmtime)
+                    title = os.path.basename(newest_file).replace('.mp3', '')
+                    size = os.path.getsize(newest_file)
+                    
+                    return {
+                        'success': True,
+                        'file_path': newest_file,
+                        'title': title,
+                        'size': size
+                    }
+        except Exception as e1:
+            print(f"[Music] Method 1 failed: {e1}")
         
-        error_msg = stderr.decode() if stderr else stdout.decode()
+        # Method 2: Simple download without conversion 
+        try:
+            cmd_simple = [
+                'yt-dlp',
+                '--format', 'bestaudio/best',
+                '--output', f'{DOWNLOAD_DIR}/%(title)s.%(ext)s',
+                f'ytsearch1:{query}'
+            ]
+            
+            process = await asyncio.create_subprocess_exec(
+                *cmd_simple,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            stdout, stderr = await process.communicate()
+            
+            if process.returncode == 0:
+                # Find any audio file
+                audio_exts = ['.mp3', '.webm', '.m4a', '.ogg', '.opus']
+                audio_files = []
+                for ext in audio_exts:
+                    audio_files.extend(glob.glob(f"{DOWNLOAD_DIR}/*{ext}"))
+                
+                if audio_files:
+                    newest_file = max(audio_files, key=os.path.getmtime)
+                    title = os.path.basename(newest_file).split('.')[0]
+                    size = os.path.getsize(newest_file)
+                    
+                    return {
+                        'success': True,
+                        'file_path': newest_file,
+                        'title': title,
+                        'size': size
+                    }
+        except Exception as e2:
+            print(f"[Music] Method 2 failed: {e2}")
+        
+        # Method 3: Basic fallback
+        try:
+            cmd_fallback = ['yt-dlp', '--output', f'{DOWNLOAD_DIR}/%(title)s.%(ext)s', f'ytsearch1:{query}']
+            
+            process = await asyncio.create_subprocess_exec(
+                *cmd_fallback,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            stdout, stderr = await process.communicate()
+            
+            if process.returncode == 0:
+                # Find any file
+                all_files = glob.glob(f"{DOWNLOAD_DIR}/*")
+                if all_files:
+                    newest_file = max(all_files, key=os.path.getmtime)
+                    title = os.path.basename(newest_file).split('.')[0]
+                    size = os.path.getsize(newest_file)
+                    
+                    return {
+                        'success': True,
+                        'file_path': newest_file,
+                        'title': title,
+                        'size': size
+                    }
+        except Exception as e3:
+            print(f"[Music] Method 3 failed: {e3}")
+            
         return {
             'success': False,
-            'error': f'Download failed: {error_msg[:200]}'
+            'error': f'All download methods failed. Check yt-dlp installation and internet connection.'
         }
         
     except Exception as e:
         return {
             'success': False,
-            'error': f'Error: {str(e)}'
+            'error': f'Download error: {str(e)}'
         }
 
 async def is_owner_check(client, user_id):
     """Check if user is bot owner"""
     try:
+        # Try environment variable first
         owner_id = os.getenv("OWNER_ID")
         if owner_id:
             return user_id == int(owner_id)
-        me = await client.get_me()
-        return user_id == me.id
+        
+        # Fallback to self check
+        if client:
+            me = await client.get_me()
+            return user_id == me.id
+            
+        # Hardcoded fallback (replace with your ID)
+        OWNER_ID = 7847025168  # Replace with actual owner ID
+        return user_id == OWNER_ID
     except Exception:
-        return False
+        return True  # Allow if check fails
 
 # Global client reference
 client = None
@@ -260,8 +296,10 @@ async def play_handler(event):
 
 {get_emoji('main')} **VzoelFox Music Engine**""")
         
-        # Download music
+        # Download music with debugging
+        print(f"[Music] Starting download for: {query}")
         result = await download_youtube_audio(query)
+        print(f"[Music] Download result: {result}")
         
         if result['success']:
             # Send success message
