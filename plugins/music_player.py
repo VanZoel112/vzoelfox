@@ -126,29 +126,29 @@ async def safe_send_premium(event, text, file=None):
     try:
         entities = create_premium_entities(text)
         if entities and file:
-            await event.reply(text, formatting_entities=entities, file=file)
+            return await event.reply(text, formatting_entities=entities, file=file)
         elif entities:
-            await event.reply(text, formatting_entities=entities)
+            return await event.reply(text, formatting_entities=entities)
         elif file:
-            await event.reply(text, file=file)
+            return await event.reply(text, file=file)
         else:
-            await event.reply(text)
+            return await event.reply(text)
     except Exception:
         if file:
-            await event.reply(text, file=file)
+            return await event.reply(text, file=file)
         else:
-            await event.reply(text)
+            return await event.reply(text)
 
 async def safe_edit_premium(message, text):
     """Edit message with premium entities"""
     try:
         entities = create_premium_entities(text)
         if entities:
-            await message.edit(text, formatting_entities=entities)
+            return await message.edit(text, formatting_entities=entities)
         else:
-            await message.edit(text)
+            return await message.edit(text)
     except Exception:
-        await message.edit(text)
+        return await message.edit(text)
 
 # Music Download Configuration
 DOWNLOAD_DIR = os.path.join(os.getcwd(), "downloads", "music")
@@ -228,43 +228,58 @@ async def search_and_download_music(query, quality='best'):
         if process.returncode == 0:
             # Find downloaded file
             output = stdout.decode()
+            print(f"[Music] yt-dlp output: {output[:500]}...")  # Debug info
             
             # Extract info from output
-            title = "Unknown Title"
+            title = query[:50]  # Use query as fallback title
             duration = "Unknown"
-            uploader = "Unknown"
+            uploader = "YouTube"
             
             # Try to extract title from yt-dlp output
             for line in output.split('\n'):
                 if '[download] Destination:' in line:
                     filepath = line.split('Destination: ')[-1].strip()
-                    title = os.path.basename(filepath).replace('.mp3', '')
+                    title = os.path.basename(filepath)
+                    # Remove extension from title
+                    for ext in ['.mp3', '.webm', '.ogg', '.m4a', '.opus']:
+                        if title.endswith(ext):
+                            title = title[:-len(ext)]
+                            break
                     break
+                elif '[info]' in line and 'title:' in line:
+                    title = line.split('title:')[-1].strip()[:50]
             
             # Find the actual downloaded file (support multiple audio formats)
             audio_extensions = ['.mp3', '.webm', '.ogg', '.m4a', '.opus']
             downloaded_file = None
             
-            for file in os.listdir(DOWNLOAD_DIR):
-                for ext in audio_extensions:
-                    if file.endswith(ext) and clean_query.lower() in file.lower():
-                        downloaded_file = os.path.join(DOWNLOAD_DIR, file)
-                        break
-                if downloaded_file:
-                    break
-            
-            # If no specific match, get the most recent audio file
-            if not downloaded_file:
-                audio_files = [f for f in os.listdir(DOWNLOAD_DIR) if any(f.endswith(ext) for ext in audio_extensions)]
-                if audio_files:
-                    audio_files.sort(key=lambda x: os.path.getmtime(os.path.join(DOWNLOAD_DIR, x)), reverse=True)
-                    downloaded_file = os.path.join(DOWNLOAD_DIR, audio_files[0])
-                    # Extract title from filename, removing extension
-                    title = audio_files[0]
-                    for ext in audio_extensions:
-                        if title.endswith(ext):
-                            title = title[:-len(ext)]
+            # First try to find by query match
+            if os.path.exists(DOWNLOAD_DIR):
+                for file in os.listdir(DOWNLOAD_DIR):
+                    if any(file.endswith(ext) for ext in audio_extensions):
+                        # Check if query keywords are in filename
+                        query_words = clean_query.lower().split()
+                        if any(word in file.lower() for word in query_words if len(word) > 2):
+                            downloaded_file = os.path.join(DOWNLOAD_DIR, file)
+                            title = file
+                            for ext in audio_extensions:
+                                if title.endswith(ext):
+                                    title = title[:-len(ext)]
+                                    break
                             break
+                
+                # If no specific match, get the most recent audio file
+                if not downloaded_file:
+                    audio_files = [f for f in os.listdir(DOWNLOAD_DIR) if any(f.endswith(ext) for ext in audio_extensions)]
+                    if audio_files:
+                        # Sort by modification time, get newest
+                        audio_files.sort(key=lambda x: os.path.getmtime(os.path.join(DOWNLOAD_DIR, x)), reverse=True)
+                        downloaded_file = os.path.join(DOWNLOAD_DIR, audio_files[0])
+                        title = audio_files[0]
+                        for ext in audio_extensions:
+                            if title.endswith(ext):
+                                title = title[:-len(ext)]
+                                break
             
             if downloaded_file and os.path.exists(downloaded_file):
                 return {
@@ -278,13 +293,13 @@ async def search_and_download_music(query, quality='best'):
             else:
                 return {
                     'success': False,
-                    'error': 'Downloaded file not found'
+                    'error': f'Downloaded file not found in {DOWNLOAD_DIR}. Output: {output[:200]}...'
                 }
         else:
             error_msg = stderr.decode() if stderr else "Unknown error"
             return {
                 'success': False,
-                'error': error_msg
+                'error': f'yt-dlp failed with code {process.returncode}: {error_msg[:200]}'
             }
             
     except Exception as e:
@@ -523,7 +538,16 @@ async def play_music_handler(event):
         # Download music directly
         download_result = await search_and_download_music(query)
         
-        if not download_result['success']:
+        # Fix None result issue
+        if not download_result or download_result is None:
+            download_result = {
+                'success': False,
+                'error': 'No download result returned - yt-dlp may have failed'
+            }
+            
+        print(f"[Music] Download result: {download_result}")  # Debug info
+        
+        if not download_result.get('success', False):
             error_text = f"""
 {get_emoji('adder5')} {convert_font('DOWNLOAD FAILED', 'bold')}
 
@@ -668,10 +692,40 @@ async def music_info_handler(event):
         return
     
     try:
+        # Test yt-dlp availability
+        yt_dlp_status = "✅ Available"
+        try:
+            import subprocess
+            result = subprocess.run(['yt-dlp', '--version'], capture_output=True, text=True, timeout=5)
+            if result.returncode == 0:
+                yt_dlp_version = result.stdout.strip()
+                yt_dlp_status = f"✅ v{yt_dlp_version}"
+            else:
+                yt_dlp_status = "❌ Error"
+        except Exception:
+            yt_dlp_status = "❌ Not installed"
+        
+        # Check ffmpeg
+        ffmpeg_status = "✅ Available"
+        try:
+            result = subprocess.run(['ffmpeg', '-version'], capture_output=True, text=True, timeout=5)
+            if result.returncode != 0:
+                ffmpeg_status = "❌ Error"
+        except Exception:
+            ffmpeg_status = "❌ Not installed"
+        
+        # Check download directory
+        download_dir_status = "✅ Ready" if os.path.exists(DOWNLOAD_DIR) else "❌ Not created"
+        
         info_text = f"""
 {get_emoji('main')} {convert_font('VZOELFOX MUSIC SYSTEM', 'bold')}
 
-{get_emoji('check')} {convert_font('Version:', 'mono')} v{PLUGIN_INFO['version']}
+{get_emoji('check')} {convert_font('System Status:', 'bold')}
+• Version: {convert_font(f'v{PLUGIN_INFO["version"]}', 'mono')}
+• yt-dlp: {convert_font(yt_dlp_status, 'mono')}
+• FFmpeg: {convert_font(ffmpeg_status, 'mono')}
+• Download Dir: {convert_font(download_dir_status, 'mono')}
+
 {get_emoji('adder4')} {convert_font('Features:', 'mono')} YouTube Music Download
 {get_emoji('adder6')} {convert_font('Quality:', 'mono')} HD Audio (320kbps)
 {get_emoji('adder2')} {convert_font('Format:', 'mono')} MP3 with Metadata
@@ -680,6 +734,7 @@ async def music_info_handler(event):
 • {convert_font('.play <song>', 'mono')} - Download music
 • {convert_font('.music <query>', 'mono')} - Music search
 • {convert_font('.musicinfo', 'mono')} - Show this info
+• {convert_font('.musictest', 'mono')} - Test download system
 
 {get_emoji('adder3')} {convert_font('Premium Features:', 'bold')}
 • High-quality audio download
@@ -694,7 +749,71 @@ async def music_info_handler(event):
         await safe_send_premium(event, info_text)
     
     except Exception as e:
-        await event.reply(f"❌ Info error: {str(e)}")
+        error_text = f"""
+{get_emoji('adder5')} {convert_font('INFO ERROR', 'bold')}
+
+{get_emoji('check')} Error: {str(e)}
+{get_emoji('adder3')} Contact: @VzoelFox for support
+
+{get_vzoel_signature()}
+        """.strip()
+        await safe_send_premium(event, error_text)
+
+async def music_test_handler(event):
+    """Test music download system"""
+    global client
+    if not await is_owner_check(client, event.sender_id):
+        return
+    
+    try:
+        test_text = f"""
+{get_emoji('adder1')} {convert_font('TESTING MUSIC SYSTEM...', 'bold')}
+
+{get_emoji('check')} Testing yt-dlp with short audio...
+{get_emoji('adder2')} This may take 30-60 seconds
+
+{get_vzoel_signature()}
+        """.strip()
+        
+        test_msg = await safe_send_premium(event, test_text)
+        
+        # Test with a very short audio
+        test_result = await search_and_download_music("test audio 10 seconds")
+        
+        if test_result and test_result.get('success'):
+            success_text = f"""
+{get_emoji('adder2')} {convert_font('SYSTEM TEST PASSED!', 'bold')}
+
+{get_emoji('check')} yt-dlp: Working correctly
+{get_emoji('adder4')} File: {test_result.get('title', 'Test Audio')[:30]}
+{get_emoji('adder6')} Size: {test_result.get('size', 0) // 1024} KB
+{get_emoji('main')} Status: Ready for music downloads
+
+{get_vzoel_signature()}
+            """.strip()
+            await safe_edit_premium(test_msg, success_text)
+        else:
+            error_text = f"""
+{get_emoji('adder5')} {convert_font('SYSTEM TEST FAILED', 'bold')}
+
+{get_emoji('check')} Error: {test_result.get('error', 'Unknown error') if test_result else 'No result'}
+{get_emoji('adder3')} Status: Music downloads may not work
+{get_emoji('adder4')} Check: Internet connection and yt-dlp installation
+
+{get_vzoel_signature()}
+            """.strip()
+            await safe_edit_premium(test_msg, error_text)
+            
+    except Exception as e:
+        error_text = f"""
+{get_emoji('adder5')} {convert_font('TEST ERROR', 'bold')}
+
+{get_emoji('check')} Error: {str(e)}
+{get_emoji('adder3')} System: Music download test failed
+
+{get_vzoel_signature()}
+        """.strip()
+        await safe_send_premium(event, error_text)
 
 def get_plugin_info():
     return PLUGIN_INFO
@@ -710,6 +829,7 @@ def setup(client_instance):
     # Register handlers
     client.add_event_handler(play_music_handler, events.NewMessage(pattern=r'\.(?:play|music|song|audio)(?:\s+(.+))?$'))
     client.add_event_handler(music_info_handler, events.NewMessage(pattern=r'\.musicinfo$'))
+    client.add_event_handler(music_test_handler, events.NewMessage(pattern=r'\.musictest$'))
     
     print(f"✅ [Music Player] VzoelFox Music System loaded v{PLUGIN_INFO['version']}")
     print(f"✅ [Music Player] Premium emoji & branding active")
