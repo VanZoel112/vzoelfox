@@ -239,9 +239,8 @@ async def save_media_to_saved_messages(client, message, media_type="unknown"):
         me = await client.get_me()
         await client.send_message(
             me.id,  # Send to self (saved messages)
-            message.media,
-            caption=caption,
-            supports_streaming=True
+            caption,  # Send caption as message text
+            file=message.media  # Media as file parameter
         )
         
         # Update stats
