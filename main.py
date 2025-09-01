@@ -1210,7 +1210,7 @@ async def main():
             # STEP 3: Trigger auto-update check after plugins loaded
             try:
                 from plugins.auto_updater import schedule_startup_update
-                schedule_startup_update()
+                schedule_startup_update(client)  # Pass client parameter
                 logger.info("🔄 Auto-update system initialized")
             except ImportError:
                 logger.warning("⚠️ Auto updater plugin not found")

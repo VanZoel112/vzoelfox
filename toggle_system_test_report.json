@@ -1,0 +1,114 @@
+{
+  "timestamp": "2025-09-01T07:54:57.694710",
+  "summary": {
+    "total": 17,
+    "passed": 13,
+    "failed": 3,
+    "warned": 1,
+    "success_rate": 76.47058823529412
+  },
+  "results": [
+    {
+      "test": "Toggle Bot Script",
+      "status": "PASS",
+      "details": "File found: vzoel_toggle_bot.js",
+      "timestamp": "2025-09-01T07:54:01.170136"
+    },
+    {
+      "test": "Startup Script",
+      "status": "PASS",
+      "details": "File found: start_toggle_bot.sh",
+      "timestamp": "2025-09-01T07:54:01.170311"
+    },
+    {
+      "test": "Package.json",
+      "status": "PASS",
+      "details": "File found: package.json",
+      "timestamp": "2025-09-01T07:54:01.170376"
+    },
+    {
+      "test": "Integration Plugin",
+      "status": "PASS",
+      "details": "File found: plugins/toggle_bot_integration.py",
+      "timestamp": "2025-09-01T07:54:01.170427"
+    },
+    {
+      "test": "Premium Emoji Helper",
+      "status": "PASS",
+      "details": "File found: utils/premium_emoji_helper.py",
+      "timestamp": "2025-09-01T07:54:01.170479"
+    },
+    {
+      "test": "Startup Script Executable",
+      "status": "PASS",
+      "details": "File is executable: start_toggle_bot.sh",
+      "timestamp": "2025-09-01T07:54:01.170615"
+    },
+    {
+      "test": "Node.js Command",
+      "status": "FAIL",
+      "details": "Error checking command: [Errno 2] No such file or directory: 'which'",
+      "timestamp": "2025-09-01T07:54:01.174338"
+    },
+    {
+      "test": "NPM Command",
+      "status": "FAIL",
+      "details": "Error checking command: [Errno 2] No such file or directory: 'which'",
+      "timestamp": "2025-09-01T07:54:01.177489"
+    },
+    {
+      "test": "Bash Command",
+      "status": "FAIL",
+      "details": "Error checking command: [Errno 2] No such file or directory: 'which'",
+      "timestamp": "2025-09-01T07:54:01.180341"
+    },
+    {
+      "test": "Node.js Version",
+      "status": "PASS",
+      "details": "Version: v24.6.0",
+      "timestamp": "2025-09-01T07:54:01.262715"
+    },
+    {
+      "test": "NPM Dependencies",
+      "status": "WARN",
+      "details": "node_modules not found - run npm install",
+      "timestamp": "2025-09-01T07:54:01.263025"
+    },
+    {
+      "test": "Toggle Bot Syntax",
+      "status": "PASS",
+      "details": "JavaScript syntax is valid",
+      "timestamp": "2025-09-01T07:54:01.954338"
+    },
+    {
+      "test": "Startup Script Help",
+      "status": "PASS",
+      "details": "Help text available",
+      "timestamp": "2025-09-01T07:54:53.028997"
+    },
+    {
+      "test": "Premium Emoji Import",
+      "status": "PASS",
+      "details": "premium_emoji_helper imported successfully",
+      "timestamp": "2025-09-01T07:54:56.732655"
+    },
+    {
+      "test": "Toggle Bot Integration Import",
+      "status": "PASS",
+      "details": "toggle_bot_integration imported successfully",
+      "timestamp": "2025-09-01T07:54:57.693101"
+    },
+    {
+      "test": "Bot Token Format",
+      "status": "PASS",
+      "details": "Token format looks valid: 8380293227:AAHYbOVl5...",
+      "timestamp": "2025-09-01T07:54:57.693236"
+    },
+    {
+      "test": "Userbot Main Script",
+      "status": "PASS",
+      "details": "Found: main.py",
+      "timestamp": "2025-09-01T07:54:57.694315"
+    }
+  ]
+}

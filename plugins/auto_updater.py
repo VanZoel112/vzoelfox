@@ -362,7 +362,7 @@ async def auto_update_on_startup():
         print(f"❌ Auto update error: {e}")
 
 # Schedule auto update on startup
-def schedule_startup_update():
+def schedule_startup_update(client_instance=None):
     """Schedule auto update to run after bot starts"""
     def delayed_update():
         time.sleep(10)  # Wait 10 seconds for bot to fully start
