@@ -11,7 +11,7 @@ from telethon import events
 from telethon.errors import ChatAdminRequiredError, UserAlreadyInvitedError, UserNotParticipantError
 from telethon.tl.functions.phone import JoinGroupCallRequest, LeaveGroupCallRequest
 from telethon.tl.functions.channels import GetFullChannelRequest
-from telethon.tl.types import DataJSON, MessageEntityCustomEmoji, InputPeerSelf
+from telethon.tl.types import MessageEntityCustomEmoji
 
 # Plugin Info
 PLUGIN_INFO = {
@@ -168,15 +168,15 @@ async def joinvc_handler(event):
         
         if not active_call:
             text = f"""
-{get_emoji('alien')} **VOICE CHAT STATUS**
+**👽 VOICE CHAT STATUS**
 
-{get_emoji('check')} Chat: {getattr(chat, 'title', 'Unknown')}
-{get_emoji('cross')} Status: Tidak ada voice chat aktif
-{get_emoji('plane')} Solusi: 
+**⚙️ Chat:** {getattr(chat, 'title', 'Unknown')}
+**❌ Status:** Tidak ada voice chat aktif
+**✈️ Solusi:** 
 • Mulai voice chat di grup ini
 • Atau gunakan command di grup dengan voice chat aktif
 
-{get_emoji('slider')} Coba lagi setelah voice chat dimulai!
+**🎚️ Coba lagi setelah voice chat dimulai!**
             """.strip()
             
             await safe_edit_message(loading_msg, text)
@@ -185,64 +185,59 @@ async def joinvc_handler(event):
         # Update loading message
         await safe_edit_message(loading_msg, f"{get_emoji('check')} Voice chat ditemukan! Bergabung...")
         
-        # Join voice chat - SIMPLE METHOD (userbot bukan bot musik)
+        # Join voice chat - SIMPLIFIED METHOD 
         try:
-            # Join sebagai akun sendiri ke voice chat
+            # Method 1: Basic join request
             await event.client(JoinGroupCallRequest(
                 call=active_call,
-                join_as=InputPeerSelf(),  # Akun kita sendiri
-                params=DataJSON(data='{}'),  # Empty params - no WebRTC needed
                 muted=False,
                 video_stopped=True
             ))
             
             success_text = f"""
-{get_emoji('check')} **BERHASIL JOIN VOICE CHAT!**
+**✅ BERHASIL JOIN VOICE CHAT!**
 
-{get_emoji('main')} Chat: {getattr(chat, 'title', 'Unknown')}
-{get_emoji('plane')} Status: Connected ke voice chat
-{get_emoji('storm')} Mode: Audio only (video disabled)
-{get_emoji('devil')} Muted: No (unmuted)
+**🤩 Chat:** {getattr(chat, 'title', 'Unknown')}
+**✈️ Status:** Connected ke voice chat
+**⛈ Mode:** Audio only (video disabled)
+**😈 Muted:** No (unmuted)
 
-{get_emoji('slider')} Gunakan `{get_prefix()}leavevc` untuk keluar
+**🎚️ Gunakan** `.leavevc` **untuk keluar**
             """.strip()
             
             await safe_edit_message(loading_msg, success_text)
             
         except Exception as join_error:
-            # Method 2: Simple fallback - basic join
+            # Method 2: Even simpler fallback
             try:
-                await event.client(JoinGroupCallRequest(
-                    call=active_call,
-                    join_as=InputPeerSelf()
-                ))
+                await event.client(JoinGroupCallRequest(call=active_call))
                 
                 fallback_text = f"""
-{get_emoji('check')} **JOIN VOICE CHAT (FALLBACK)**
+**✅ JOIN VOICE CHAT (FALLBACK)**
 
-{get_emoji('main')} Berhasil join dengan mode fallback
-{get_emoji('storm')} Chat: {getattr(chat, 'title', 'Unknown')}
-{get_emoji('plane')} Status: Connected
+**🤩 Berhasil join dengan mode fallback**
+**⛈ Chat:** {getattr(chat, 'title', 'Unknown')}
+**✈️ Status:** Connected
 
-{get_emoji('slider')} Gunakan `{get_prefix()}leavevc` untuk keluar
+**🎚️ Gunakan** `.leavevc` **untuk keluar**
                 """.strip()
                 
                 await safe_edit_message(loading_msg, fallback_text)
                 
             except Exception as fallback_error:
                 error_text = f"""
-{get_emoji('alien')} **GAGAL JOIN VOICE CHAT**
+**👽 GAGAL JOIN VOICE CHAT**
 
-{get_emoji('cross')} Primary Error: {str(join_error)[:50]}
-{get_emoji('cross')} Fallback Error: {str(fallback_error)[:50]}
+**❌ Primary Error:** {str(join_error)[:50]}
+**❌ Fallback Error:** {str(fallback_error)[:50]}
 
-{get_emoji('devil')} Kemungkinan penyebab:
+**😈 Kemungkinan penyebab:**
 • Tidak punya permission join voice chat
 • Voice chat penuh atau restricted
 • Connection issue dengan Telegram servers
 • Bot belum join grup sebagai member
 
-{get_emoji('storm')} Solusi:
+**⛈ Solusi:**
 • Pastikan bot adalah admin atau member grup
 • Coba restart bot dan ulangi command
 • Periksa connection internet
@@ -252,21 +247,21 @@ async def joinvc_handler(event):
         
     except ChatAdminRequiredError:
         text = f"""
-{get_emoji('devil')} **ADMIN REQUIRED**
+**😈 ADMIN REQUIRED**
 
-{get_emoji('cross')} Bot membutuhkan admin permission
-{get_emoji('check')} Atau pastikan voice chat open untuk semua member
-{get_emoji('storm')} Contact admin grup untuk permission
+**❌ Bot membutuhkan admin permission**
+**⚙️ Atau pastikan voice chat open untuk semua member**
+**⛈ Contact admin grup untuk permission**
         """.strip()
         await safe_send_message(event, text)
         
     except UserAlreadyInvitedError:
         text = f"""
-{get_emoji('check')} **SUDAH JOIN VOICE CHAT**
+**✅ SUDAH JOIN VOICE CHAT**
 
-{get_emoji('main')} Bot sudah berada di voice chat ini
-{get_emoji('plane')} Gunakan `{get_prefix()}leavevc` untuk keluar dulu
-{get_emoji('storm')} Kemudian coba join lagi jika perlu
+**🤩 Bot sudah berada di voice chat ini**
+**✈️ Gunakan** `.leavevc` **untuk keluar dulu**
+**⛈ Kemudian coba join lagi jika perlu**
         """.strip()
         await safe_send_message(event, text)
         
@@ -336,13 +331,13 @@ async def leavevc_handler(event):
             await event.client(LeaveGroupCallRequest(call=active_call))
             
             success_text = f"""
-{get_emoji('plane')} **BERHASIL KELUAR VOICE CHAT**
+**✈️ BERHASIL KELUAR VOICE CHAT**
 
-{get_emoji('check')} Chat: {getattr(chat, 'title', 'Unknown')}
-{get_emoji('main')} Status: Disconnected dari voice chat
-{get_emoji('storm')} Action: Left voice chat successfully
+**⚙️ Chat:** {getattr(chat, 'title', 'Unknown')}
+**🤩 Status:** Disconnected dari voice chat
+**⛈ Action:** Left voice chat successfully
 
-{get_emoji('slider')} Gunakan `{get_prefix()}joinvc` untuk join lagi
+**🎚️ Gunakan** `.joinvc` **untuk join lagi**
             """.strip()
             
             await safe_edit_message(loading_msg, success_text)
