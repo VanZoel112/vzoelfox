@@ -95,7 +95,9 @@ async def safe_send_premium(event, text):
             return await event.reply(text, formatting_entities=entities)
         else:
             return await event.reply(text)
-    except Exception:
+    except Exception as e:
+        # Fallback to plain text if premium emoji fails
+        print(f"[Help] Premium emoji error: {e}")
         return await event.reply(text)
 
 def get_all_plugins():
@@ -143,28 +145,53 @@ def get_plugin_info_from_file(plugin_name):
         }
 
 def get_help_page(page=0):
-    """Generate help page with 10 plugins"""
+    """Generate help page with 10 commands per page"""
     all_plugins = get_all_plugins()
-    plugins_per_page = HELP_STATE['plugins_per_page']
+    all_commands = []
     
-    start_idx = page * plugins_per_page
-    end_idx = start_idx + plugins_per_page
-    page_plugins = all_plugins[start_idx:end_idx]
+    # Collect all commands from plugins
+    for plugin_name in all_plugins:
+        plugin_info = get_plugin_info_from_file(plugin_name)
+        commands = plugin_info.get('commands', [])
+        for cmd in commands:
+            all_commands.append({
+                'command': cmd,
+                'plugin': plugin_name,
+                'description': plugin_info.get('description', 'No description')[:50]
+            })
     
-    total_plugins = len(all_plugins)
-    total_pages = (total_plugins - 1) // plugins_per_page + 1
+    # Add core commands
+    core_commands = [
+        {'command': '.alive', 'plugin': 'core', 'description': 'Check bot status and uptime'},
+        {'command': '.ping', 'plugin': 'core', 'description': 'Test response time'},
+        {'command': '.restart', 'plugin': 'core', 'description': 'Restart the userbot'},
+        {'command': '.plugins', 'plugin': 'core', 'description': 'Show plugin status'},
+    ]
+    all_commands.extend(core_commands)
     
-    help_text = f"""{get_emoji('main')} **VZOELFOX HELP** (Page {page + 1}/{total_pages})
+    # Sort commands alphabetically
+    all_commands.sort(key=lambda x: x['command'])
+    
+    commands_per_page = HELP_STATE['plugins_per_page']
+    start_idx = page * commands_per_page
+    end_idx = start_idx + commands_per_page
+    page_commands = all_commands[start_idx:end_idx]
+    
+    total_commands = len(all_commands)
+    total_pages = (total_commands - 1) // commands_per_page + 1
+    
+    help_text = f"""{get_emoji('main')} **VZOELFOX COMMANDS** (Page {page + 1}/{total_pages})
 
-{get_emoji('check')} **Total Plugins:** {total_plugins}
+{get_emoji('check')} **Total Commands:** {total_commands}
 {get_emoji('adder4')} **Page:** {page + 1} of {total_pages}
 
 """
     
-    for idx, plugin in enumerate(page_plugins, start_idx + 1):
-        help_text += f"{get_emoji('adder2')} **{idx}.** `{plugin}`\n"
+    for idx, cmd_info in enumerate(page_commands, start_idx + 1):
+        help_text += f"{get_emoji('adder2')} **{idx}.** `{cmd_info['command']}`\n"
+        help_text += f"   └ {cmd_info['description']}\n\n"
     
-    help_text += f"\n{get_emoji('adder6')} **Navigation:**\n"
+    help_text += f"{get_emoji('adder6')} **Navigation:**\n"
     if page > 0:
         help_text += f"{get_emoji('adder1')} `.back` - Previous page\n"
     if page < total_pages - 1:

@@ -749,42 +749,42 @@ async def alive_handler(event):
         uptime = datetime.now() - start_time if start_time else datetime.now()
         uptime_str = str(uptime).split('.')[0]
         
-        title = convert_font("VZOEL ASSISTANT IS ALIVE!", 'mono')
+        title = "`VZOEL ASSISTANT IS ALIVE!`"
         
         base_animations = [
-            f"{get_emoji('main')} {convert_font('Initializing system check...', 'bold')}",
-            f"{get_emoji('check')} {convert_font('Loading components...', 'bold')}",
-            f"{get_emoji('adder1')} {convert_font('Checking premium features...', 'bold')}",
-            f"{get_emoji('main')} {convert_font('Finalizing status report...', 'bold')}",
+            f"{get_emoji('main')} **Initializing system check...**",
+            f"{get_emoji('check')} **Loading components...**",
+            f"{get_emoji('adder1')} **Checking premium features...**",
+            f"{get_emoji('main')} **Finalizing status report...**",
         ]
         
         final_message = f"""
     {title}
-        {get_emoji('main')} {convert_font('V Z O E L  A S S I S T A N T', 'mono')} {get_emoji('main')}
-{get_emoji('main')} {convert_font('Founder Userbot:', 'bold')} Vzoel 
-{get_emoji('check')} {convert_font('Name:', 'bold')} {me.first_name or 'Vzoel Assistant'}
-{get_emoji('check')} {convert_font('ID:', 'bold')} `{me.id}`
-{get_emoji('check')} {convert_font('Username:', 'bold')} @{me.username or 'None'}
-{get_emoji('check')} {convert_font('Prefix:', 'bold')} `{COMMAND_PREFIX}`
-{get_emoji('check')} {convert_font('Uptime:', 'bold')} `{uptime_str}`
-{get_emoji('main')} {convert_font('Version:', 'bold')} v0.0.0.0.69
-{get_emoji('check')} {convert_font('Status:', 'bold')} Active & Running
-{get_emoji('adder2')} {convert_font('Premium:', 'bold')} {'Active' if premium_status else 'Standard'}
+        {get_emoji('main')} `V Z O E L  A S S I S T A N T` {get_emoji('main')}
+{get_emoji('main')} **Founder Userbot:** Vzoel 
+{get_emoji('check')} **Name:** {me.first_name or 'Vzoel Assistant'}
+{get_emoji('check')} **ID:** `{me.id}`
+{get_emoji('check')} **Username:** @{me.username or 'None'}
+{get_emoji('check')} **Prefix:** `{COMMAND_PREFIX}`
+{get_emoji('check')} **Uptime:** `{uptime_str}`
+{get_emoji('main')} **Version:** v0.0.0.0.69
+{get_emoji('check')} **Status:** Active & Running
+{get_emoji('adder2')} **Premium:** {'Active' if premium_status else 'Standard'}
 {get_emoji('adder1')}{get_emoji('adder1')}{get_emoji('adder1')}{get_emoji('adder1')}
-{get_emoji('adder3')} {convert_font('Statistics:', 'bold')}
+{get_emoji('adder3')} **Statistics:**
 {get_emoji('check')} Commands: `{stats['commands_executed']}`
 {get_emoji('check')} Plugins Loaded: Active  
 {get_emoji('check')} Emojis Extracted: `{stats['emojis_extracted']}`
 {get_emoji('check')} Blacklisted: `{len(blacklisted_chats)}`
 
-{get_emoji('adder4')} {convert_font('Enhanced Features:', 'bold')}
+{get_emoji('adder4')} **Enhanced Features:**
 {get_emoji('check')} Reply-based Gcast Support
 {get_emoji('check')} Auto Premium Emoji Extraction
 {get_emoji('check')} Advanced Entity Handling
 {get_emoji('check')} Database Integration
 {get_emoji('check')} Enhanced Rate Limiting
 
-{get_emoji('check')} {convert_font('Hak milik Vzoel Fox\'s ©2025 ~ LTPN', 'bold')} {get_emoji('check')}
+{get_emoji('check')} **Hak milik Vzoel Fox's ©2025 ~ LTPN** {get_emoji('check')}
         """.strip()
         
         alive_animations = base_animations + [final_message]
@@ -793,7 +793,7 @@ async def alive_handler(event):
         await animate_text_premium(msg, alive_animations, delay=2)
         
     except Exception as e:
-        await event.reply(f"❌ {convert_font('Error:', 'bold')} {str(e)}")
+        await event.reply(f"❌ **Error:** {str(e)}")
         logger.error(f"Alive command error: {e}")
 
 # ============= GCAST COMMAND REMOVED =============
