@@ -10,7 +10,8 @@ import asyncio
 from telethon import events
 from telethon.errors import ChatAdminRequiredError, UserAlreadyInvitedError, UserNotParticipantError
 from telethon.tl.functions.phone import JoinGroupCallRequest, LeaveGroupCallRequest
-from telethon.tl.functions.channels import GetFullChannelRequest
+from telethon.tl.functions.channels import GetFullChannelRequest, JoinChannelRequest
+from telethon.tl.functions.messages import ImportChatInviteRequest
 from telethon.tl.types import MessageEntityCustomEmoji
 
 # Plugin Info
@@ -133,151 +134,121 @@ async def is_owner_check(client, user_id):
     return user_id == OWNER_ID
 
 async def joinvc_handler(event):
-    """Enhanced handler for .joinvc command dengan proper voice chat detection"""
+    """Enhanced userbot voice chat join - simple participant join without admin requirements"""
     if not await is_owner_check(event.client, event.sender_id):
         return
     
     try:
         chat = await event.get_chat()
-        chat_id = chat.id
         
         # Loading message dengan premium emoji
-        loading_msg = await safe_send_message(event, f"{get_emoji('storm')} Mencari voice chat aktif...")
+        loading_msg = await safe_send_message(event, f"{get_emoji('storm')} **Connecting to voice chat...**")
         
-        # Get full chat info untuk voice chat data
-        full_chat = None
+        # ENHANCED USERBOT: Detect voice chat dengan multiple methods
         active_call = None
         
         try:
-            if hasattr(chat, 'broadcast') and chat.broadcast:
-                # Channel
+            # Method 1: Full chat request (recommended)
+            if hasattr(chat, 'broadcast') and not chat.broadcast:  # Not a channel
                 full_chat = await event.client(GetFullChannelRequest(chat))
                 active_call = getattr(full_chat.full_chat, 'call', None)
-            elif hasattr(chat, 'megagroup') or hasattr(chat, 'title'):
-                # Supergroup/Group
+            elif hasattr(chat, 'megagroup') and chat.megagroup:  # Supergroup
                 full_chat = await event.client(GetFullChannelRequest(chat))
                 active_call = getattr(full_chat.full_chat, 'call', None)
             else:
-                # Regular group - cek call attribute langsung
+                # Method 2: Direct attribute check
                 active_call = getattr(chat, 'call', None)
-                
-        except Exception as chat_error:
-            # Fallback: cek call attribute langsung dari chat
+        except Exception as detection_error:
+            # Method 3: Fallback detection
             active_call = getattr(chat, 'call', None)
-            print(f"[JoinVC] Chat info error: {chat_error}, using fallback")
+            print(f"[JoinVC] Detection fallback used: {detection_error}")
         
         if not active_call:
-            text = f"""
-**👽 VOICE CHAT STATUS**
+            no_vc_text = f"""{get_emoji('alien')} **NO ACTIVE VOICE CHAT**
 
-**⚙️ Chat:** {getattr(chat, 'title', 'Unknown')}
-**❌ Status:** Tidak ada voice chat aktif
-**✈️ Solusi:** 
-• Mulai voice chat di grup ini
-• Atau gunakan command di grup dengan voice chat aktif
+{get_emoji('check')} **Chat:** {getattr(chat, 'title', 'Unknown')}
+{get_emoji('cross')} **Status:** Voice chat tidak aktif
+{get_emoji('plane')} **Action:** Start voice chat di grup ini dulu
 
-**🎚️ Coba lagi setelah voice chat dimulai!**
-            """.strip()
+{get_emoji('slider')} **Tip:** Voice chat harus dimulai oleh admin grup terlebih dahulu!"""
             
-            await safe_edit_message(loading_msg, text)
+            await safe_edit_message(loading_msg, no_vc_text)
             return
         
-        # Update loading message
-        await safe_edit_message(loading_msg, f"{get_emoji('check')} Voice chat ditemukan! Bergabung...")
+        # Update status - voice chat found
+        await safe_edit_message(loading_msg, f"{get_emoji('check')} **Voice chat detected! Joining...**")
         
-        # Join voice chat - SIMPLIFIED METHOD 
         try:
-            # Method 1: Basic join request
-            await event.client(JoinGroupCallRequest(
-                call=active_call,
-                muted=False,
-                video_stopped=True
-            ))
+            # SIMPLE USERBOT JOIN: No music bot features, just participant
+            await event.client(JoinGroupCallRequest(call=active_call))
             
-            success_text = f"""
-**✅ BERHASIL JOIN VOICE CHAT!**
+            # Success message
+            success_text = f"""{get_emoji('main')} **VOICE CHAT JOINED!**
 
-**🤩 Chat:** {getattr(chat, 'title', 'Unknown')}
-**✈️ Status:** Connected ke voice chat
-**⛈ Mode:** Audio only (video disabled)
-**😈 Muted:** No (unmuted)
+{get_emoji('check')} **Chat:** {getattr(chat, 'title', 'Unknown')}
+{get_emoji('plane')} **Status:** Connected as voice participant
+{get_emoji('storm')} **Mode:** Simple user join (no music bot)
 
-**🎚️ Gunakan** `.leavevc` **untuk keluar**
-            """.strip()
+{get_emoji('slider')} **Use** `.leavevc` **to disconnect**"""
             
             await safe_edit_message(loading_msg, success_text)
             
         except Exception as join_error:
-            # Method 2: Even simpler fallback
-            try:
-                await event.client(JoinGroupCallRequest(call=active_call))
-                
-                fallback_text = f"""
-**✅ JOIN VOICE CHAT (FALLBACK)**
+            # Handle join failures dengan detailed info
+            error_name = type(join_error).__name__
+            error_msg = str(join_error)[:100]
+            
+            fail_text = f"""{get_emoji('devil')} **JOIN VOICE CHAT FAILED**
 
-**🤩 Berhasil join dengan mode fallback**
-**⛈ Chat:** {getattr(chat, 'title', 'Unknown')}
-**✈️ Status:** Connected
+{get_emoji('cross')} **Error:** {error_name}
+{get_emoji('alien')} **Details:** {error_msg}
 
-**🎚️ Gunakan** `.leavevc` **untuk keluar**
-                """.strip()
-                
-                await safe_edit_message(loading_msg, fallback_text)
-                
-            except Exception as fallback_error:
-                error_text = f"""
-**👽 GAGAL JOIN VOICE CHAT**
+{get_emoji('storm')} **Possible Issues:**
+• Voice chat restricted to admins only
+• Group doesn't allow regular users in VC  
+• Network/connection problems
+• Voice chat participant limit reached
 
-**❌ Primary Error:** {str(join_error)[:50]}
-**❌ Fallback Error:** {str(fallback_error)[:50]}
-
-**😈 Kemungkinan penyebab:**
-• Tidak punya permission join voice chat
-• Voice chat penuh atau restricted
-• Connection issue dengan Telegram servers
-• Bot belum join grup sebagai member
-
-**⛈ Solusi:**
-• Pastikan bot adalah admin atau member grup
-• Coba restart bot dan ulangi command
-• Periksa connection internet
-                """.strip()
-                
-                await safe_edit_message(loading_msg, error_text)
+{get_emoji('check')} **Solutions:**
+• Ask admin to open VC for all members
+• Check internet connection
+• Try again after a few seconds
+• Verify you're still in the group"""
+            
+            await safe_edit_message(loading_msg, fail_text)
         
     except ChatAdminRequiredError:
-        text = f"""
-**😈 ADMIN REQUIRED**
+        admin_text = f"""{get_emoji('devil')} **ADMIN ACCESS REQUIRED**
 
-**❌ Bot membutuhkan admin permission**
-**⚙️ Atau pastikan voice chat open untuk semua member**
-**⛈ Contact admin grup untuk permission**
-        """.strip()
-        await safe_send_message(event, text)
+{get_emoji('cross')} **Issue:** Bot needs admin permissions
+{get_emoji('check')} **Solution:** Ask admin to allow all members to join voice chat
+{get_emoji('storm')} **Alternative:** Make bot admin temporarily"""
+        
+        await safe_send_message(event, admin_text)
         
     except UserAlreadyInvitedError:
-        text = f"""
-**✅ SUDAH JOIN VOICE CHAT**
+        already_text = f"""{get_emoji('check')} **ALREADY IN VOICE CHAT**
 
-**🤩 Bot sudah berada di voice chat ini**
-**✈️ Gunakan** `.leavevc` **untuk keluar dulu**
-**⛈ Kemudian coba join lagi jika perlu**
-        """.strip()
-        await safe_send_message(event, text)
+{get_emoji('main')} **Status:** Bot sudah terhubung ke voice chat
+{get_emoji('plane')} **Action:** Use `.leavevc` to disconnect first
+{get_emoji('slider')} **Then:** Try `.joinvc` again if needed"""
+        
+        await safe_send_message(event, already_text)
         
     except Exception as e:
-        error_text = f"""
-{get_emoji('alien')} **UNEXPECTED ERROR**
+        # Generic error handler
+        generic_error = f"""{get_emoji('alien')} **UNEXPECTED ERROR**
 
-{get_emoji('cross')} Error: {str(e)}
-{get_emoji('storm')} Type: {type(e).__name__}
+{get_emoji('cross')} **Error:** {str(e)[:80]}
+{get_emoji('storm')} **Type:** {type(e).__name__}
 
-{get_emoji('devil')} Coba:
-• Restart bot
-• Check internet connection 
-• Verify grup permissions
-        """.strip()
-        await safe_send_message(event, error_text)
+{get_emoji('devil')} **Try:**
+• Restart the userbot
+• Check internet connection
+• Verify group permissions
+• Contact support if issue persists"""
+        
+        await safe_send_message(event, generic_error)
 
 async def leavevc_handler(event):
     """Enhanced handler for .leavevc command dengan proper voice chat handling"""
