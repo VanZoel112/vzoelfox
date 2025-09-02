@@ -10,6 +10,8 @@ import asyncio
 from telethon import events
 from telethon.errors import ChatAdminRequiredError, UserAlreadyInvitedError, UserNotParticipantError
 from telethon.tl.functions.phone import JoinGroupCallRequest, LeaveGroupCallRequest
+from telethon.tl.types import InputPeerSelf
+from telethon.tl.functions.phone import CreateGroupCallRequest
 from telethon.tl.functions.channels import GetFullChannelRequest, JoinChannelRequest
 from telethon.tl.functions.messages import ImportChatInviteRequest
 from telethon.tl.types import MessageEntityCustomEmoji
@@ -179,8 +181,17 @@ async def joinvc_handler(event):
         await safe_edit_message(loading_msg, f"{get_emoji('check')} **Voice chat detected! Joining...**")
         
         try:
-            # SIMPLE USERBOT JOIN: No music bot features, just participant
-            await event.client(JoinGroupCallRequest(call=active_call))
+            # SIMPLE USERBOT JOIN: Create proper join request with required parameters
+            from telethon.tl.types import DataJSON
+            
+            # Create empty params for simple voice join (not video/screen share)
+            join_params = DataJSON(data='{}')
+            
+            await event.client(JoinGroupCallRequest(
+                call=active_call,
+                join_as=InputPeerSelf(),
+                params=join_params
+            ))
             
             # Success message
             success_text = f"""{get_emoji('main')} **VOICE CHAT JOINED!**
