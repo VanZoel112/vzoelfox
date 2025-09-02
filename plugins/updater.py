@@ -55,6 +55,75 @@ def get_emoji(emoji_type):
     emoji_data = PREMIUM_EMOJIS.get(emoji_type, PREMIUM_EMOJIS["main"])
     return emoji_data["emoji"]
 
+def create_premium_entities(text):
+    """Create premium emoji entities for text with UTF-16 support"""
+    try:
+        entities = []
+        current_offset = 0
+        i = 0
+        
+        while i < len(text):
+            found_emoji = False
+            
+            for emoji_type, emoji_data in PREMIUM_EMOJIS.items():
+                emoji = emoji_data["emoji"]
+                custom_emoji_id = int(emoji_data["custom_emoji_id"])
+                
+                if text[i:].startswith(emoji):
+                    try:
+                        # Calculate UTF-16 length properly
+                        emoji_bytes = emoji.encode('utf-16-le')
+                        utf16_length = len(emoji_bytes) // 2
+                        
+                        entities.append(MessageEntityCustomEmoji(
+                            offset=current_offset,
+                            length=utf16_length,
+                            document_id=custom_emoji_id
+                        ))
+                        
+                        i += len(emoji)
+                        current_offset += utf16_length
+                        found_emoji = True
+                        break
+                        
+                    except Exception:
+                        break
+            
+            if not found_emoji:
+                char = text[i]
+                char_bytes = char.encode('utf-16-le')
+                char_utf16_length = len(char_bytes) // 2
+                current_offset += char_utf16_length
+                i += 1
+        
+        return entities
+    except Exception:
+        return []
+
+async def safe_send_premium(event, text):
+    """Send message with premium entities"""
+    try:
+        entities = create_premium_entities(text)
+        if entities:
+            return await event.reply(text, formatting_entities=entities)
+        else:
+            return await event.reply(text)
+    except Exception as e:
+        # Fallback to plain text if premium emoji fails
+        return await event.reply(text)
+
+async def safe_edit_premium(message, text):
+    """Edit message with premium entities"""
+    try:
+        entities = create_premium_entities(text)
+        if entities:
+            await message.edit(text, formatting_entities=entities)
+        else:
+            await message.edit(text)
+    except Exception as e:
+        # Fallback to plain edit if premium emoji fails
+        await message.edit(text)
+
 # Import from central font system
 from utils.font_helper import convert_font
 
@@ -471,7 +540,7 @@ async def updater_handler(event):
 
 {get_emoji('adder4')} {convert_font('Safety:', 'bold')} All updates create backups automatically
             """.strip()
-            await event.reply(help_text)
+            await safe_send_premium(event, help_text)
             return
         
         command = args[1].lower()
@@ -521,15 +590,15 @@ async def updater_handler(event):
 {get_emoji('adder5')} Use {convert_font('.update', 'mono')} to install updates
                 """.strip()
             
-            await event.reply(response)
+            await safe_send_premium(event, response)
             
         elif command == "force":
             # Force update
             if not check_git_repo():
-                await event.reply(f"{get_emoji('adder3')} {convert_font('Not a git repository', 'bold')}")
+                await safe_send_premium(event, f"{get_emoji('adder3')} {convert_font('Not a git repository', 'bold')}")
                 return
             
-            progress_msg = await event.reply(f"{get_emoji('adder4')} {convert_font('Force updating...', 'mono')}")
+            progress_msg = await safe_send_premium(event, f"{get_emoji('adder4')} {convert_font('Force updating...', 'mono')}")
             
             success, message = await perform_update("force")
             
@@ -556,7 +625,7 @@ async def updater_handler(event):
 {get_emoji('adder5')} {convert_font('Restarting in 10 seconds...', 'mono')}
                 """.strip()
                 
-                await progress_msg.edit(response)
+                await safe_edit_premium(progress_msg, response)
                 
                 # Restart after 10 seconds
                 await asyncio.sleep(10)
@@ -572,7 +641,7 @@ async def updater_handler(event):
 {get_emoji('adder6')} Try {convert_font('.update rollback', 'mono')} if needed
                 """.strip()
                 
-                await progress_msg.edit(response)
+                await safe_edit_premium(progress_msg, response)
             
         elif command == "rollback":
             # Rollback last update
@@ -602,7 +671,7 @@ async def updater_handler(event):
 {get_emoji('adder5')} {convert_font('Restarting in 10 seconds...', 'mono')}
                 """.strip()
                 
-                await progress_msg.edit(response)
+                await safe_edit_premium(progress_msg, response)
                 
                 # Restart after 10 seconds
                 await asyncio.sleep(10)
@@ -615,7 +684,7 @@ async def updater_handler(event):
 {get_emoji('check')} {convert_font('Current state:', 'mono')} Unchanged
                 """.strip()
                 
-                await progress_msg.edit(response)
+                await safe_edit_premium(progress_msg, response)
             
         elif command == "status":
             # Show update status
@@ -649,7 +718,7 @@ async def updater_handler(event):
 {history_text}
             """.strip()
             
-            await event.reply(response)
+            await safe_send_premium(event, response)
             
         elif command == "changelog":
             # Show changelog
@@ -714,7 +783,7 @@ async def updater_handler(event):
 {get_emoji('adder5')} {convert_font('Restarting in 10 seconds...', 'mono')}
                 """.strip()
                 
-                await progress_msg.edit(response)
+                await safe_edit_premium(progress_msg, response)
                 
                 # Restart after 10 seconds
                 await asyncio.sleep(10)
@@ -730,11 +799,11 @@ async def updater_handler(event):
 {get_emoji('adder6')} Try {convert_font('.update rollback', 'mono')} if needed
                 """.strip()
                 
-                await progress_msg.edit(response)
+                await safe_edit_premium(progress_msg, response)
             
     except Exception as e:
         print(f"[Updater] Handler error: {e}")
-        await event.reply(f"{get_emoji('adder5')} {convert_font('Command error occurred', 'bold')}")
+        await safe_send_premium(event, f"{get_emoji('adder5')} {convert_font('Command error occurred', 'bold')}")
 
 def get_plugin_info():
     return PLUGIN_INFO
