@@ -27,7 +27,7 @@ PLUGIN_INFO = {
     "features": ["response time measurement", "premium emojis", "Unicode font system", "server latency test"]
 }
 
-# Premium Emoji Mapping - Enhanced with UTF-16 support
+# Premium Emoji Mapping - Enhanced with UTF-16 support dan latency color mapping
 PREMIUM_EMOJIS = {
     "main":    {"emoji": "🤩", "custom_emoji_id": "6156784006194009426"},
     "check":   {"emoji": "⚙️", "custom_emoji_id": "5794353925360457382"},
@@ -36,7 +36,11 @@ PREMIUM_EMOJIS = {
     "adder3":  {"emoji": "👽", "custom_emoji_id": "5321412209992033736"},
     "adder4":  {"emoji": "✈️", "custom_emoji_id": "5793973133559993740"},
     "adder5":  {"emoji": "😈", "custom_emoji_id": "5357404860566235955"},
-    "adder6":  {"emoji": "🎚️", "custom_emoji_id": "5794323465452394551"}
+    "adder6":  {"emoji": "🎚️", "custom_emoji_id": "5794323465452394551"},
+    # Latency Color Premium Emojis (dari mapping yang diberikan user)
+    "latency_green":  {"emoji": "🎅", "custom_emoji_id": "5260687265121712272"},  # Excellent < 100ms
+    "latency_blue":   {"emoji": "🤩", "custom_emoji_id": "5260637271702389570"},  # Good < 200ms  
+    "latency_yellow": {"emoji": "🥳", "custom_emoji_id": "5260471374295613818"}   # Fair/Slow/Very Slow >= 200ms
 }
 
 # ===== Global Client Variable =====
@@ -131,36 +135,29 @@ async def safe_send_premium(event, text):
         return await event.reply(text)
 
 def get_ping_status(response_time_ms):
-    """Get ping status based on response time"""
+    """Get ping status based on response time with premium color emojis"""
     if response_time_ms < 100:
         return {
             'status': 'Excellent',
-            'emoji': get_emoji('adder2'),  # ✅
-            'color': 'green'
+            'emoji': get_emoji('latency_green'),  # 🎅 Green - Excellent
+            'color': 'green',
+            'color_emoji': get_emoji('latency_green')
         }
     elif response_time_ms < 200:
         return {
             'status': 'Good',
-            'emoji': get_emoji('check'),   # ⚙️
-            'color': 'blue'
-        }
-    elif response_time_ms < 500:
-        return {
-            'status': 'Fair',
-            'emoji': get_emoji('adder6'),  # 🎚️
-            'color': 'yellow'
-        }
-    elif response_time_ms < 1000:
-        return {
-            'status': 'Slow',
-            'emoji': get_emoji('adder1'),  # ⛈
-            'color': 'orange'
+            'emoji': get_emoji('latency_blue'),   # 🤩 Blue - Good
+            'color': 'blue',
+            'color_emoji': get_emoji('latency_blue')
         }
     else:
+        # Fair/Slow/Very Slow menggunakan yellow emoji
+        status_text = 'Fair' if response_time_ms < 500 else 'Slow' if response_time_ms < 1000 else 'Very Slow'
         return {
-            'status': 'Very Slow',
-            'emoji': get_emoji('adder5'),  # 😈
-            'color': 'red'
+            'status': status_text,
+            'emoji': get_emoji('latency_yellow'),  # 🥳 Yellow - Fair/Slow/Very Slow
+            'color': 'yellow',
+            'color_emoji': get_emoji('latency_yellow')
         }
 
 async def is_owner_check(user_id):
@@ -212,17 +209,17 @@ async def ping_command_handler(event):
         # Get current time
         current_time = datetime.now().strftime('%H:%M:%S')
         
-        # Build enhanced ping response
+        # Build enhanced ping response with premium color emojis
         ping_response = f"""
 {get_emoji('main')} {convert_font('VZOEL PING RESPONSE', 'bold')}
 
-{ping_status['emoji']} {convert_font('Response Time:', 'bold')} {convert_font(f'{response_time_ms}ms', 'mono')}
-{get_emoji('check')} {convert_font('Status:', 'bold')} {ping_status['status']}
+{ping_status['color_emoji']} {convert_font('Response Time:', 'bold')} {convert_font(f'{response_time_ms}ms', 'mono')}
+{ping_status['emoji']} {convert_font('Status:', 'bold')} {ping_status['status']}
 {get_emoji('adder3')} {convert_font('Server:', 'bold')} Online & Ready
 {get_emoji('adder6')} {convert_font('Time:', 'bold')} {convert_font(current_time, 'mono')}
 
 {get_emoji('adder2')} {convert_font('Connection Quality:', 'bold')}
-{get_emoji('adder4')} Latency: {'🟢 Low' if response_time_ms < 200 else '🟡 Medium' if response_time_ms < 500 else '🔴 High'}
+{ping_status['color_emoji']} Latency: {ping_status['status']} ({ping_status['color']})
 {get_emoji('adder1')} Network: Stable Connection
 
 {get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}
@@ -271,12 +268,12 @@ async def pong_command_handler(event):
         # Get ping status
         ping_status = get_ping_status(response_time_ms)
         
-        # Build pong response with different style
+        # Build pong response with premium color emojis
         pong_response = f"""
-{get_emoji('adder2')} {convert_font('PONG!', 'bold')} {ping_status['emoji']}
+{ping_status['color_emoji']} {convert_font('PONG!', 'bold')} {ping_status['emoji']}
 
-{get_emoji('check')} {convert_font('Response:', 'mono')} {response_time_ms}ms
-{get_emoji('adder4')} {convert_font('Quality:', 'mono')} {ping_status['status']}
+{ping_status['color_emoji']} {convert_font('Response:', 'mono')} {response_time_ms}ms
+{ping_status['emoji']} {convert_font('Quality:', 'mono')} {ping_status['status']}
 {get_emoji('main')} {convert_font('System:', 'mono')} Active
 
 {get_emoji('adder6')} {convert_font('Vzoel Assistant Ready!', 'bold')}
@@ -301,8 +298,9 @@ def setup(client_instance):
     global client
     client = client_instance
     
-    client.add_event_handler(ping_command_handler, events.NewMessage(pattern=r"\.ping$"))
-    client.add_event_handler(pong_command_handler, events.NewMessage(pattern=r"\.pong$"))
+    # Register handlers dengan client menggunakan proper method
+    client.add_event_handler(ping_command_handler)
+    client.add_event_handler(pong_command_handler)
     print(f"✅ [Ping] Premium ping system loaded v{PLUGIN_INFO['version']} - Response time testing")
 
 def cleanup_plugin():
