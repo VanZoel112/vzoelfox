@@ -34,10 +34,7 @@ def get_emoji(emoji_name):
     return PREMIUM_EMOJIS.get(emoji_name, {}).get("emoji", "❓")
 
 # Import from central font system
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils.font_helper import convert_font, process_markdown_bold, process_all_markdown
+from utils.font_helper import convert_font
 
 def create_premium_entities(text):
     """Create premium emoji entities for text with UTF-16 support (TEMPLATE VERSION)"""
@@ -162,16 +159,16 @@ async def vzoel_command_handler(event):
 
         # Final message: Custom founder message dengan premium emoji template
         final_message = f"""
-        {get_emoji('main')} {convert_font('VZOEL USERBOT SYSTEM')}
-        {get_emoji('check')} {convert_font('System Information:')}
+        {get_emoji('main')} {convert_font('VZOEL USERBOT SYSTEM', 'bold')}
+        {get_emoji('check')} {convert_font('System Information:', 'bold')}
         {get_emoji('adder2')} Status: Online & Ready
         {get_emoji('adder3')} Version: Premium Edition
         {get_emoji('adder4')} Features: Advanced Automation
         {get_emoji('adder1')} Performance: Optimized
         {get_emoji('adder6')} Security: Enhanced Protection
-        {get_emoji('adder5')} {convert_font('Founder:')} Vzoel Fox's LTPN
-        {get_emoji('main')} {convert_font('Premium Userbot by VzoeL')}
-        {get_emoji('adder2')} {convert_font('System fully initialized and ready!')}
+        {get_emoji('adder5')} {convert_font('Founder:', 'bold')} Vzoel Fox's LTPN
+        {get_emoji('main')} {convert_font('Premium Userbot by VzoeL', 'bold')}
+        {get_emoji('adder2')} {convert_font('System fully initialized and ready!', 'bold')}
         """.strip()
 
         # Send final message dengan premium emoji entities
@@ -179,7 +176,7 @@ async def vzoel_command_handler(event):
         await safe_edit_message(progress_msg, final_message, final_entities)
 
     except Exception as e:
-        error_text = f"{get_emoji('adder5')} {convert_font(f'Error executing .vzoel command: {str(e)}')}"
+        error_text = f"{get_emoji('adder5')} {convert_font(f'Error executing .vzoel command: {str(e)}', 'bold')}"
         error_entities = create_premium_entities(error_text)
         await event.reply(error_text, formatting_entities=error_entities)
 

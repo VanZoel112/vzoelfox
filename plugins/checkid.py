@@ -39,10 +39,7 @@ def get_emoji(emoji_name):
     return PREMIUM_EMOJIS.get(emoji_name, {}).get("emoji", "❓")
 
 # Import from central font system
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils.font_helper import convert_font, process_markdown_bold, process_all_markdown
+from utils.font_helper import convert_font
 
 def create_premium_entities(text):
     """Create premium emoji entities for text with UTF-16 support"""
@@ -237,17 +234,17 @@ async def id_handler(event):
                     user = await client.get_entity(username)
                     method = "username"
                 except Exception as e:
-                    error_text = f"{get_emoji('adder5')} {convert_font(f'User @{username} tidak ditemukan!')}"
+                    error_text = f"{get_emoji('adder5')} {convert_font(f'User @{username} tidak ditemukan!', 'bold')}"
                     await safe_send_message(event, error_text)
                     return
             else:
                 # Show usage if no username and not replying
                 usage_text = f"""
-{get_emoji('check')} {convert_font('Cara penggunaan CheckID:')}
+{get_emoji('check')} {convert_font('Cara penggunaan CheckID:', 'bold')}
 
-{get_emoji('adder3')} `.id @username` - Cek ID dari username
-{get_emoji('adder3')} `.id` (reply pesan) - Cek ID dari pengirim pesan
-{get_emoji('adder2')} `.id` (tanpa reply) - Cek ID diri sendiri
+{get_emoji('adder3')} {convert_font('.id @username', 'mono')} - Cek ID dari username
+{get_emoji('adder3')} {convert_font('.id', 'mono')} (reply pesan) - Cek ID dari pengirim pesan
+{get_emoji('adder2')} {convert_font('.id', 'mono')} (tanpa reply) - Cek ID diri sendiri
                 """.strip()
                 await safe_send_message(event, usage_text)
                 return
@@ -259,7 +256,7 @@ async def id_handler(event):
         
         # Validate user exists
         if not user:
-            error_text = f"{get_emoji('adder5')} {convert_font('User tidak ditemukan!')}"
+            error_text = f"{get_emoji('adder5')} {convert_font('User tidak ditemukan!', 'bold')}"
             await safe_send_message(event, error_text)
             return
         
@@ -274,16 +271,16 @@ async def id_handler(event):
         
         # Build result with premium emoji support
         result_text = f"""
-{get_emoji('main')} {convert_font('User Information')}
+{get_emoji('main')} {convert_font('User Information', 'bold')}
 
-{get_emoji('check')} **ID:** `{user_id}`
-{get_emoji('adder2')} **Username:** @{username if username else 'Tidak ada'}
-{get_emoji('adder3')} **Name:** {full_name}
-{get_emoji('adder4')} **Bot:** {'Ya' if is_bot else 'Tidak'}
-{get_emoji('adder1')} **Premium:** {'Ya' if is_premium else 'Tidak'}
-{get_emoji('adder6')} **Method:** {method.title()}
+{get_emoji('check')} {convert_font('ID:', 'bold')} {convert_font(str(user_id), 'mono')}
+{get_emoji('adder2')} {convert_font('Username:', 'bold')} @{username if username else 'Tidak ada'}
+{get_emoji('adder3')} {convert_font('Name:', 'bold')} {full_name}
+{get_emoji('adder4')} {convert_font('Bot:', 'bold')} {'Ya' if is_bot else 'Tidak'}
+{get_emoji('adder1')} {convert_font('Premium:', 'bold')} {'Ya' if is_premium else 'Tidak'}
+{get_emoji('adder6')} {convert_font('Method:', 'bold')} {method.title()}
 
-{get_emoji('adder5')} {convert_font('CheckID by Vzoel Fox')}
+{get_emoji('adder5')} {convert_font('CheckID by Vzoel Fox', 'bold')}
         """.strip()
         
         await safe_send_message(event, result_text)
@@ -295,7 +292,7 @@ async def id_handler(event):
             print(f"[CheckID] Log save failed: {log_error}")
     
     except Exception as e:
-        error_text = f"{get_emoji('adder5')} {convert_font(f'Error: {str(e)}')}"
+        error_text = f"{get_emoji('adder5')} {convert_font(f'Error: {str(e)}', 'bold')}"
         await safe_send_message(event, error_text)
 
 def setup(client):
