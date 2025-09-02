@@ -33,9 +33,11 @@ def get_emoji(emoji_name):
     """Get emoji from premium mapping"""
     return PREMIUM_EMOJIS.get(emoji_name, {}).get("emoji", "❓")
 
-def convert_font(text):
-    """Convert text to bold font"""
-    return f"**{text}**"
+# Import from central font system
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.font_helper import convert_font, process_markdown_bold, process_all_markdown
 
 def create_premium_entities(text):
     """Create premium emoji entities for text with UTF-16 support (TEMPLATE VERSION)"""

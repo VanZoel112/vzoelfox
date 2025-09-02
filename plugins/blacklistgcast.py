@@ -135,13 +135,15 @@ def analyze_emoji_positions(text):
     
     return result
 
+# Import from central font system
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.font_helper import convert_font, process_markdown_bold, process_all_markdown
+
 def safe_convert_font(text, font_type='bold'):
-    """Convert teks ke format sederhana (bold / mono)"""
-    if font_type == 'bold':
-        return f"**{text}**"
-    elif font_type == 'mono':
-        return f"`{text}`"
-    return text
+    """Convert teks menggunakan centralized font system"""
+    return convert_font(text, font_type)
 
 async def is_owner_check(user_id):
     """Cek apakah user adalah owner"""
