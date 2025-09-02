@@ -44,7 +44,11 @@ PREMIUM_EMOJIS = {
 client = None
 
 # ===== Blacklist File Path =====
-BLACKLIST_FILE = "gcast_blacklist.json"
+BLACKLIST_FILE = "data/blacklist/gcast_blacklist.json"
+LEGACY_BLACKLIST_FILE = "gcast_blacklist.json"  # Backward compatibility
+
+# Import from central font system
+from utils.font_helper import convert_font
 
 # ===== Helper Functions =====
 async def safe_send_message(event, text):
@@ -158,33 +162,44 @@ def get_prefix():
         return "."
 
 def load_blacklist():
-    """Load blacklist dari file JSON"""
-    try:
-        if os.path.exists(BLACKLIST_FILE):
-            with open(BLACKLIST_FILE, 'r') as f:
-                data = json.load(f)
-                if isinstance(data, dict) and 'blacklisted_chats' in data:
-                    # Convert old format ke dict modern
-                    blacklist_data = {}
-                    for chat_id in data['blacklisted_chats']:
-                        blacklist_data[int(chat_id)] = {
-                            'title': f'Chat {chat_id}',
-                            'type': 'Unknown',
-                            'added_date': datetime.now().isoformat(),
-                            'added_by': 'legacy'
-                        }
-                    return blacklist_data
-                elif isinstance(data, dict):
-                    # New format, pastikan key adalah angka
-                    return {int(k): v for k, v in data.items() if k.lstrip('-').isdigit()}
-        return {}
-    except Exception as e:
-        print(f"Error loading blacklist: {e}")
-        return {}
+    """Load blacklist dari file JSON dengan multi-location support"""
+    blacklist_files = [BLACKLIST_FILE, LEGACY_BLACKLIST_FILE]
+    
+    for blacklist_file in blacklist_files:
+        try:
+            if os.path.exists(blacklist_file):
+                with open(blacklist_file, 'r') as f:
+                    data = json.load(f)
+                    if isinstance(data, dict) and 'blacklisted_chats' in data:
+                        # Convert old format ke dict modern
+                        blacklist_data = {}
+                        for chat_id in data['blacklisted_chats']:
+                            blacklist_data[int(chat_id)] = {
+                                'title': f'Chat {chat_id}',
+                                'type': 'Unknown',
+                                'added_date': datetime.now().isoformat(),
+                                'added_by': 'legacy'
+                            }
+                        print(f"[Blacklist] Loaded {len(blacklist_data)} chats from {blacklist_file}")
+                        return blacklist_data
+                    elif isinstance(data, dict):
+                        # New format, pastikan key adalah angka
+                        blacklist_data = {int(k): v for k, v in data.items() if k.lstrip('-').isdigit()}
+                        print(f"[Blacklist] Loaded {len(blacklist_data)} chats from {blacklist_file}")
+                        return blacklist_data
+        except Exception as e:
+            print(f"Error loading {blacklist_file}: {e}")
+            continue
+    
+    print("[Blacklist] No blacklist file found, starting with empty blacklist")
+    return {}
 
 def save_blacklist(blacklist):
-    """Simpan blacklist ke file JSON"""
+    """Simpan blacklist ke file JSON dengan directory creation"""
     try:
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(BLACKLIST_FILE), exist_ok=True)
+        
         # Save in new format with legacy support
         data = {str(k): v for k, v in blacklist.items()}
         
@@ -192,21 +207,22 @@ def save_blacklist(blacklist):
         data['blacklisted_chats'] = list(blacklist.keys())
         data['metadata'] = {
             'last_updated': datetime.now().isoformat(),
-            'total_blacklisted': len(blacklist)
+            'total_blacklisted': len(blacklist),
+            'version': '2.0.0'
         }
         
         with open(BLACKLIST_FILE, 'w') as f:
             json.dump(data, f, indent=2)
         
-        # Reload blacklist in gcast plugin if available
+        # Force reload blacklist in gcast plugin if available
         try:
-            from plugins.gcast import load_blacklist as gcast_load_blacklist
-            gcast_load_blacklist()
-            print(f"[Blacklist] Reloaded gcast blacklist - {len(blacklist)} chats")
+            from gcast import force_reload_blacklist
+            force_reload_blacklist()
+            print(f"[Blacklist] FORCE RELOADED gcast blacklist - {len(blacklist)} chats")
         except ImportError:
-            pass  # gcast plugin not available
+            print("[Blacklist] gcast plugin not available for reload")
         except Exception as e:
-            print(f"[Blacklist] Error reloading gcast blacklist: {e}")
+            print(f"[Blacklist] Error force reloading gcast blacklist: {e}")
             
         return True
     except Exception as e:

@@ -57,7 +57,8 @@ except ImportError:
 
 # Configuration
 DATABASE_FILE = "vzoel_assistant.db"
-BLACKLIST_FILE = "gcast_blacklist.json"
+BLACKLIST_FILE = "data/blacklist/gcast_blacklist.json"
+LEGACY_BLACKLIST_FILE = "gcast_blacklist.json"  # For backward compatibility
 MAX_CONCURRENT_GCAST = 10
 GCAST_DELAY = 0.5
 
@@ -68,10 +69,157 @@ stats = {
 }
 
 # Import from central font system - STANDARDIZED
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utils.font_helper import convert_font, process_markdown_bold, process_markdown_mono, process_all_markdown
+from utils.font_helper import convert_font
+
+# ============= BLACKLIST MANAGEMENT SYSTEM =============
+
+def load_blacklist():
+    """Load blacklist from JSON file with fallback support"""
+    global blacklisted_chats
+    
+    # Try new location first
+    blacklist_files = [BLACKLIST_FILE, LEGACY_BLACKLIST_FILE]
+    
+    for blacklist_file in blacklist_files:
+        try:
+            if os.path.exists(blacklist_file):
+                with open(blacklist_file, 'r') as f:
+                    data = json.load(f)
+                    
+                    if isinstance(data, dict):
+                        # Handle both old and new formats
+                        if 'blacklisted_chats' in data:
+                            # Old format compatibility
+                            blacklisted_chats = set(int(chat_id) for chat_id in data['blacklisted_chats'])
+                        else:
+                            # New format - extract keys as chat IDs
+                            blacklisted_chats = set(int(chat_id) for chat_id in data.keys() 
+                                                  if str(chat_id).lstrip('-').isdigit())
+                        
+                        print(f"[Gcast] Loaded blacklist: {len(blacklisted_chats)} chats from {blacklist_file}")
+                        return True
+                        
+        except Exception as e:
+            print(f"[Gcast] Error loading {blacklist_file}: {e}")
+            continue
+    
+    # Initialize empty blacklist if no file found
+    blacklisted_chats = set()
+    print("[Gcast] No blacklist file found, using empty blacklist")
+    return False
+
+def save_blacklist():
+    """Save current blacklist to JSON file"""
+    try:
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(BLACKLIST_FILE), exist_ok=True)
+        
+        # Prepare data in new format
+        blacklist_data = {}
+        
+        for chat_id in blacklisted_chats:
+            blacklist_data[str(chat_id)] = {
+                'title': f'Chat {chat_id}',
+                'type': 'Unknown',
+                'added_date': datetime.now().isoformat(),
+                'added_by': 'gcast_sync'
+            }
+        
+        # Add legacy format for backward compatibility
+        blacklist_data['blacklisted_chats'] = list(blacklisted_chats)
+        blacklist_data['metadata'] = {
+            'last_updated': datetime.now().isoformat(),
+            'total_blacklisted': len(blacklisted_chats),
+            'version': '2.0.0'
+        }
+        
+        with open(BLACKLIST_FILE, 'w') as f:
+            json.dump(blacklist_data, f, indent=2)
+        
+        print(f"[Gcast] Saved blacklist: {len(blacklisted_chats)} chats")
+        return True
+        
+    except Exception as e:
+        print(f"[Gcast] Error saving blacklist: {e}")
+        return False
+
+def force_reload_blacklist():
+    """ENHANCED: Force reload blacklist dari semua sumber dengan real-time check"""
+    global blacklisted_chats
+    print("[Gcast] FORCE RELOAD BLACKLIST - Starting comprehensive blacklist refresh...")
+    
+    # Step 1: Load from JSON file
+    original_count = len(blacklisted_chats)
+    load_blacklist()
+    json_count = len(blacklisted_chats)
+    
+    # Step 2: Load from grub.py if available
+    grub_count = 0
+    if GRUB_INTEGRATION:
+        try:
+            from grub import get_blacklisted_groups
+            grub_blacklisted = get_blacklisted_groups()
+            if grub_blacklisted:
+                blacklisted_chats.update(grub_blacklisted)
+                grub_count = len(grub_blacklisted)
+                print(f"[Gcast] Added {grub_count} chats from grub.py")
+        except Exception as e:
+            print(f"[Gcast] Error loading from grub.py: {e}")
+    
+    # Step 3: Session database integration
+    session_count = 0
+    try:
+        # Try to load from session database if available
+        if os.path.exists(DATABASE_FILE):
+            import sqlite3
+            conn = sqlite3.connect(DATABASE_FILE)
+            cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='gcast_blacklist'")
+            if cursor.fetchone():
+                cursor = conn.execute("SELECT chat_id FROM gcast_blacklist WHERE is_blacklisted=1")
+                session_blacklist = [row[0] for row in cursor.fetchall()]
+                blacklisted_chats.update(session_blacklist)
+                session_count = len(session_blacklist)
+                print(f"[Gcast] Added {session_count} chats from session database")
+            conn.close()
+    except Exception as e:
+        print(f"[Gcast] Session database not available: {e}")
+    
+    total_count = len(blacklisted_chats)
+    
+    # Save consolidated blacklist
+    save_blacklist()
+    
+    print(f"[Gcast] FORCE RELOAD COMPLETE:")
+    print(f"  • Original: {original_count} chats")
+    print(f"  • JSON: {json_count} chats")
+    print(f"  • Grub: {grub_count} chats")
+    print(f"  • Session: {session_count} chats")
+    print(f"  • TOTAL: {total_count} chats blacklisted")
+    
+    return total_count
+
+def is_chat_blacklisted(chat_id):
+    """Enhanced check if chat is blacklisted with multiple sources"""
+    try:
+        chat_id = int(chat_id)
+        
+        # Check local blacklist
+        if chat_id in blacklisted_chats:
+            return True
+        
+        # Check grub integration if available
+        if GRUB_INTEGRATION:
+            try:
+                from grub import is_blacklisted
+                if is_blacklisted(chat_id):
+                    return True
+            except Exception:
+                pass
+        
+        return False
+        
+    except Exception:
+        return False
 
 # ============= EMOJI FUNCTIONS - ENHANCED =============
 
@@ -179,118 +327,7 @@ async def is_owner_check(user_id):
     OWNER_ID = 7847025168  # Ganti sesuai ID Master
     return user_id == OWNER_ID
 
-def force_reload_blacklist():
-    """ENHANCED: Force reload blacklist dari semua sumber dengan real-time check"""
-    global blacklisted_chats
-    print("[Gcast] FORCE RELOAD BLACKLIST - Starting comprehensive blacklist refresh...")
-    
-    # Reset blacklist
-    blacklisted_chats = set()
-    
-    try:
-        # 1. Load from JSON file - support both old and new formats
-        file_blacklist = set()
-        if os.path.exists(BLACKLIST_FILE):
-            with open(BLACKLIST_FILE, 'r') as f:
-                data = json.load(f)
-                
-                # New format: keys are chat IDs with metadata
-                for key, value in data.items():
-                    if key.lstrip('-').isdigit():  # Chat ID key
-                        file_blacklist.add(int(key))
-                
-                # Legacy format: blacklisted_chats array
-                if 'blacklisted_chats' in data:
-                    for chat_id in data['blacklisted_chats']:
-                        file_blacklist.add(int(chat_id))
-                        
-            print(f"[Gcast] Loaded {len(file_blacklist)} blacklisted chats from JSON file")
-        
-        # 2. Load from grub database (preferred)
-        db_blacklist = set()
-        if GRUB_INTEGRATION:
-            try:
-                db_blacklist = get_blacklisted_groups()
-                print(f"[Gcast] Loaded {len(db_blacklist)} blacklisted groups from grub database")
-            except Exception as e:
-                print(f"[Gcast] Error loading grub blacklist: {e}")
-        
-        # 3. Load from session database (SQLite)
-        session_blacklist = set()
-        try:
-            if os.path.exists(DATABASE_FILE):
-                conn = sqlite3.connect(DATABASE_FILE)
-                cursor = conn.cursor()
-                
-                # Create table if not exists
-                cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS gcast_blacklist_session (
-                        chat_id INTEGER PRIMARY KEY,
-                        title TEXT,
-                        type TEXT,
-                        added_date TEXT,
-                        added_by TEXT,
-                        reason TEXT,
-                        permanent INTEGER DEFAULT 1
-                    )
-                ''')
-                
-                # Load session blacklist
-                cursor.execute('SELECT chat_id FROM gcast_blacklist_session WHERE permanent = 1')
-                session_data = cursor.fetchall()
-                for row in session_data:
-                    session_blacklist.add(int(row[0]))
-                    
-                conn.close()
-                print(f"[Gcast] Loaded {len(session_blacklist)} blacklisted chats from session database")
-        except Exception as e:
-            print(f"[Gcast] Error loading session blacklist: {e}")
-        
-        # 4. Combine all sources (Union of all blacklists)
-        blacklisted_chats = file_blacklist | db_blacklist | session_blacklist
-        
-        # 5. Update session database dengan semua blacklist yang ditemukan
-        try:
-            conn = sqlite3.connect(DATABASE_FILE)
-            cursor = conn.cursor()
-            
-            for chat_id in blacklisted_chats:
-                cursor.execute('''
-                    INSERT OR REPLACE INTO gcast_blacklist_session 
-                    (chat_id, title, type, added_date, added_by, reason, permanent)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (chat_id, 'Auto-imported', 'Unknown', 
-                     datetime.now().isoformat(), 'system_auto', 
-                     'Auto-imported from file/grub', 1))
-            
-            conn.commit()
-            conn.close()
-            print(f"[Gcast] Updated session database with {len(blacklisted_chats)} blacklisted chats")
-        except Exception as e:
-            print(f"[Gcast] Error updating session database: {e}")
-        
-        # 6. Final report
-        print(f"[Gcast] ✅ FORCE RELOAD COMPLETED:")
-        print(f"[Gcast] - File blacklist: {len(file_blacklist)}")
-        print(f"[Gcast] - Grub database: {len(db_blacklist)}")
-        print(f"[Gcast] - Session database: {len(session_blacklist)}")
-        print(f"[Gcast] - TOTAL BLACKLISTED: {len(blacklisted_chats)}")
-        
-        # Show blacklisted IDs for debugging
-        if blacklisted_chats:
-            sorted_ids = sorted(list(blacklisted_chats))
-            print(f"[Gcast] Blacklisted chat IDs: {sorted_ids}")
-        
-        return True
-        
-    except Exception as e:
-        print(f"[Gcast] CRITICAL ERROR during force reload blacklist: {e}")
-        blacklisted_chats = set()
-        return False
-
-def load_blacklist():
-    """Wrapper untuk backward compatibility - calls force_reload_blacklist()"""
-    return force_reload_blacklist()
+# Cleaned up duplicate force_reload_blacklist function
 
 async def add_to_blacklist_session(chat_id: int, title: str = "Unknown", reason: str = "Manual add"):
     """Add chat to session blacklist database"""
