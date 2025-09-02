@@ -334,4 +334,5 @@ class {plugin_name.title()}Handler:
 ├── `{{COMMAND_PREFIX}}{plugin_name.lower()} status` - Show status
 └── `{{COMMAND_PREFIX}}{plugin_name.lower()} config` - Show config
 
-💎 **Vzoel
+💎 **Vzoel Fox's Enhanced Plugin System**
+        '''
