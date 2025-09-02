@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
 """
-Tag All Plugin dengan Premium Emoji Support - Enhanced UTF-16 Edition
-File: plugins/tagall.py
-Founder : Vzoel Fox's Ltpn (Enhanced Premium Emoji Mapping)
-Description:
-    Plugin advanced untuk tag semua member group dan cek user ID dengan dukungan 
-    premium emoji yang sudah diperbarui menggunakan mapping UTF-16 terbaru.
-    Fitur utama: tagall members, cek ID user via username/reply.
+Enhanced TagAll Plugin for VzoelFox Userbot - Premium Batch System
+Fitur: Smart batch processing, reply support, stop functionality, premium emoji per username
+Founder Userbot: Vzoel Fox's Ltpn 🤩
+Version: 2.0.0 - Enhanced Batch TagAll System
 """
 
 import re
 import asyncio
+import random
+import time
 from telethon import events
-from telethon.tl.types import MessageEntityCustomEmoji, Channel, Chat, User
-from telethon.errors import ChatAdminRequiredError, UserNotParticipantError, FloodWaitError
+from telethon.tl.types import MessageEntityCustomEmoji, Channel, Chat, User, Message
+from telethon.errors import ChatAdminRequiredError, UserNotParticipantError, FloodWaitError, MessageNotModifiedError
 
 # ===== Plugin Info =====
 PLUGIN_INFO = {
-    "name": "tagall_premium",
-    "version": "1.0.0",
-    "description": "Tag all members and user ID checker with premium emoji support",
+    "name": "tagall_enhanced",
+    "version": "2.0.0",
+    "description": "Enhanced TagAll dengan batch processing, reply support, stop functionality, premium emoji per username",
     "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
-    "commands": [".tagall", ".cekid"],
-    "features": ["tag all members", "user ID checker", "premium emojis"]
+    "commands": [".tag all <text>", ".tag all (reply)", ".stop tagall"],
+    "features": ["5-member batch processing", "reply message support", "stop functionality", "premium emoji per username", "random member selection", "no markdown bugs"]
 }
 
 # Premium Emoji Mapping - Updated with UTF-16 support (mapping dari formorgan.py)
@@ -37,17 +36,40 @@ PREMIUM_EMOJIS = {
     "adder6":  {"emoji": "🎚", "custom_emoji_id": "5794323465452394551"}
 }
 
-# ===== Global Client Variable =====
+# Import from central font system
+from utils.font_helper import convert_font
+
+# ===== Global Variables =====
 client = None
+active_tagall = {}  # Track active tagall processes per chat
+tagall_stop_flags = {}  # Stop flags for tagall processes
 
 # ===== Helper Functions =====
-async def safe_send_message(event, text):
-    """Send message with error handling"""
+async def safe_send_premium(event, text):
+    """Send message with premium entities"""
     try:
-        return await event.reply(text)
+        entities = create_premium_entities(text)
+        if entities:
+            return await event.reply(text, formatting_entities=entities)
+        else:
+            return await event.reply(text)
     except Exception as e:
         print(f"Error sending message: {e}")
-        return None
+        return await event.reply(text)
+
+async def safe_edit_premium(message, text):
+    """Edit message with premium entities"""
+    try:
+        entities = create_premium_entities(text)
+        if entities:
+            await message.edit(text, formatting_entities=entities)
+        else:
+            await message.edit(text)
+    except MessageNotModifiedError:
+        pass
+    except Exception as e:
+        print(f"Error editing message: {e}")
+        await message.edit(text)
 
 async def safe_edit_message(message, text, entities=None):
     """Edit message safely with error handling"""
@@ -114,13 +136,16 @@ def create_premium_entities(text):
     except Exception:
         return []
 
-# ===== Tag All Command =====
-@events.register(events.NewMessage(pattern=r'^\.tagall(?:\s+(.*))?$', outgoing=True))
-async def tagall_handler(event):
-    """Tag all members in group with premium emoji support"""
-    global client
+# ===== Enhanced Tag All Command System =====
+@events.register(events.NewMessage(pattern=r'^\.tag all(?:\s+(.*))?$', outgoing=True))
+async def enhanced_tag_all_handler(event):
+    """Enhanced tag all with 5-member batch processing, premium emoji per username, stop functionality"""
+    global client, active_tagall, tagall_stop_flags
+    
     if client is None:
         client = event.client
+    
+    chat_id = event.chat_id
     
     try:
         # Check if in group/channel
@@ -130,15 +155,42 @@ async def tagall_handler(event):
             await event.reply(error_text, formatting_entities=create_premium_entities(error_text))
             return
         
-        # Get custom message or use default
-        custom_message = event.pattern_match.group(1) or "Tag All Members by Vzoel Fox"
+        # Check if tagall already running in this chat
+        if chat_id in active_tagall:
+            running_text = f"{get_emoji('adder5')} {convert_font('Tag All sedang berjalan! Gunakan .stop tagall untuk memberhentikan.')}"
+            await event.reply(running_text, formatting_entities=create_premium_entities(running_text))
+            return
+        
+        # Get message - either from command parameter or replied message
+        custom_message = None
+        if event.is_reply:
+            # Reply to message - use replied message content
+            reply_message = await event.get_reply_message()
+            if reply_message and reply_message.text:
+                custom_message = reply_message.text
+            else:
+                custom_message = "Tag All Members by Vzoel Fox"
+        else:
+            # Text from command parameter
+            custom_message = event.pattern_match.group(1) or "Tag All Members by Vzoel Fox"
+        
+        # Initialize tagall process
+        active_tagall[chat_id] = {
+            'start_time': time.time(),
+            'message': custom_message,
+            'total_tagged': 0
+        }
+        tagall_stop_flags[chat_id] = False
         
         # Progress message
         progress_text = f"""
-{get_emoji('adder1')} {convert_font('Memuat daftar member...')}
-{get_emoji('check')} {convert_font('Mohon tunggu sebentar...')}
+{get_emoji('adder1')} {convert_font('Memulai Enhanced Tag All System...')}
+{get_emoji('check')} {convert_font('Menggunakan batch processing 5 member per waktu')}
+{get_emoji('adder3')} {convert_font('Gunakan .stop tagall untuk memberhentikan')}
         """.strip()
         progress_msg = await event.reply(progress_text, formatting_entities=create_premium_entities(progress_text))
+        
+        await asyncio.sleep(2)
         
         # Get all participants
         participants = await client.get_participants(event.chat_id)
@@ -146,47 +198,91 @@ async def tagall_handler(event):
         if not participants:
             no_members_text = f"{get_emoji('adder5')} {convert_font('Tidak ada member yang ditemukan!')}"
             await safe_edit_message(progress_msg, no_members_text, create_premium_entities(no_members_text))
+            # Clean up
+            if chat_id in active_tagall:
+                del active_tagall[chat_id]
+            if chat_id in tagall_stop_flags:
+                del tagall_stop_flags[chat_id]
             return
         
-        # Create tag message
-        tag_message = f"{get_emoji('main')} {convert_font(custom_message)}\n\n"
+        # Filter valid users and shuffle for random selection
+        valid_users = [user for user in participants if isinstance(user, User) and not getattr(user, 'bot', False)]
+        random.shuffle(valid_users)  # Random selection optimization
         
-        # Split participants into chunks to avoid message length limit
-        chunk_size = 50  # Tag 50 users per message
-        participant_chunks = [participants[i:i + chunk_size] for i in range(0, len(participants), chunk_size)]
+        # Start batch processing with 5 members at a time
+        batch_size = 5
+        total_batches = (len(valid_users) + batch_size - 1) // batch_size
         
-        for chunk_index, chunk in enumerate(participant_chunks):
-            current_tags = ""
+        # Update progress message with batch info
+        batch_info_text = f"""
+{get_emoji('main')} {convert_font(custom_message)}
+
+{get_emoji('adder2')} {convert_font(f'Total member: {len(valid_users)}')}
+{get_emoji('adder4')} {convert_font(f'Batch processing: {total_batches} batch')}
+{get_emoji('check')} {convert_font('Memulai batch tagging...')}
+        """.strip()
+        await safe_edit_message(progress_msg, batch_info_text, create_premium_entities(batch_info_text))
+        
+        await asyncio.sleep(3)
+        
+        # Process in batches of 5 members
+        for batch_num in range(0, len(valid_users), batch_size):
+            # Check stop flag
+            if tagall_stop_flags.get(chat_id, False):
+                stop_text = f"""
+{get_emoji('adder5')} {convert_font('Tag All diberhentikan oleh pengguna!')}
+{get_emoji('adder3')} {convert_font(f'Total yang sudah ditag: {active_tagall[chat_id]["total_tagged"]}')}
+{get_emoji('main')} {convert_font('By Vzoel Fox Ltpn')}
+                """.strip()
+                await event.reply(stop_text, formatting_entities=create_premium_entities(stop_text))
+                # Clean up
+                if chat_id in active_tagall:
+                    del active_tagall[chat_id]
+                if chat_id in tagall_stop_flags:
+                    del tagall_stop_flags[chat_id]
+                return
             
-            for user in chunk:
-                # Validate user object
-                if not isinstance(user, User):
-                    continue
-                    
+            # Get current batch
+            batch_users = valid_users[batch_num:batch_num + batch_size]
+            current_batch_number = (batch_num // batch_size) + 1
+            
+            # Build tag message for this batch with premium emoji after each username
+            batch_tags = ""
+            for user in batch_users:
                 if user.username:
-                    current_tags += f"@{user.username} "
+                    batch_tags += f"@{user.username} {get_emoji('main')} "
                 elif user.first_name:
-                    # Use mention for users without username
-                    current_tags += f"[{user.first_name}](tg://user?id={user.id}) "
+                    # Use mention for users without username + premium emoji
+                    display_name = user.first_name[:20]  # Limit length
+                    batch_tags += f"[{display_name}](tg://user?id={user.id}) {get_emoji('main')} "
             
-            if chunk_index == 0:
-                # Update first message
-                final_text = tag_message + current_tags
-                await safe_edit_message(progress_msg, final_text, create_premium_entities(final_text))
-            else:
-                # Send additional messages for remaining chunks
-                chunk_text = f"{get_emoji('adder3')} {convert_font(f'Tag All - Part {chunk_index + 1}')}\n\n" + current_tags
-                await event.reply(chunk_text, formatting_entities=create_premium_entities(chunk_text))
+            # Create batch message
+            batch_message = f"""
+{get_emoji('adder3')} {convert_font(f'Batch {current_batch_number}/{total_batches} - Enhanced Tag All')}
+
+{batch_tags}
+
+{get_emoji('adder4')} {convert_font(custom_message)}
+{get_emoji('check')} {convert_font('By Vzoel Fox Ltpn')}
+            """.strip()
             
-            # Add delay between chunks to avoid flood
-            if chunk_index < len(participant_chunks) - 1:
-                await asyncio.sleep(2)
+            # Send batch message
+            await event.reply(batch_message, formatting_entities=create_premium_entities(batch_message))
+            
+            # Update counter
+            active_tagall[chat_id]['total_tagged'] += len(batch_users)
+            
+            # Wait between batches (avoid flood)
+            if batch_num + batch_size < len(valid_users):
+                await asyncio.sleep(4)  # 4 second delay between batches
         
         # Final completion message
         completion_text = f"""
-{get_emoji('adder2')} {convert_font('Tag All Selesai!')}
-{get_emoji('adder4')} {convert_font(f'Total member: {len(participants)}')}
-{get_emoji('main')} {convert_font('By Vzoel Fox Ltpn')}
+{get_emoji('adder2')} {convert_font('Enhanced Tag All Selesai!')}
+{get_emoji('main')} {convert_font(f'Total member ditag: {len(valid_users)}')}
+{get_emoji('adder4')} {convert_font(f'Total batch: {total_batches}')}
+{get_emoji('adder6')} {convert_font('Dengan premium emoji per username')}
+{get_emoji('check')} {convert_font('By Vzoel Fox Ltpn')}
         """.strip()
         await event.reply(completion_text, formatting_entities=create_premium_entities(completion_text))
         
@@ -198,6 +294,40 @@ async def tagall_handler(event):
         await event.reply(flood_text, formatting_entities=create_premium_entities(flood_text))
     except Exception as e:
         error_text = f"{get_emoji('adder5')} {convert_font(f'Error: {str(e)}')}"
+        await event.reply(error_text, formatting_entities=create_premium_entities(error_text))
+    finally:
+        # Clean up tracking variables
+        if chat_id in active_tagall:
+            del active_tagall[chat_id]
+        if chat_id in tagall_stop_flags:
+            del tagall_stop_flags[chat_id]
+
+# ===== Stop Tag All Command =====
+@events.register(events.NewMessage(pattern=r'^\.stop tagall$', outgoing=True))
+async def stop_tagall_handler(event):
+    """Stop active tagall process"""
+    global tagall_stop_flags, active_tagall
+    
+    chat_id = event.chat_id
+    
+    try:
+        if chat_id not in active_tagall:
+            not_running_text = f"{get_emoji('adder5')} {convert_font('Tidak ada Tag All yang sedang berjalan di grup ini!')}"
+            await event.reply(not_running_text, formatting_entities=create_premium_entities(not_running_text))
+            return
+        
+        # Set stop flag
+        tagall_stop_flags[chat_id] = True
+        
+        # Confirmation message
+        stopping_text = f"""
+{get_emoji('adder1')} {convert_font('Menghentikan Tag All...')}
+{get_emoji('check')} {convert_font('Proses akan berhenti setelah batch saat ini selesai')}
+        """.strip()
+        await event.reply(stopping_text, formatting_entities=create_premium_entities(stopping_text))
+        
+    except Exception as e:
+        error_text = f"{get_emoji('adder5')} {convert_font(f'Error menghentikan tagall: {str(e)}')}"
         await event.reply(error_text, formatting_entities=create_premium_entities(error_text))
 
 # ===== Check User ID Command =====
@@ -265,9 +395,10 @@ async def cekid_handler(event):
 def setup(client):
     """Setup function to register event handlers with client"""
     if client:
-        client.add_event_handler(tagall_handler)
+        client.add_event_handler(enhanced_tag_all_handler)
+        client.add_event_handler(stop_tagall_handler)
         client.add_event_handler(cekid_handler)
-        print("⚙️ Tagall handlers registered to client")
+        print("⚙️ Enhanced Tagall handlers registered to client")
 
-print("🤩 Tag All Plugin dengan Premium Emoji Support berhasil dimuat!")
-print("Commands: .tagall [pesan] | .cekid [@username atau reply]")
+print("🤩 Enhanced Tag All Plugin v2.0 dengan Premium Emoji Support berhasil dimuat!")
+print("Commands: .tag all [pesan] | .tag all (reply) | .stop tagall | .cekid [@username atau reply]")
