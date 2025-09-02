@@ -41,7 +41,7 @@ client = None
 def get_utf16_length(emoji_char):
     """Get UTF-16 length of emoji character"""
     try:
-        utf16_bytes = emoji_char.encode('utf-16le')
+        utf16_bytes = emoji_char.encode('utf-16-le')
         return len(utf16_bytes) // 2
     except:
         return 1

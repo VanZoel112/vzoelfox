@@ -1,15 +1,9 @@
 {
-  "-1002785371546": {
-    "title": "Sample Blacklisted Group",
-    "type": "Supergroup",
-    "added_date": "2025-01-01T00:00:00",
-    "added_by": "system_default",
-    "permanent": true,
-    "reason": "Default permanent blacklist - system protection"
-  },
-  "blacklisted_chats": [-1002785371546],
+  "blacklisted_chats": [
+    -1002785371546
+  ],
   "metadata": {
-    "last_updated": "2025-01-01T00:00:00",
+    "last_updated": "2025-09-02T06:56:10.376733",
     "total_blacklisted": 1
   }
 }

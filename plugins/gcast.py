@@ -111,7 +111,7 @@ def get_emoji(emoji_type):
 def get_utf16_length(emoji_char):
     """Get UTF-16 length of emoji character"""
     try:
-        utf16_bytes = emoji_char.encode('utf-16le')
+        utf16_bytes = emoji_char.encode('utf-16-le')
         return len(utf16_bytes) // 2
     except:
         return 1
@@ -171,14 +171,14 @@ def extract_premium_emoji_from_message(message: Message) -> List[Dict]:
         if isinstance(entity, MessageEntityCustomEmoji) and entity.document_id:
             try:
                 # Proper UTF-16 extraction
-                text_bytes = text.encode('utf-16le')
+                text_bytes = text.encode('utf-16-le')
                 start_byte = entity.offset * 2
                 end_byte = (entity.offset + entity.length) * 2
                 
                 # Validate bounds
                 if end_byte <= len(text_bytes) and start_byte >= 0:
                     entity_bytes = text_bytes[start_byte:end_byte]
-                    emoji_char = entity_bytes.decode('utf-16le')
+                    emoji_char = entity_bytes.decode('utf-16-le')
                     
                     premium_emojis.append({
                         'emoji': emoji_char,

@@ -71,7 +71,7 @@ def create_premium_entities(text):
                 if text[i:].startswith(emoji):
                     try:
                         # Calculate UTF-16 length properly (from emoji_template.py reference)
-                        emoji_bytes = emoji.encode('utf-16le')
+                        emoji_bytes = emoji.encode('utf-16-le')
                         utf16_length = len(emoji_bytes) // 2
                         
                         entities.append(MessageEntityCustomEmoji(
@@ -90,7 +90,7 @@ def create_premium_entities(text):
             
             if not found_emoji:
                 char = text[i]
-                char_bytes = char.encode('utf-16le')
+                char_bytes = char.encode('utf-16-le')
                 char_utf16_length = len(char_bytes) // 2
                 current_offset += char_utf16_length
                 i += 1

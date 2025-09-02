@@ -68,7 +68,7 @@ def get_utf16_length(emoji_char):
     """Get UTF-16 length of emoji character"""
     try:
         # Convert to UTF-16 and get byte length, then divide by 2 for character count
-        utf16_bytes = emoji_char.encode('utf-16le')
+        utf16_bytes = emoji_char.encode('utf-16-le')
         return len(utf16_bytes) // 2
     except:
         return 1
@@ -522,7 +522,7 @@ async def test_emoji_handler(event):
 
 {get_emoji('check')} **Test String:** `{test_text}`
 {get_emoji('adder1')} **String Length:** {len(test_text)} chars
-{get_emoji('adder2')} **UTF-16 Length:** {len(test_text.encode('utf-16le')) // 2} units
+{get_emoji('adder2')} **UTF-16 Length:** {len(test_text.encode('utf-16-le')) // 2} units
 
 {get_emoji('adder3')} **Premium Emoji Entities Created:**
 """
