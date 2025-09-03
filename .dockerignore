@@ -1,0 +1,119 @@
+# VzoelFox Docker Ignore
+# Founder: Vzoel Fox's Ltpn 🤩
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+*.temp
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Session files
+*.session
+*.session-journal
+sessions/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.yaml
+.dockerignore
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Tests
+tests/
+test/
+*.test.js
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Deployment scripts (saat build)
+deploy.sh
+install.sh
+
+# Large files
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+
+# Sensitive data
+.env
+.env.*
+config.json
+secrets/
+private/

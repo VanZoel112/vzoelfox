@@ -1,0 +1,116 @@
+# VzoelFox Userbot Docker Compose
+# Founder: Vzoel Fox's Ltpn 🤩
+# Production-ready deployment dengan monitoring
+
+version: '3.8'
+
+services:
+  # Main VzoelFox Userbot Service
+  vzoelfox:
+    build: .
+    container_name: vzoelfox-userbot
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+    env_file:
+      - .env
+    volumes:
+      - ./sessions:/app/sessions:rw
+      - ./data:/app/data:rw
+      - ./logs:/app/logs:rw
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - vzoelfox-network
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import sys; sys.exit(0)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    labels:
+      - "com.vzoelfox.service=userbot"
+      - "com.vzoelfox.version=1.0.0"
+
+  # Redis for caching and sessions (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: vzoelfox-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - vzoelfox-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+
+  # Watchtower for auto-updates (optional)
+  watchtower:
+    image: containrrr/watchtower
+    container_name: vzoelfox-watchtower
+    restart: unless-stopped
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=86400  # 24 hours
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_REVIVE_STOPPED=false
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - vzoelfox-network
+    labels:
+      - "com.vzoelfox.service=updater"
+
+  # Log aggregator (optional)
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: vzoelfox-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+    networks:
+      - vzoelfox-network
+    command: -config.file=/etc/loki/local-config.yaml
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
+
+# Networks
+networks:
+  vzoelfox-network:
+    driver: bridge
+    name: vzoelfox-network
+    labels:
+      - "com.vzoelfox.network=main"
+
+# Volumes
+volumes:
+  redis_data:
+    driver: local
+    name: vzoelfox-redis-data
+  loki_data:
+    driver: local
+    name: vzoelfox-loki-data
