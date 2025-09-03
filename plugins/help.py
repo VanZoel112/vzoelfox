@@ -1,275 +1,389 @@
 #!/usr/bin/env python3
 """
-Comprehensive Help System for VzoelFox - All Plugins Catalog
-Enhanced premium emoji support with full plugin command listing
-Author: Morgan (Enhanced for VzoelFox)
+Simple Help Plugin for VzoelFox Userbot - Direct Plugin List with Premium Emojis
+Fitur: 10 plugins per page, .next/.back navigation, detailed plugin info
+Founder Userbot: Vzoel Fox's Ltpn 🤩
+Version: 4.0.0 - Simple Template System
 """
 
-import asyncio
 import os
 import glob
-import importlib.util
 from telethon import events
-from telethon.errors import MessageNotModifiedError, FloodWaitError
+from telethon.tl.types import MessageEntityCustomEmoji
+
+# Import from central font system
+from utils.font_helper import convert_font
 
 # ===== Plugin Info =====
 PLUGIN_INFO = {
-    "name": "help_comprehensive",
-    "version": "2.2.0",
-    "description": "Comprehensive help system cataloging ALL VzoelFox plugins and commands",
-    "author": "Morgan (Enhanced for VzoelFox)",
-    "commands": [".help", ".info", ".plugins", ".commands", ".about", ".menu", ".allcmd"]
+    "name": "help",
+    "version": "4.0.0", 
+    "description": "Simple help system - 10 plugins per page dengan premium emoji support",
+    "author": "Founder Userbot: Vzoel Fox's Ltpn 🤩",
+    "commands": [".help", ".next", ".back", ".help <plugin>"],
+    "features": ["simple template", "10 plugins per page", "premium emoji integration", "plugin details"]
 }
 
-def scan_all_plugins():
-    """Scan all plugins directory and extract command information"""
-    plugins_info = {}
-    plugins_dir = "/data/data/com.termux/files/home/vzoelfox/plugins"
-    
-    if not os.path.exists(plugins_dir):
-        return plugins_info
-    
-    for py_file in glob.glob(os.path.join(plugins_dir, "*.py")):
-        if py_file.endswith("__init__.py"):
-            continue
-            
-        filename = os.path.basename(py_file)
-        plugin_name = filename[:-3]  # Remove .py
+# ===== PREMIUM EMOJI CONFIGURATION =====
+PREMIUM_EMOJIS = {
+    'main': {'id': '6156784006194009426', 'char': '🤩'},
+    'check': {'id': '5794353925360457382', 'char': '⚙️'},
+    'adder1': {'id': '5794407002566300853', 'char': '⛈'},
+    'adder2': {'id': '5793913811471700779', 'char': '✅'},
+    'adder3': {'id': '5321412209992033736', 'char': '👽'},
+    'adder4': {'id': '5793973133559993740', 'char': '✈️'},
+    'adder5': {'id': '5357404860566235955', 'char': '😈'},
+    'adder6': {'id': '5794323465452394551', 'char': '🎚️'}
+}
+
+# Global navigation state
+HELP_STATE = {
+    'current_page': 0,
+    'plugins_per_page': 10
+}
+
+def get_emoji(emoji_type):
+    """Get premium emoji character"""
+    return PREMIUM_EMOJIS.get(emoji_type, {}).get('char', '🤩')
+
+def create_premium_entities(text):
+    """Create premium emoji entities for text with UTF-16 support"""
+    try:
+        entities = []
+        current_offset = 0
+        i = 0
         
-        try:
-            # Quick command extraction from file content
-            with open(py_file, 'r', encoding='utf-8', errors='ignore') as f:
-                content = f.read()
+        while i < len(text):
+            found_emoji = False
+            
+            for emoji_type, emoji_data in PREMIUM_EMOJIS.items():
+                emoji_char = emoji_data['char']
+                emoji_id = emoji_data['id']
                 
-                # Extract commands from various patterns
-                commands = []
-                
-                # Pattern 1: @events.register(events.NewMessage(pattern=r'^\.command', outgoing=True))
-                import re
-                event_patterns = re.findall(r'pattern=r[\'"][^\'"]*\\\.([\w]+)', content)
-                for cmd in event_patterns:
-                    commands.append(f".{cmd}")
-                
-                # Pattern 2: PLUGIN_INFO commands
-                plugin_info_match = re.search(r'PLUGIN_INFO\s*=\s*{[^}]*"commands":\s*\[(.*?)\]', content, re.DOTALL)
-                if plugin_info_match:
-                    cmd_list = plugin_info_match.group(1)
-                    extracted = re.findall(r'[\'"](\.[^\'\"]+)[\'"]', cmd_list)
-                    commands.extend(extracted)
-                
-                # Pattern 3: @Client.on_message(filters.command
-                pyrogram_patterns = re.findall(r'filters\.command\(\[(.*?)\]', content)
-                for pattern in pyrogram_patterns:
-                    cmds = re.findall(r'[\'"]([^\'\"]+)[\'"]', pattern)
-                    for cmd in cmds:
-                        commands.append(f".{cmd}")
-                
-                # Remove duplicates and clean
-                commands = list(set(commands))
-                commands = [cmd for cmd in commands if len(cmd) > 1 and cmd.startswith('.')]
-                
-                if commands:
-                    # Extract description
-                    desc = "VzoelFox Plugin"
-                    desc_match = re.search(r'[\'"]description[\'"]:\s*[\'"]([^\'\"]+)[\'"]', content)
-                    if desc_match:
-                        desc = desc_match.group(1)[:50]
-                    
-                    plugins_info[plugin_name] = {
-                        'commands': sorted(commands),
-                        'description': desc
-                    }
-                    
-        except Exception as e:
-            # Skip problematic files
-            pass
-    
-    return plugins_info
+                if text[i:].startswith(emoji_char):
+                    try:
+                        emoji_bytes = emoji_char.encode('utf-16-le')
+                        utf16_length = len(emoji_bytes) // 2
+                        
+                        entities.append(MessageEntityCustomEmoji(
+                            offset=current_offset,
+                            length=utf16_length,
+                            document_id=int(emoji_id)
+                        ))
+                        
+                        i += len(emoji_char)
+                        current_offset += utf16_length
+                        found_emoji = True
+                        break
+                        
+                    except Exception:
+                        break
+            
+            if not found_emoji:
+                char = text[i]
+                char_bytes = char.encode('utf-16-le')
+                char_utf16_length = len(char_bytes) // 2
+                current_offset += char_utf16_length
+                i += 1
+        
+        return entities
+    except Exception:
+        return []
 
 async def safe_send_premium(event, text):
-    """Send message with error handling"""
+    """Send message with premium entities"""
     try:
-        await event.edit(text, link_preview=False)
-    except MessageNotModifiedError:
-        pass
-    except FloodWaitError as e:
-        await asyncio.sleep(e.seconds)
-        await event.edit(text, link_preview=False)
+        entities = create_premium_entities(text)
+        if entities:
+            return await event.reply(text, formatting_entities=entities)
+        else:
+            return await event.reply(text)
     except Exception as e:
-        print(f"[Help] Error sending message: {e}")
-        try:
-            await event.edit("❌ Error displaying help message")
-        except:
-            pass
+        # Fallback to plain text if premium emoji fails
+        print(f"[Help] Premium emoji error: {e}")
+        return await event.reply(text)
 
-@events.register(events.NewMessage(pattern=r'\.help$|\.commands$|\.allcmd$', outgoing=True))
-async def comprehensive_help_command(event):
-    """Comprehensive help command showing ALL VzoelFox plugins"""
+def get_all_plugins():
+    """Get all plugin files from plugins directory"""
     try:
-        await event.edit("🔍 Scanning all plugins...")
+        plugin_files = glob.glob("plugins/*.py")
+        plugins = []
         
-        plugins_info = scan_all_plugins()
+        for plugin_file in plugin_files:
+            plugin_name = os.path.basename(plugin_file).replace('.py', '')
+            if plugin_name not in ['__init__', 'database_helper', 'nsfw_downloader']:
+                plugins.append(plugin_name)
         
-        help_text = """**🤖 VzoelFox Userbot - Complete Plugin Catalog**
+        return sorted(plugins)
+    except Exception:
+        return []
 
-**🇮🇩 Indonesian Content Filter:**
-• `.indoscan @channel [limit]` - Scan Indonesian content
-• `.indofilter` - Check if message is Indonesian  
-• `.indobatch @ch1 @ch2 @ch3` - Batch scan channels
-• `.indosave` - Save ONLY Indonesian content
-
-**📥 Media Downloader (NSFW):**
-• `.save` - Save media with 🇮🇩/🌍 tagging
-• `.linkdl <telegram_link>` - Download from Telegram link
-• `.indosave` - Indonesian content saver
-
-**🎮 System Commands:**
-• `.ping` / `.pong` - Response time test
-• `.alive` - Bot status check
-• `.restart` - Restart bot
-
-**📡 Communication:**
-• `.gcast <message>` - Global broadcast
-• `.gcastbl list` - View broadcast blacklist
-
-**🔧 Utilities:**
-• `.tagall` - Tag all members
-• `.checkid` - Get user/chat info
-• `.vzoel` - Main bot commands
-
-**All Available Plugins:**"""
-
-        # Add discovered plugins
-        if plugins_info:
-            for plugin_name, info in sorted(plugins_info.items()):
-                if len(info['commands']) > 0:
-                    commands_str = ' • '.join(info['commands'][:6])  # Limit to 6 commands
-                    if len(info['commands']) > 6:
-                        commands_str += f" + {len(info['commands']) - 6} more"
-                    
-                    help_text += f"\n\n**{plugin_name.title()}:**\n• {commands_str}"
+def get_plugin_info_from_file(plugin_name):
+    """Get plugin info from file if available"""
+    try:
+        import importlib
+        import sys
         
-        help_text += f"""
-
-**📊 Plugin Stats:**
-• Total Plugins: {len(plugins_info)}
-• Available Commands: {sum(len(info['commands']) for info in plugins_info.values())}
-
-**🚀 VzoelFox Premium System Ready!**
-**Use .info for Indonesian filter details**"""
+        # Add plugins to path
+        if 'plugins' not in sys.path:
+            sys.path.append('plugins')
+            
+        plugin_module = importlib.import_module(plugin_name)
         
+        if hasattr(plugin_module, 'get_plugin_info'):
+            return plugin_module.get_plugin_info()
+        elif hasattr(plugin_module, 'PLUGIN_INFO'):
+            return plugin_module.PLUGIN_INFO
+        else:
+            return {
+                'name': plugin_name,
+                'description': 'Plugin deskripsi tidak tersedia',
+                'commands': ['Lihat source code untuk commands']
+            }
+    except Exception:
+        return {
+            'name': plugin_name,
+            'description': 'Plugin tidak dapat dimuat',
+            'commands': ['Error loading plugin']
+        }
+
+def get_help_page(page=0):
+    """Generate help page with 10 commands per page"""
+    all_plugins = get_all_plugins()
+    all_commands = []
+    
+    # Collect all commands from plugins
+    for plugin_name in all_plugins:
+        plugin_info = get_plugin_info_from_file(plugin_name)
+        commands = plugin_info.get('commands', [])
+        for cmd in commands:
+            all_commands.append({
+                'command': cmd,
+                'plugin': plugin_name,
+                'description': plugin_info.get('description', 'No description')[:50]
+            })
+    
+    # Add core commands
+    core_commands = [
+        {'command': '.alive', 'plugin': 'core', 'description': 'Check bot status and uptime'},
+        {'command': '.ping', 'plugin': 'core', 'description': 'Test response time'},
+        {'command': '.restart', 'plugin': 'core', 'description': 'Restart the userbot'},
+        {'command': '.plugins', 'plugin': 'core', 'description': 'Show plugin status'},
+    ]
+    all_commands.extend(core_commands)
+    
+    # Sort commands alphabetically
+    all_commands.sort(key=lambda x: x['command'])
+    
+    commands_per_page = HELP_STATE['plugins_per_page']
+    start_idx = page * commands_per_page
+    end_idx = start_idx + commands_per_page
+    page_commands = all_commands[start_idx:end_idx]
+    
+    total_commands = len(all_commands)
+    total_pages = (total_commands - 1) // commands_per_page + 1
+    
+    help_text = f"""{get_emoji('main')} {convert_font('VZOELFOX COMMANDS', 'bold')} (Page {page + 1}/{total_pages})
+
+{get_emoji('check')} {convert_font('Total Commands:', 'bold')} {total_commands}
+{get_emoji('adder4')} {convert_font('Page:', 'bold')} {page + 1} of {total_pages}
+
+"""
+    
+    for idx, cmd_info in enumerate(page_commands, start_idx + 1):
+        help_text += f"{get_emoji('adder2')} {convert_font(f'{idx}.', 'bold')} {convert_font(cmd_info['command'], 'mono')}\n"
+        help_text += f"   └ {cmd_info['description']}\n\n"
+    
+    help_text += f"{get_emoji('adder6')} {convert_font('Navigation:', 'bold')}\n"
+    if page > 0:
+        help_text += f"{get_emoji('adder1')} {convert_font('.back', 'mono')} - Previous page\n"
+    if page < total_pages - 1:
+        help_text += f"{get_emoji('adder1')} {convert_font('.next', 'mono')} - Next page\n"
+    
+    help_text += f"{get_emoji('adder3')} {convert_font('.help <plugin>', 'mono')} - Plugin details\n"
+    help_text += f"\n{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}\n"
+    help_text += f"{get_emoji('adder5')} Powered by Vzoel Fox's Technology\n"
+    help_text += f"{get_emoji('adder6')} © 2025 Vzoel Fox's (LTPN)"
+    
+    return help_text
+
+def get_plugin_details(plugin_name):
+    """Get detailed plugin information"""
+    plugin_info = get_plugin_info_from_file(plugin_name)
+    
+    help_text = f"""{get_emoji('main')} {convert_font(f'PLUGIN: {plugin_name.upper()}', 'bold')}
+
+{get_emoji('check')} {convert_font('Description:', 'bold')}
+{plugin_info.get('description', 'Tidak ada deskripsi')}
+
+{get_emoji('adder2')} {convert_font('Commands:', 'bold')}
+"""
+    
+    commands = plugin_info.get('commands', [])
+    if commands:
+        for cmd in commands:
+            help_text += f"{get_emoji('adder4')} {convert_font(cmd, 'mono')}\n"
+    else:
+        help_text += f"{get_emoji('adder5')} Tidak ada commands tersedia\n"
+    
+    if 'features' in plugin_info:
+        help_text += f"\n{get_emoji('adder3')} {convert_font('Features:', 'bold')}\n"
+        for feature in plugin_info['features']:
+            help_text += f"{get_emoji('adder6')} {feature}\n"
+    
+    if 'author' in plugin_info:
+        help_text += f"\n{get_emoji('main')} {convert_font('Author:', 'bold')} {plugin_info['author']}\n"
+    
+    if 'version' in plugin_info:
+        help_text += f"{get_emoji('check')} {convert_font('Version:', 'bold')} {plugin_info['version']}\n"
+    
+    help_text += f"\n{get_emoji('adder1')} {convert_font('.help', 'mono')} - Back to main help\n"
+    help_text += f"\n{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}\n"
+    help_text += f"{get_emoji('adder5')} Powered by Vzoel Fox's Technology\n"
+    help_text += f"{get_emoji('adder6')} © 2025 Vzoel Fox's (LTPN)"
+    
+    return help_text
+
+async def is_owner_check(client, user_id):
+    """Check if user is bot owner"""
+    try:
+        owner_id = os.getenv("OWNER_ID")
+        if owner_id:
+            return user_id == int(owner_id)
+        me = await client.get_me()
+        return user_id == me.id
+    except Exception:
+        return False
+
+# Global client reference
+client = None
+
+async def help_handler(event):
+    """Main help command handler"""
+    global client
+    if not await is_owner_check(client, event.sender_id):
+        return
+    
+    try:
+        args = event.text.split(maxsplit=1)
+        
+        if len(args) > 1:
+            # Show specific plugin details
+            plugin_name = args[1].strip().lower()
+            all_plugins = get_all_plugins()
+            
+            if plugin_name in all_plugins:
+                help_text = get_plugin_details(plugin_name)
+                await safe_send_premium(event, help_text)
+                return
+            else:
+                error_text = f"""{get_emoji('adder5')} {convert_font('Plugin tidak ditemukan:', 'bold')} {convert_font(plugin_name, 'mono')}
+
+{get_emoji('adder3')} {convert_font('Available plugins:', 'bold')}
+{', '.join([convert_font(p, 'mono') for p in all_plugins[:10]])}...
+
+{get_emoji('adder1')} {convert_font('.help', 'mono')} - Show all plugins
+
+{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}"""
+                await safe_send_premium(event, error_text)
+                return
+        
+        # Reset to page 0 and show main help
+        HELP_STATE['current_page'] = 0
+        help_text = get_help_page(0)
         await safe_send_premium(event, help_text)
         
-        # Auto delete after 45 seconds (longer for comprehensive list)
-        await asyncio.sleep(45)
-        await event.delete()
-        
     except Exception as e:
-        print(f"Comprehensive help error: {e}")
-        await event.edit("❌ Error displaying comprehensive help")
+        error_text = f"""{get_emoji('adder5')} {convert_font('Help error:', 'bold')} {str(e)}
 
-@events.register(events.NewMessage(pattern=r'\.plugins$|\.menu$', outgoing=True))
-async def plugins_list_command(event):
-    """List all available plugins with their status"""
+{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}
+{get_emoji('adder6')} © 2025 Vzoel Fox's (LTPN)"""
+        await safe_send_premium(event, error_text)
+
+async def next_handler(event):
+    """Handle .next command for pagination"""
+    global client
+    if not await is_owner_check(client, event.sender_id):
+        return
+    
     try:
-        await event.edit("🔍 Loading plugin information...")
+        all_plugins = get_all_plugins()
+        plugins_per_page = HELP_STATE['plugins_per_page']
+        total_pages = (len(all_plugins) - 1) // plugins_per_page + 1
+        current_page = HELP_STATE['current_page']
         
-        plugins_info = scan_all_plugins()
-        
-        plugins_text = f"""**🔌 VzoelFox Plugin Manager**
+        if current_page < total_pages - 1:
+            HELP_STATE['current_page'] = current_page + 1
+            help_text = get_help_page(HELP_STATE['current_page'])
+            await safe_send_premium(event, help_text)
+        else:
+            error_text = f"""{get_emoji('adder5')} {convert_font('Already at last page!', 'bold')}
 
-**Loaded Plugins ({len(plugins_info)}):**
-"""
-        
-        for plugin_name, info in sorted(plugins_info.items()):
-            status = "✅" if len(info['commands']) > 0 else "⚠️"
-            cmd_count = len(info['commands'])
-            plugins_text += f"\n{status} **{plugin_name}** - {cmd_count} commands"
-        
-        plugins_text += f"""
+{get_emoji('check')} Current page: {current_page + 1}/{total_pages}
+{get_emoji('adder1')} {convert_font('.back', 'mono')} - Previous page
+{get_emoji('adder3')} {convert_font('.help', 'mono')} - First page
 
-**Legend:**
-✅ - Active with commands
-⚠️ - Loaded but no commands found
-
-**Total: {len(plugins_info)} plugins loaded**
-**Use .help or .allcmd for command list**"""
-        
-        await safe_send_premium(event, plugins_text)
-        
-        await asyncio.sleep(30)
-        await event.delete()
+{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}"""
+            await safe_send_premium(event, error_text)
         
     except Exception as e:
-        print(f"Plugins list error: {e}")
-        await event.edit("❌ Error displaying plugins list")
+        error_text = f"""{get_emoji('adder5')} {convert_font('Next error:', 'bold')} {str(e)}
 
-@events.register(events.NewMessage(pattern=r'\.info$|\.about$', outgoing=True))
-async def info_command(event):
-    """Bot information with Indonesian filter details"""
+{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}"""
+        await safe_send_premium(event, error_text)
+
+async def back_handler(event):
+    """Handle .back command for navigation"""
+    global client
+    if not await is_owner_check(client, event.sender_id):
+        return
+    
     try:
-        info_text = """**🇮🇩 VzoelFox Indonesian Filter Bot**
-
-**Version:** 2.2.0 Enhanced Premium
-**Focus:** Indonesian Content + Full Userbot System
-**Status:** ✅ Active with Smart Indonesian Filter
-
-**🎯 Indonesian Specialization:**
-• Indonesian spicy/skandal content detection
-• Regional filtering (Jabodetabek, etc)
-• Cultural context recognition  
-• Adult content in Indonesian context
-
-**🧠 Smart Detection Features:**
-• Indonesian language NLP processing
-• Regional geographic filtering
-• Cultural reference scoring
-• Name pattern recognition
-• Phone number detection (+62/08)
-• Time zone awareness (WIB/WITA/WIT)
-
-**📈 Detection Accuracy:**
-• Language accuracy: 90%+
-• Regional detection: 95%+
-• Cultural context: 85%+
-• Adult content recognition: 92%+
-
-**🔧 Technical Stack:**
-• Python 3.12 + Telethon framework
-• Indonesian NLP libraries
-• Fuzzy text matching engine
-• Pattern recognition system
-• Smart confidence scoring
-• Premium emoji support
-
-**⚡ System Performance:**
-• Real-time content scanning
-• Batch processing support  
-• Memory optimized operations
-• Rate limit protection
-• Multi-channel analysis
-
-**🚀 Perfect for Indonesian content hunting!**
-**Use .help for all commands**"""
+        current_page = HELP_STATE['current_page']
         
-        await safe_send_premium(event, info_text)
-        
-        await asyncio.sleep(30)
-        await event.delete()
+        if current_page > 0:
+            HELP_STATE['current_page'] = current_page - 1
+            help_text = get_help_page(HELP_STATE['current_page'])
+            await safe_send_premium(event, help_text)
+        else:
+            error_text = f"""{get_emoji('adder5')} {convert_font('Already at first page!', 'bold')}
+
+{get_emoji('check')} Current page: 1
+{get_emoji('adder1')} {convert_font('.next', 'mono')} - Next page
+{get_emoji('adder3')} {convert_font('.help <plugin>', 'mono')} - Plugin details
+
+{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}"""
+            await safe_send_premium(event, error_text)
         
     except Exception as e:
-        print(f"Info command error: {e}")
+        error_text = f"""{get_emoji('adder5')} {convert_font('Back error:', 'bold')} {str(e)}
 
-def load_plugin(client):
-    """Plugin loader function"""
+{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}"""
+        await safe_send_premium(event, error_text)
+
+def get_plugin_info():
+    return PLUGIN_INFO
+
+def setup(client_instance):
+    """Setup function untuk register event handlers"""
+    global client
+    client = client_instance
+    
+    client.add_event_handler(help_handler, events.NewMessage(pattern=r'\.help(?:\s+(.+))?$'))
+    client.add_event_handler(next_handler, events.NewMessage(pattern=r'\.next$'))
+    client.add_event_handler(back_handler, events.NewMessage(pattern=r'\.back$'))
+    
+    print(f"✅ [Help] Simple template system loaded v{PLUGIN_INFO['version']} - 10 plugins per page")
+
+def cleanup_plugin():
+    """Cleanup plugin resources"""
+    global client
     try:
-        client.add_event_handler(comprehensive_help_command)
-        client.add_event_handler(plugins_list_command)
-        client.add_event_handler(info_command)
-        
-        print("✅ Comprehensive Help System loaded - ALL plugins cataloged!")
-        return True
-        
+        print("[Help] Plugin cleanup initiated")
+        client = None
+        print("[Help] Plugin cleanup completed")
     except Exception as e:
-        print(f"❌ Comprehensive Help plugin loading failed: {e}")
-        return False
+        print(f"[Help] Cleanup error: {e}")
+
+# Export functions
+__all__ = ['setup', 'cleanup_plugin', 'get_plugin_info', 'help_handler', 'next_handler', 'back_handler']
