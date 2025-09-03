@@ -59,7 +59,7 @@ def get_emoji(emoji_type):
     return PREMIUM_EMOJIS.get(emoji_type, {}).get('char', '🤩')
 
 def create_premium_entities(text):
-    """Create premium emoji entities dengan mapping yang benar"""
+    """Create premium emoji entities untuk mapped emojis only (untuk UI display)"""
     entities = []
     
     try:
@@ -104,6 +104,24 @@ def create_premium_entities(text):
                     utf16_offset += 1
         
         return entities
+        
+    except Exception:
+        return []
+
+def extract_all_premium_entities(message):
+    """Extract semua premium emoji entities dari message (unlimited support)"""
+    if not message or not message.entities:
+        return []
+    
+    premium_entities = []
+    
+    try:
+        for entity in message.entities:
+            if hasattr(entity, 'document_id') and entity.document_id:
+                # This is a custom emoji entity - preserve it
+                premium_entities.append(entity)
+        
+        return premium_entities
         
     except Exception:
         return []
@@ -189,8 +207,8 @@ async def get_broadcast_channels():
         print(f"[Gcast] Error getting channels: {e}")
         return []
 
-async def execute_gcast(message_text, progress_callback=None):
-    """Execute gcast dengan progress tracking"""
+async def execute_gcast(message_text, entities=None, progress_callback=None):
+    """Execute gcast dengan support unlimited premium emoji entities"""
     channels = await get_broadcast_channels()
     
     if not channels:
@@ -208,8 +226,9 @@ async def execute_gcast(message_text, progress_callback=None):
         'success': True
     }
     
-    # Create premium entities
-    entities = create_premium_entities(message_text)
+    # Use provided entities (from reply message) or create for UI emojis
+    if entities is None:
+        entities = create_premium_entities(message_text)
     
     semaphore = asyncio.Semaphore(MAX_CONCURRENT)
     
@@ -265,20 +284,30 @@ async def execute_gcast(message_text, progress_callback=None):
 # ============= EVENT HANDLERS =============
 
 async def gcast_handler(event):
-    """Main gcast command handler"""
+    """Main gcast command handler dengan unlimited premium emoji support"""
     if not await is_owner_check(event.sender_id):
         return
     
     try:
-        # Get message text
+        message_text = ""
+        message_entities = None
+        
+        # Get message text dan entities
         if event.is_reply:
             reply_message = await event.get_reply_message()
             command_text = event.pattern_match.group(2)
             
             if command_text:
+                # Use additional text dari command
                 message_text = command_text.strip()
+                message_entities = None  # Create new entities untuk command text
             else:
+                # Use replied message dengan entities aslinya
                 message_text = reply_message.text or reply_message.message or ""
+                message_entities = extract_all_premium_entities(reply_message)
+                
+                if message_entities:
+                    print(f"[Gcast] Extracted {len(message_entities)} premium emoji entities from reply")
                 
             if not message_text:
                 await event.reply(f"{get_emoji('adder5')} No text found in message!")
@@ -292,18 +321,24 @@ async def gcast_handler(event):
 {get_emoji('adder1')} Reply Gcast: Reply to message + .gcast
 {get_emoji('adder2')} Reply with text: Reply + .gcast <additional text>
 
-{get_emoji('adder3')} Blacklist commands: .gcastbl <refresh|list|status>"""
+{get_emoji('adder3')} Premium Emoji: Reply ke message dengan premium emoji untuk broadcast unlimited emojis
+{get_emoji('adder4')} Blacklist commands: .gcastbl <refresh|list|status>"""
                 
                 await safe_send_premium(event, usage_text)
                 return
                 
             message_text = event.pattern_match.group(2).strip()
+            message_entities = None  # Create new entities untuk typed text
         
-        # Show starting message
+        # Show starting message dengan info emoji support
+        emoji_info = ""
+        if message_entities:
+            emoji_info = f"\n{get_emoji('adder3')} Premium emojis: {len(message_entities)} entities preserved"
+        
         start_msg = f"""{get_emoji('main')} Starting GCAST
 
 {get_emoji('adder1')} Processing blacklist...
-{get_emoji('check')} Preparing broadcast..."""
+{get_emoji('check')} Preparing broadcast...{emoji_info}"""
         
         progress_msg = await safe_send_premium(event, start_msg)
         
@@ -319,16 +354,20 @@ async def gcast_handler(event):
             except Exception:
                 pass
         
-        # Execute gcast
-        result = await execute_gcast(message_text, progress_update)
+        # Execute gcast dengan entities (unlimited support)
+        result = await execute_gcast(message_text, message_entities, progress_update)
         
         # Show final results
         if result['success']:
+            emoji_sent = ""
+            if message_entities:
+                emoji_sent = f"\n{get_emoji('adder3')} Premium emojis: {len(message_entities)} entities sent"
+            
             success_text = f"""{get_emoji('main')} GCAST Completed
 
 {get_emoji('adder2')} Successfully sent to {result['channels_success']} groups
 {get_emoji('check')} Failed: {result['channels_failed']}
-{get_emoji('adder4')} Time: {datetime.now().strftime('%H:%M:%S')}
+{get_emoji('adder4')} Time: {datetime.now().strftime('%H:%M:%S')}{emoji_sent}
 
 {get_emoji('main')} Ready for next GCAST"""
             
