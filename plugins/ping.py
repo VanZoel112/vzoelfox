@@ -179,8 +179,8 @@ async def ping_handler(event):
         # Record start time
         ping_start = time.time()
         
-        # Simple loading message
-        msg = await event.reply("🏓 Pinging...")
+        # Simple loading message with premium emoji
+        msg = await safe_send_premium(event, f"{get_emoji('main')} Pinging...")
         
         # Calculate ping time
         ping_end = time.time()
