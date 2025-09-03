@@ -77,7 +77,13 @@ fi
 
 # Install Python packages
 echo "📦 Installing Python packages..."
-pip3 install --user telethon python-dotenv
+if [ -f "requirements.txt" ]; then
+    echo "Installing from requirements.txt..."
+    pip3 install --user -r requirements.txt
+else
+    echo "Installing core packages..."
+    pip3 install --user telethon python-dotenv pyaes rsa pyasn1
+fi
 
 # Set permissions
 chmod +x main.py
