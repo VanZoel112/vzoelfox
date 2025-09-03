@@ -238,47 +238,65 @@ def get_utf16_length(emoji_char):
         return 1
 
 def create_premium_entities(text):
-    """Enhanced: Create MessageEntityCustomEmoji entities with compound character support"""
+    """Fixed: Create MessageEntityCustomEmoji entities with proper UTF-16 handling"""
     entities = []
-    utf16_offset = 0
-    text_pos = 0
     
-    # Process text dengan handling compound characters (seperti ⚙️)
-    while text_pos < len(text):
-        found_emoji = False
+    try:
+        # Convert text to UTF-16 for proper offset calculation
+        text_utf16 = text.encode('utf-16-le')
+        utf16_offset = 0
+        char_index = 0
         
-        # Check setiap premium emoji
-        for emoji_type, emoji_data in PREMIUM_EMOJIS.items():
-            emoji_char = emoji_data['char']
-            emoji_len = len(emoji_char)
+        while char_index < len(text):
+            found_emoji = False
             
-            # Cek apakah text di posisi ini cocok dengan emoji
-            if text[text_pos:text_pos + emoji_len] == emoji_char:
-                # Get actual UTF-16 length dari emoji character
-                emoji_utf16_length = get_utf16_length(emoji_char)
+            # Check each premium emoji
+            for emoji_type, emoji_data in PREMIUM_EMOJIS.items():
+                emoji_char = emoji_data['char']
+                emoji_len = len(emoji_char)
                 
-                # Create custom emoji entity
-                entity = MessageEntityCustomEmoji(
-                    offset=utf16_offset,
-                    length=emoji_utf16_length,
-                    document_id=int(emoji_data['id'])
-                )
-                entities.append(entity)
-                
-                # Skip emoji characters
-                text_pos += emoji_len
-                utf16_offset += emoji_utf16_length
-                found_emoji = True
-                break
+                # Check if text matches emoji at current position
+                if text[char_index:char_index + emoji_len] == emoji_char:
+                    try:
+                        # Get UTF-16 length for this emoji
+                        emoji_utf16_bytes = emoji_char.encode('utf-16-le')
+                        emoji_utf16_length = len(emoji_utf16_bytes) // 2
+                        
+                        # Create custom emoji entity
+                        entity = MessageEntityCustomEmoji(
+                            offset=utf16_offset,
+                            length=emoji_utf16_length,
+                            document_id=int(emoji_data['id'])
+                        )
+                        entities.append(entity)
+                        
+                        # Move position
+                        char_index += emoji_len
+                        utf16_offset += emoji_utf16_length
+                        found_emoji = True
+                        break
+                        
+                    except (ValueError, OverflowError) as e:
+                        print(f"[Gcast] Error creating entity for {emoji_type}: {e}")
+                        break
+            
+            if not found_emoji:
+                # Regular character
+                try:
+                    char = text[char_index]
+                    char_utf16_bytes = char.encode('utf-16-le')
+                    char_utf16_length = len(char_utf16_bytes) // 2
+                    utf16_offset += char_utf16_length
+                    char_index += 1
+                except Exception:
+                    char_index += 1
+                    utf16_offset += 1
         
-        if not found_emoji:
-            # Regular character, advance by 1
-            char = text[text_pos]
-            char_utf16_length = get_utf16_length(char)
-            utf16_offset += char_utf16_length
-            text_pos += 1
-    
-    return entities
+        return entities
+        
+    except Exception as e:
+        print(f"[Gcast] Error creating premium entities: {e}")
+        return []
 
 def extract_premium_emoji_from_message(message: Message) -> List[Dict]:
     """Enhanced: Extract premium emoji dari message entities using proper UTF-16 handling"""
@@ -402,21 +420,28 @@ async def get_blacklist_status():
         return None
 
 async def safe_edit_message(message, text):
-    """Safely edit message dengan error handling dan premium emoji"""
+    """Safely edit message with premium emoji support"""
     if not message:
         return False
     try:
+        # Always create premium entities for consistent emoji display
         entities = create_premium_entities(text)
-        if entities:
+        if entities and len(entities) > 0:
             await message.edit(text, formatting_entities=entities)
         else:
+            # Fallback to regular edit if no premium emojis found
             await message.edit(text)
         return True
     except MessageNotModifiedError:
         pass  # Message content unchanged
     except Exception as e:
         print(f"[Gcast] Edit message error: {e}")
-        return False
+        # Fallback to basic edit if entity fails
+        try:
+            await message.edit(text)
+            return True
+        except:
+            return False
 
 # ============= BROADCAST FUNCTIONS =============
 
@@ -548,23 +573,23 @@ async def enhanced_gcast(message_text: str, reply_message: Optional[Message] = N
         'success': True
     }
     
-    # Extract entities from reply message if provided
+    # Always create premium entities for consistent emoji support
     entities = None
-    if reply_message and preserve_entities:
-        try:
+    try:
+        # First, try to extract from reply message if available
+        if reply_message and preserve_entities:
             premium_emojis = extract_premium_emoji_from_message(reply_message)
             if premium_emojis:
-                # Create entity mapping for message text
-                entity_mappings = []
-                for emoji_data in premium_emojis:
-                    if emoji_data['emoji'] in message_text:
-                        entity_mappings.append((emoji_data['emoji'], emoji_data['document_id']))
-                
-                if entity_mappings:
-                    entities = create_premium_entities(message_text)
-                    print(f"[Gcast] Created {len(entities)} entities from reply message")
-        except Exception as e:
-            print(f"[Gcast] Error processing reply message entities: {e}")
+                print(f"[Gcast] Found {len(premium_emojis)} premium emojis in reply message")
+        
+        # Always create entities for the message text to ensure premium emoji support
+        entities = create_premium_entities(message_text)
+        if entities:
+            print(f"[Gcast] Created {len(entities)} premium entities for broadcast")
+        
+    except Exception as e:
+        print(f"[Gcast] Error creating premium entities: {e}")
+        entities = None
     
     # Broadcast to all channels
     semaphore = asyncio.Semaphore(MAX_CONCURRENT_GCAST)
@@ -575,14 +600,24 @@ async def enhanced_gcast(message_text: str, reply_message: Optional[Message] = N
                 # Small delay to prevent rate limiting
                 await asyncio.sleep(GCAST_DELAY)
                 
-                if entities:
+                # Send with premium emoji support
+                if entities and len(entities) > 0:
                     await client.send_message(
                         channel_info['id'], 
                         message_text,
                         formatting_entities=entities
                     )
                 else:
-                    await client.send_message(channel_info['id'], message_text)
+                    # Fallback: create entities on the fly if none exist
+                    fallback_entities = create_premium_entities(message_text)
+                    if fallback_entities and len(fallback_entities) > 0:
+                        await client.send_message(
+                            channel_info['id'], 
+                            message_text,
+                            formatting_entities=fallback_entities
+                        )
+                    else:
+                        await client.send_message(channel_info['id'], message_text)
                 
                 results['channels_success'] += 1
                 stats['gcast_sent'] += 1
@@ -592,16 +627,25 @@ async def enhanced_gcast(message_text: str, reply_message: Optional[Message] = N
             except FloodWaitError as e:
                 print(f"[Gcast] Flood wait {e.seconds}s for channel {channel_info['title']}")
                 await asyncio.sleep(e.seconds)
-                # Retry once after flood wait
+                # Retry once after flood wait with premium emoji support
                 try:
-                    if entities:
+                    if entities and len(entities) > 0:
                         await client.send_message(
                             channel_info['id'], 
                             message_text,
                             formatting_entities=entities
                         )
                     else:
-                        await client.send_message(channel_info['id'], message_text)
+                        # Fallback for retry
+                        retry_entities = create_premium_entities(message_text)
+                        if retry_entities and len(retry_entities) > 0:
+                            await client.send_message(
+                                channel_info['id'], 
+                                message_text,
+                                formatting_entities=retry_entities
+                            )
+                        else:
+                            await client.send_message(channel_info['id'], message_text)
                     results['channels_success'] += 1
                     return True
                 except Exception as retry_error:
@@ -696,30 +740,27 @@ Reply to message + `{prefix}gcast <additional text>`
         # INITIAL BLACKLIST CHECK NOTIFICATION
         blacklist_status = await get_blacklist_status()
         
-        # Show enhanced progress message dengan premium emoji dan blacklist info  
-        progress_text = f"""
-{get_emoji('adder1')} {convert_font('ENHANCED GCAST WITH FORCE BLACKLIST CHECK', 'bold')}
+        # Show blacklist info before starting gcast
+        blacklist_info_text = f"""🤩 **Starting GCAST with Blacklist Check**
 
-{get_emoji('check')} {convert_font('Mode:', 'bold')} {'Reply + Entity Preservation' if reply_message else 'Standard Text'}
-{get_emoji('adder2')} {convert_font('Blacklist Status:', 'bold')} {blacklist_status['total_blacklisted']} chats blocked
-{get_emoji('adder3')} {convert_font('Sources:', 'bold')} JSON({blacklist_status['sources']['json_file']}) + Grub({blacklist_status['sources']['grub_database']}) + Session({blacklist_status['sources']['session_database']})
-{get_emoji('adder1')} {convert_font('Status:', 'bold')} Force checking blacklist...
-        """.strip()
+📋 **Blacklist Status:** {blacklist_status['total_blacklisted']} groups blocked
+🔍 **Sources:** JSON({blacklist_status['sources']['json_file']}) + Grub({blacklist_status['sources']['grub_database']}) + Session({blacklist_status['sources']['session_database']})
+⚡ **Mode:** {'Reply Mode' if reply_message else 'Text Mode'}
+
+🚀 **Checking all groups and starting broadcast...**"""
         
-        # Send dengan premium emoji support
-        progress_msg = await event.reply(progress_text, formatting_entities=create_premium_entities(progress_text))
+        # Send blacklist info message with proper emoji support
+        progress_msg = await event.reply(blacklist_info_text)
         
-        # Progress callback for updates
+        # Simple progress callback
         async def progress_update(completed, total, gcast_id):
             try:
-                progress_text = f"""
-{get_emoji('adder2')} {convert_font('BROADCASTING IN PROGRESS', 'bold')}
+                progress_percentage = (completed/total)*100 if total > 0 else 0
+                simple_progress = f"""🤩 **GCAST in Progress**
 
-{get_emoji('check')} {convert_font('Progress:', 'bold')} `{completed}/{total}` ({(completed/total)*100:.1f}%)
-{get_emoji('adder1')} {convert_font('Gcast ID:', 'bold')} `{gcast_id}`
-{get_emoji('main')} {convert_font('Status:', 'bold')} Processing...
-                """.strip()
-                await safe_edit_message(progress_msg, progress_text)
+📤 **Sending:** {completed}/{total} groups ({progress_percentage:.0f}%)
+⚡ **Status:** Broadcasting..."""
+                await safe_edit_message(progress_msg, simple_progress)
             except Exception as e:
                 print(f"[Gcast] Error updating progress: {e}")
         
@@ -731,39 +772,19 @@ Reply to message + `{prefix}gcast <additional text>`
             progress_callback=progress_update
         )
         
-        # Show final results
+        # Show simple final results
         if result['success']:
-            success_rate = (result['channels_success'] / result['channels_total'] * 100) if result['channels_total'] > 0 else 0
+            current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
-            final_text = f"""
-{get_emoji('adder2')} {convert_font('GCAST COMPLETED!', 'mono')}
+            # Simple completion message as requested
+            simple_final_text = f"""🤩 **GCAST by vzoel assistant done**
 
-     {convert_font('BROADCAST RESULTS', 'mono')} 
+✅ **Sent to {result['channels_success']} groups** at {current_time}
 
-{get_emoji('adder4')} {convert_font('Statistics:', 'bold')}
-{get_emoji('check')} Total Channels: `{result['channels_total']}`
-{get_emoji('check')} Successful: `{result['channels_success']}`
-{get_emoji('adder3')} Failed: `{result['channels_failed']}`
-{get_emoji('adder1')} Success Rate: `{success_rate:.1f}%`
-{get_emoji('main')} Gcast ID: `{result['gcast_id']}`
-
-{get_emoji('adder5')} {convert_font('Features Used:', 'bold')}
-{get_emoji('check')} {'Entity Preservation: ✅' if reply_message else 'Standard Mode: ✅'}
-{get_emoji('check')} Concurrent Broadcasting: ✅
-{get_emoji('check')} Rate Limiting: ✅
-{get_emoji('check')} Error Recovery: ✅
-
-{get_emoji('check')} {convert_font('Message delivered successfully!', 'bold')}
-            """.strip()
+🚀 **Siap untuk GCAST berikutnya**
+**Userbot by Vzoel Fox's** 🤩"""
             
-            # Show errors if any (limited to first 5)
-            if result['errors']:
-                error_preview = '\n'.join(result['errors'][:3])
-                final_text += f"\n\n{get_emoji('adder3')} {convert_font('Sample Errors:', 'bold')}\n```{error_preview}```"
-                if len(result['errors']) > 3:
-                    final_text += f"\n{get_emoji('check')} ... and {len(result['errors']) - 3} more errors"
-            
-            await safe_edit_message(progress_msg, final_text)
+            await safe_edit_message(progress_msg, simple_final_text)
         else:
             error_text = f"""
 {get_emoji('adder3')} {convert_font('GCAST FAILED', 'bold')}
