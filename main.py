@@ -755,7 +755,7 @@ async def alive_handler(event):
 {get_emoji('check')} Database Integration
 {get_emoji('check')} Enhanced Rate Limiting
 
-{get_emoji('check')} {convert_font('Hak milik Vzoel Fox\'s ©2025 ~ LTPN', 'bold')} {get_emoji('check')}"""
+{get_emoji('check')} {convert_font('Hak milik Vzoel Fox - 2025 LTPN', 'bold')} {get_emoji('check')}"""
         
         alive_animations = base_animations + [final_message]
         
