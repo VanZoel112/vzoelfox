@@ -30,18 +30,18 @@ PLUGIN_INFO = {
     "features": ["global broadcast", "grub blacklist integration", "real-time blacklist check", "reply message support", "entity preservation", "auto UTF-16 premium emoji"]
 }
 
-# Premium Emoji Mapping - Updated with new IDs from your Telegram data
+# Premium Emoji Mapping - Fixed dengan entity data yang benar
 PREMIUM_EMOJIS = {
-    'main': {'id': '5260637271702389570', 'char': '🤩'},
-    'check': {'id': '5794353925360457382', 'char': '⚙️'},
-    'adder1': {'id': '5794407002566300853', 'char': '⛈'},
-    'adder2': {'id': '5793913811471700779', 'char': '✅'}, 
-    'adder3': {'id': '5321412209992033736', 'char': '👽'},
-    'adder4': {'id': '5793973133559993740', 'char': '✈️'},
-    'adder5': {'id': '5357404860566235955', 'char': '😈'},
-    'adder6': {'id': '5794323465452394551', 'char': '🎚'},
-    'santa': {'id': '5260687265121712272', 'char': '🎅'},
-    'party': {'id': '5260471374295613818', 'char': '🥳'}
+    'main': {'id': '5260637271702389570', 'char': '🤩', 'length': 2},
+    'check': {'id': '5794353925360457382', 'char': '⚙️', 'length': 2},
+    'adder1': {'id': '5794407002566300853', 'char': '⛈', 'length': 1},
+    'adder2': {'id': '5793913811471700779', 'char': '✅', 'length': 1}, 
+    'adder3': {'id': '5321412209992033736', 'char': '👽', 'length': 2},
+    'adder4': {'id': '5793973133559993740', 'char': '✈️', 'length': 2},
+    'adder5': {'id': '5357404860566235955', 'char': '😈', 'length': 2},
+    'adder6': {'id': '5794323465452394551', 'char': '🎚', 'length': 2},
+    'santa': {'id': '5260687265121712272', 'char': '🎅', 'length': 2},
+    'party': {'id': '5260471374295613818', 'char': '🥳', 'length': 2}
 }
 
 # Global variables
@@ -240,12 +240,10 @@ def get_utf16_length(emoji_char):
         return 1
 
 def create_premium_entities(text):
-    """Fixed: Create MessageEntityCustomEmoji entities with proper UTF-16 handling"""
+    """Fixed: Create MessageEntityCustomEmoji entities dengan length yang benar dari entity data"""
     entities = []
     
     try:
-        # Convert text to UTF-16 for proper offset calculation
-        text_utf16 = text.encode('utf-16-le')
         utf16_offset = 0
         char_index = 0
         
@@ -260,9 +258,8 @@ def create_premium_entities(text):
                 # Check if text matches emoji at current position
                 if text[char_index:char_index + emoji_len] == emoji_char:
                     try:
-                        # Get UTF-16 length for this emoji
-                        emoji_utf16_bytes = emoji_char.encode('utf-16-le')
-                        emoji_utf16_length = len(emoji_utf16_bytes) // 2
+                        # Use predefined length from entity data instead of calculating
+                        emoji_utf16_length = emoji_data.get('length', 2)
                         
                         # Create custom emoji entity
                         entity = MessageEntityCustomEmoji(
@@ -283,7 +280,7 @@ def create_premium_entities(text):
                         break
             
             if not found_emoji:
-                # Regular character
+                # Regular character - calculate UTF-16 length
                 try:
                     char = text[char_index]
                     char_utf16_bytes = char.encode('utf-16-le')
