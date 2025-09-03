@@ -44,7 +44,7 @@ PREMIUM_EMOJIS = {
 
 # Global variables
 client = None
-blacklisted_chats = set()
+blacklisted_chats = {-1002785371546}  # PV REVERIES permanent blacklist
 BLACKLIST_FILE = "data/blacklist/gcast_blacklist.json"
 MAX_CONCURRENT = 5
 GCAST_DELAY = 0.5
@@ -252,19 +252,32 @@ def load_blacklist():
         print(f"[Gcast] Error loading blacklist: {e}")
     
     # Fallback ke empty set
-    blacklisted_chats = set()
+    blacklisted_chats = {-1002785371546}  # PV REVERIES permanent blacklist
     print("[Gcast] Using empty blacklist")
     return blacklisted_chats
 
 def is_chat_blacklisted(chat_id):
-    """Check if chat is blacklisted dengan validation"""
+    """Check if chat is blacklisted dengan validation - ENHANCED"""
     if not chat_id:
         return True  # Protect against None/empty IDs
         
     try:
         # Convert dan validate chat_id
         validated_id = int(chat_id)
-        return validated_id in blacklisted_chats
+        
+        # Hard-coded check untuk PV REVERIES
+        if validated_id == -1002785371546:
+            print(f"[Blacklist] PERMANENT BLOCK: PV REVERIES (ID: {validated_id})")
+            return True
+            
+        # Check dalam blacklist set
+        is_blocked = validated_id in blacklisted_chats
+        
+        if is_blocked:
+            print(f"[Blacklist] BLOCKED: Chat {validated_id} - blacklisted")
+            
+        return is_blocked
+        
     except (ValueError, TypeError):
         # If can't convert, treat as blacklisted untuk safety
         return True
@@ -275,9 +288,18 @@ async def get_broadcast_channels():
     """Get valid channels dengan enhanced filtering dan blacklist protection"""
     print("[Gcast] Getting broadcast channels...")
     
-    # Load dan validate blacklist
+    # Load dan validate blacklist dengan logging detail
     load_blacklist()
     print(f"[Gcast] Blacklist protection: {len(blacklisted_chats)} chats blocked")
+    print(f"[Gcast] Blacklisted IDs: {list(blacklisted_chats)}")
+    
+    # Double check PV REVERIES specifically
+    pv_reveries_id = -1002785371546
+    if pv_reveries_id in blacklisted_chats:
+        print(f"[Gcast] ✅ PV REVERIES ({pv_reveries_id}) CONFIRMED in blacklist")
+    else:
+        print(f"[Gcast] ❌ WARNING: PV REVERIES ({pv_reveries_id}) NOT in blacklist - adding now")
+        blacklisted_chats.add(pv_reveries_id)
     
     channels = []
     blocked_count = 0
@@ -307,10 +329,16 @@ async def get_broadcast_channels():
                 entity_id = entity.id
                 entity_title = getattr(entity, 'title', f'Unknown_{entity_id}')
                 
-                # Check blacklist protection
-                if is_chat_blacklisted(entity_id):
+                # Check blacklist protection - STRICT BLOCKING
+                if entity_id in blacklisted_chats:
                     blocked_count += 1
-                    print(f"[Gcast] Protected: {entity_title} (ID: {entity_id})")
+                    print(f"[Gcast] BLOCKED: {entity_title} (ID: {entity_id}) - Tidak bisa kirim GCast, karena blacklist")
+                    continue
+                
+                # Double check untuk ID spesifik PV REVERIES
+                if entity_id == -1002785371546:
+                    blocked_count += 1
+                    print(f"[Gcast] PERMANENT BLOCK: PV REVERIES (ID: {entity_id}) - Vzoel Fox's private group")
                     continue
                 
                 # Filter valid channels dan groups
@@ -365,6 +393,13 @@ async def execute_gcast(message_text, entities=None, progress_callback=None):
             'error': 'Empty message text',
             'channels_total': 0
         }
+    
+    # Force reload blacklist untuk ensure PV REVERIES diblok
+    load_blacklist()
+    pv_reveries_id = -1002785371546
+    if pv_reveries_id not in blacklisted_chats:
+        blacklisted_chats.add(pv_reveries_id)
+        print(f"[Gcast] FORCE ADDED PV REVERIES ({pv_reveries_id}) to blacklist")
     
     channels = await get_broadcast_channels()
     
