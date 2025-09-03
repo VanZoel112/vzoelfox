@@ -154,52 +154,24 @@ def get_uptime():
             return f"{minutes}m {seconds}s"
     return "Unknown"
 
-# ============= ANIMATION SEQUENCES =============
-
-def get_animation_frames():
-    """Get ping animation frames dengan variasi semua emoji premium"""
-    return [
-        f"{get_emoji('main')} {convert_font('bentar otw cek ping', 'italic')}",
-        f"{get_emoji('adder8')} {convert_font('nyala bang tenang aja', 'italic')}",
-        f"{get_emoji('adder9')} {convert_font('gacor masa ga nyala', 'italic')}",
-        f"nihh {get_emoji('adder10')}",
-        f"{get_emoji('adder1')} {get_emoji('adder2')} {get_emoji('adder3')}",
-        f"{get_emoji('main')} {get_emoji('adder4')} {get_emoji('adder5')} {get_emoji('adder6')}",
-        f"{get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder10')} {get_emoji('main')}",
-        f"{get_emoji('adder1')} {get_emoji('adder2')} {get_emoji('adder3')} {get_emoji('adder4')} {get_emoji('adder5')}",
-        f"{get_emoji('main')} {get_emoji('adder6')} {get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder10')}",
-        f"{get_emoji('adder1')} {get_emoji('main')} {get_emoji('adder2')} {get_emoji('adder3')} {get_emoji('adder4')} {get_emoji('adder5')}",
-        f"{get_emoji('adder6')} {get_emoji('adder8')} {get_emoji('main')} {get_emoji('adder9')} {get_emoji('adder10')} {get_emoji('adder1')}",
-        f"{get_emoji('adder2')} {get_emoji('adder3')} {get_emoji('adder4')} {get_emoji('main')} {get_emoji('adder5')} {get_emoji('adder6')}",
-        f"{get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder10')} {get_emoji('main')} {get_emoji('adder1')} {get_emoji('adder2')}",
-        f"{get_emoji('main')} {get_emoji('adder3')} {get_emoji('adder4')} {get_emoji('adder5')} {get_emoji('adder6')} {get_emoji('adder8')}"
-    ]
-
-async def animate_ping(message, ping_time):
-    """Animate ping dengan premium emojis"""
-    frames = get_animation_frames()
-    
-    # Show animation frames
-    for frame in frames:
-        await safe_edit_premium(message, frame)
-        await asyncio.sleep(0.8)
-    
-    # Show final result
+async def show_simple_ping(message, ping_time):
+    """Simple ping result tanpa animasi kompleks"""
     latency_level, latency_emoji = get_latency_level(ping_time)
     uptime = get_uptime()
     
-    final_message = f"""{get_emoji('main')} {convert_font('VZOEL ASSISTANT', 'bold')}
+    # Simple ping result
+    ping_result = f"""{get_emoji('main')} {convert_font('VZOEL ASSISTANT', 'bold')}
 
 {get_emoji('adder1')} {convert_font('PONG !!!!!!', 'bold')}
 {get_emoji('check')} LATENCY: {latency_level} {latency_emoji}
 {get_emoji('check')} uptime: {uptime}"""
     
-    await safe_edit_premium(message, final_message)
+    await safe_edit_premium(message, ping_result)
 
 # ============= EVENT HANDLERS =============
 
 async def ping_handler(event):
-    """Enhanced ping command dengan animations"""
+    """Simple ping command tanpa animasi kompleks"""
     if not await is_owner_check(event.sender_id):
         return
     
@@ -207,15 +179,15 @@ async def ping_handler(event):
         # Record start time
         ping_start = time.time()
         
-        # Start with first animation frame
-        msg = await safe_send_premium(event, f"{get_emoji('main')} {convert_font('bentar otw cek ping', 'italic')}")
+        # Simple loading message
+        msg = await event.reply("🏓 Pinging...")
         
         # Calculate ping time
         ping_end = time.time()
         ping_time = (ping_end - ping_start) * 1000
         
-        # Run animation
-        await animate_ping(msg, ping_time)
+        # Show simple result
+        await show_simple_ping(msg, ping_time)
         
     except Exception as e:
         await event.reply(f"{get_emoji('adder5')} Ping error: {str(e)}")
