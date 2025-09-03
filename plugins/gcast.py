@@ -30,16 +30,18 @@ PLUGIN_INFO = {
     "features": ["global broadcast", "grub blacklist integration", "real-time blacklist check", "reply message support", "entity preservation", "auto UTF-16 premium emoji"]
 }
 
-# Premium Emoji Mapping - Enhanced dari formorgan.py (UTF-16 compliant)
+# Premium Emoji Mapping - Updated with new IDs from your Telegram data
 PREMIUM_EMOJIS = {
-    'main': {'id': '6156784006194009426', 'char': '🤩'},
+    'main': {'id': '5260637271702389570', 'char': '🤩'},
     'check': {'id': '5794353925360457382', 'char': '⚙️'},
     'adder1': {'id': '5794407002566300853', 'char': '⛈'},
     'adder2': {'id': '5793913811471700779', 'char': '✅'}, 
     'adder3': {'id': '5321412209992033736', 'char': '👽'},
     'adder4': {'id': '5793973133559993740', 'char': '✈️'},
     'adder5': {'id': '5357404860566235955', 'char': '😈'},
-    'adder6': {'id': '5794323465452394551', 'char': '🎚'}
+    'adder6': {'id': '5794323465452394551', 'char': '🎚'},
+    'santa': {'id': '5260687265121712272', 'char': '🎅'},
+    'party': {'id': '5260471374295613818', 'char': '🥳'}
 }
 
 # Global variables
@@ -741,13 +743,13 @@ Reply to message + `{prefix}gcast <additional text>`
         blacklist_status = await get_blacklist_status()
         
         # Show blacklist info before starting gcast
-        blacklist_info_text = f"""🤩 **Starting GCAST with Blacklist Check**
+        blacklist_info_text = f"""{get_emoji('main')} **Starting GCAST with Blacklist Check**
 
-📋 **Blacklist Status:** {blacklist_status['total_blacklisted']} groups blocked
-🔍 **Sources:** JSON({blacklist_status['sources']['json_file']}) + Grub({blacklist_status['sources']['grub_database']}) + Session({blacklist_status['sources']['session_database']})
-⚡ **Mode:** {'Reply Mode' if reply_message else 'Text Mode'}
+{get_emoji('adder2')} **Blacklist Status:** {blacklist_status['total_blacklisted']} groups blocked
+{get_emoji('adder1')} **Sources:** JSON({blacklist_status['sources']['json_file']}) + Grub({blacklist_status['sources']['grub_database']}) + Session({blacklist_status['sources']['session_database']})
+{get_emoji('adder4')} **Mode:** {'Reply Mode' if reply_message else 'Text Mode'}
 
-🚀 **Checking all groups and starting broadcast...**"""
+{get_emoji('santa')} **Checking all groups and starting broadcast...**"""
         
         # Send blacklist info message with proper emoji support
         progress_msg = await event.reply(blacklist_info_text)
@@ -756,10 +758,10 @@ Reply to message + `{prefix}gcast <additional text>`
         async def progress_update(completed, total, gcast_id):
             try:
                 progress_percentage = (completed/total)*100 if total > 0 else 0
-                simple_progress = f"""🤩 **GCAST in Progress**
+                simple_progress = f"""{get_emoji('main')} **GCAST in Progress**
 
-📤 **Sending:** {completed}/{total} groups ({progress_percentage:.0f}%)
-⚡ **Status:** Broadcasting..."""
+{get_emoji('santa')} **Sending:** {completed}/{total} groups ({progress_percentage:.0f}%)
+{get_emoji('adder4')} **Status:** Broadcasting..."""
                 await safe_edit_message(progress_msg, simple_progress)
             except Exception as e:
                 print(f"[Gcast] Error updating progress: {e}")
@@ -777,12 +779,12 @@ Reply to message + `{prefix}gcast <additional text>`
             current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             
             # Simple completion message as requested
-            simple_final_text = f"""🤩 **GCAST by vzoel assistant done**
+            simple_final_text = f"""{get_emoji('main')} **GCAST by vzoel assistant done**
 
-✅ **Sent to {result['channels_success']} groups** at {current_time}
+{get_emoji('adder2')} **Sent to {result['channels_success']} groups** at {current_time}
 
-🚀 **Siap untuk GCAST berikutnya**
-**Userbot by Vzoel Fox's** 🤩"""
+{get_emoji('santa')} **Siap untuk GCAST berikutnya**
+**Userbot by Vzoel Fox's** {get_emoji('main')}"""
             
             await safe_edit_message(progress_msg, simple_final_text)
         else:
@@ -819,13 +821,13 @@ async def gcast_blacklist_handler(event):
 {get_emoji('check')} {convert_font('.gcastbl test', 'mono')} - Test ALL blacklist functionality
 
 {get_emoji('adder2')} {convert_font('PROTECTION SOURCES:', 'bold')}
-{get_emoji('adder4')} JSON File: ✅ Always active
-{get_emoji('adder4')} Grub Database: {'✅ Connected' if GRUB_INTEGRATION else '❌ Not available'}
-{get_emoji('adder4')} Session Database: ✅ Always active
-{get_emoji('adder4')} Real-time Check: {'✅ Active' if GRUB_INTEGRATION else '❌ Limited'}
+{get_emoji('adder4')} JSON File: {get_emoji('adder2')} Always active
+{get_emoji('adder4')} Grub Database: {'{} Connected'.format(get_emoji('adder2')) if GRUB_INTEGRATION else '{} Not available'.format(get_emoji('adder5'))}
+{get_emoji('adder4')} Session Database: {get_emoji('adder2')} Always active
+{get_emoji('adder4')} Real-time Check: {'{} Active'.format(get_emoji('adder2')) if GRUB_INTEGRATION else '{} Limited'.format(get_emoji('adder5'))}
 
 {get_emoji('adder6')} {convert_font('Current Status:', 'bold')} {len(blacklisted_chats)} groups protected
-{get_emoji('main')} {convert_font('Protection Level:', 'bold')} {'🔒 MAXIMUM' if GRUB_INTEGRATION else '⚠️ BASIC'}
+{get_emoji('main')} {convert_font('Protection Level:', 'bold')} {'{} MAXIMUM'.format(get_emoji('party')) if GRUB_INTEGRATION else '{} BASIC'.format(get_emoji('adder1'))}
             """.strip()
             await event.reply(help_text, formatting_entities=create_premium_entities(help_text))
             return
@@ -846,9 +848,9 @@ async def gcast_blacklist_handler(event):
 {get_emoji('check')} Previous count: {old_count}
 {get_emoji('check')} Current count: {new_count}
 {get_emoji('adder4')} Sources loaded: JSON + Grub + Session Database
-{get_emoji('main')} Integration: {'✅ grub.py' if GRUB_INTEGRATION else '⚠️ local only'}
+{get_emoji('main')} Integration: {'{} grub.py'.format(get_emoji('adder2')) if GRUB_INTEGRATION else '{} local only'.format(get_emoji('adder1'))}
 
-{get_emoji('adder2')} ✅ All blacklist sources synchronized!
+{get_emoji('adder2')} {get_emoji('adder2')} All blacklist sources synchronized!
                 """.strip()
             else:
                 refresh_text = f"""
@@ -900,11 +902,11 @@ async def gcast_blacklist_handler(event):
 {get_emoji('check')} Session Database: {status_info['sources']['session_database']} chats
 
 {get_emoji('adder4')} {convert_font('INTEGRATION STATUS:', 'bold')}
-{get_emoji('adder6')} Grub Integration: {'✅ Connected' if GRUB_INTEGRATION else '❌ Not available'}
-{get_emoji('adder6')} Real-time Check: {'✅ Active' if GRUB_INTEGRATION else '❌ Disabled'}
-{get_emoji('adder6')} Force Reload: ✅ Available
+{get_emoji('adder6')} Grub Integration: {'{} Connected'.format(get_emoji('adder2')) if GRUB_INTEGRATION else '{} Not available'.format(get_emoji('adder5'))}
+{get_emoji('adder6')} Real-time Check: {'{} Active'.format(get_emoji('adder2')) if GRUB_INTEGRATION else '{} Disabled'.format(get_emoji('adder5'))}
+{get_emoji('adder6')} Force Reload: {get_emoji('adder2')} Available
 
-{get_emoji('adder3')} {convert_font('PROTECTION LEVEL:', 'bold')} {'🔒 MAXIMUM PROTECTION' if GRUB_INTEGRATION else '⚠️ BASIC PROTECTION'}
+{get_emoji('adder3')} {convert_font('PROTECTION LEVEL:', 'bold')} {'{} MAXIMUM PROTECTION'.format(get_emoji('party')) if GRUB_INTEGRATION else '{} BASIC PROTECTION'.format(get_emoji('adder1'))}
 
 {get_emoji('adder5')} {convert_font('SAMPLE BLACKLISTED IDs:', 'bold')}
                 """.strip()
@@ -942,23 +944,23 @@ async def gcast_blacklist_handler(event):
             new_count = len(blacklisted_chats)
             
             # Test grub integration
-            grub_test = "❌ Not available"
+            grub_test = "{} Not available".format(get_emoji('adder5'))
             if GRUB_INTEGRATION:
                 try:
                     db_groups = get_blacklisted_groups()
-                    grub_test = f"✅ {len(db_groups)} groups from database"
+                    grub_test = f"{get_emoji('adder2')} {len(db_groups)} groups from database"
                 except Exception as e:
-                    grub_test = f"❌ Error: {str(e)}"
+                    grub_test = f"{get_emoji('adder5')} Error: {str(e)}"
             
             final_test_text = f"""
 {get_emoji('main')} {convert_font('BLACKLIST TEST RESULTS', 'bold')}
 
-{get_emoji('check')} {convert_font('File Loading:', 'mono')} ✅ Success
+{get_emoji('check')} {convert_font('File Loading:', 'mono')} {get_emoji('adder2')} Success
 {get_emoji('adder2')} {convert_font('Database Integration:', 'mono')} {grub_test}
 {get_emoji('adder4')} {convert_font('Total Groups:', 'mono')} {new_count}
-{get_emoji('adder6')} {convert_font('Real-time Protection:', 'mono')} {'✅ Active' if GRUB_INTEGRATION else '⚠️ Limited'}
+{get_emoji('adder6')} {convert_font('Real-time Protection:', 'mono')} {'{} Active'.format(get_emoji('adder2')) if GRUB_INTEGRATION else '{} Limited'.format(get_emoji('adder1'))}
 
-{get_emoji('adder3')} {convert_font('Test Status:', 'mono')} {'✅ All systems working' if GRUB_INTEGRATION else '⚠️ Limited functionality'}
+{get_emoji('adder3')} {convert_font('Test Status:', 'mono')} {'{} All systems working'.format(get_emoji('adder2')) if GRUB_INTEGRATION else '{} Limited functionality'.format(get_emoji('adder1'))}
             """.strip()
             
             await safe_edit_message(test_msg, final_test_text)
@@ -980,7 +982,7 @@ def setup(client_instance):
     
     # Load blacklist on startup
     load_blacklist()
-    print(f"[Gcast] Blacklist integration: {'✅ grub.py' if GRUB_INTEGRATION else '⚠️ local only'}")
+    print(f"[Gcast] Blacklist integration: {'{} grub.py'.format('✅') if GRUB_INTEGRATION else '{} local only'.format('⚠️')}")
     
     # Check premium status
     try:
