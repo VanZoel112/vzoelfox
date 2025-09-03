@@ -1005,59 +1005,7 @@ Reply ke message + `{COMMAND_PREFIX}setemoji` (AUTO)
 # Continue with remaining commands...
 # [I'll provide the rest of the commands in the next part due to length limits]
 
-# 4. PING COMMAND - ENHANCED
-@client.on(events.NewMessage(pattern=rf'{re.escape(COMMAND_PREFIX)}ping'))
-async def ping_handler(event):
-    """Enhanced ping command with detailed metrics"""
-    if not await is_owner(event.sender_id):
-        return
-    
-    await log_command(event, "ping")
-    
-    try:
-        start = time.time()
-        msg = await event.reply(f"{get_emoji('main')} **Testing response time...**")
-        end = time.time()
-        
-        ping_time = (end - start) * 1000
-        
-        # Determine latency category
-        if ping_time < 100:
-            latency_status = f"{get_emoji('check')} Excellent"
-            latency_emoji = get_emoji('adder2')
-        elif ping_time < 300:
-            latency_status = f"{get_emoji('adder1')} Good"
-            latency_emoji = get_emoji('adder1')
-        elif ping_time < 500:
-            latency_status = f"{get_emoji('adder3')} Fair"
-            latency_emoji = get_emoji('adder3')
-        else:
-            latency_status = f"{get_emoji('adder3')} Slow"
-            latency_emoji = get_emoji('adder3')
-        
-        ping_text = f"""
-{get_emoji('main')} `PING RESULTS`
-   {get_emoji('main')} `RESPONSE TIME ANALYSIS` {get_emoji('main')}
-
-{get_emoji('check')} **Response Time:** `{ping_time:.2f}ms`
-{latency_emoji} **Latency Status:** {latency_status}
-{get_emoji('adder4')} **Connection:** Stable
-{get_emoji('check')} **Server:** Online
-{get_emoji('main')} **Premium Status:** {'Active' if premium_status else 'Standard'}
-
-{get_emoji('adder5')} **Performance Metrics:**
-{get_emoji('check')} Commands Executed: `{stats['commands_executed']}`
-{get_emoji('check')} Plugins Loaded: Active
-{get_emoji('check')} Voice Chat: Ready
-{get_emoji('main')} **Userbot by. Ltpn** {get_emoji('main')}
-{get_emoji('check')} **Bot performance optimal!**
-        """.strip()
-        
-        await safe_edit_message(msg, ping_text)
-        
-    except Exception as e:
-        await event.reply(f"❌ **Error:** {str(e)}")
-        logger.error(f"Ping error: {e}")
+# 4. PING COMMAND - MOVED TO plugins/ping.py
 
 # [Continue with all remaining commands...]
 # Due to artifact length limits, I'll provide a comprehensive but condensed version
