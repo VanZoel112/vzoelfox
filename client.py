@@ -192,24 +192,7 @@ from telethon import events
 async def setup(client):
     """Plugin setup function"""
     
-    @client.on(events.NewMessage(pattern=r\'\\.ping\'))
-    async def ping_handler(event):
-        """Ping command with response time"""
-        me = await client.get_me()
-        if event.sender_id != me.id:
-            return
-            
-        start = time.time()
-        msg = await event.edit("🏓 **Pinging...**")
-        end = time.time()
-        
-        ping_time = (end - start) * 1000
-        
-        await msg.edit("""🏓 **PONG!**
-
-⚡ **Response:** `{:.2f}ms`
-🚀 **Status:** Active
-✅ **Plugin:** Loaded Externally""".format(ping_time))
+    # Ping command moved to plugins/ping.py for better organization
 '''
 
         # Sample gcast plugin (FIXED VERSION)
