@@ -42,12 +42,15 @@ PREMIUM_EMOJIS = {
     'adder10': {'id': '5794407002566300999', 'char': '🥳', 'length': 2}
 }
 
-# Global variables
-client = None
-blacklisted_chats = {-1002785371546}  # PV REVERIES permanent blacklist
+# ----------------- CONFIG -----------------
 BLACKLIST_FILE = "data/blacklist/gcast_blacklist.json"
+PV_REVERIES_ID = -1002785371546  # permanent block
 MAX_CONCURRENT = 5
 GCAST_DELAY = 0.5
+
+# ----------------- GLOBAL -----------------
+client = None
+blacklisted_chats = set()
 
 # Import font helper
 try:
@@ -208,182 +211,124 @@ async def safe_send_premium(event, text):
 # ============= BLACKLIST MANAGEMENT =============
 
 def load_blacklist():
-    """Load blacklist dengan improved error handling dan validation"""
+    """Load blacklist dari file JSON, fallback ke PV REVERIES"""
     global blacklisted_chats
-    
     try:
-        # Ensure blacklist directory exists
         os.makedirs(os.path.dirname(BLACKLIST_FILE), exist_ok=True)
-        
-        if os.path.exists(BLACKLIST_FILE) and os.path.getsize(BLACKLIST_FILE) > 0:
+        if os.path.exists(BLACKLIST_FILE):
             with open(BLACKLIST_FILE, 'r', encoding='utf-8') as f:
-                try:
-                    data = json.load(f)
-                    
-                    # Validate data structure
-                    if isinstance(data, dict) and 'blacklisted_chats' in data:
-                        # Validate dan convert chat IDs
-                        valid_ids = set()
-                        for chat_id in data['blacklisted_chats']:
-                            try:
-                                # Convert ke int dan validate
-                                validated_id = int(chat_id)
-                                # Skip invalid IDs (0 atau positive - Telegram IDs should be negative for groups)
-                                if validated_id != 0:
-                                    valid_ids.add(validated_id)
-                            except (ValueError, TypeError):
-                                continue
-                        
-                        blacklisted_chats = valid_ids
-                        print(f"[Gcast] Loaded {len(blacklisted_chats)} blacklisted chats")
-                        return blacklisted_chats
-                        
-                    else:
-                        print("[Gcast] Invalid blacklist format, using empty blacklist")
-                        
-                except json.JSONDecodeError as e:
-                    print(f"[Gcast] JSON decode error: {e}")
-                except Exception as e:
-                    print(f"[Gcast] Error parsing blacklist: {e}")
-        else:
-            print("[Gcast] Blacklist file not found atau empty")
-            
+                data = json.load(f)
+                if isinstance(data, dict) and "blacklisted_chats" in data:
+                    ids = set()
+                    for chat_id in data['blacklisted_chats']:
+                        try:
+                            validated_id = int(chat_id)
+                            ids.add(validated_id)
+                        except:
+                            continue
+                    blacklisted_chats = ids
     except Exception as e:
-        print(f"[Gcast] Error loading blacklist: {e}")
-    
-    # Fallback ke empty set
-    blacklisted_chats = {-1002785371546}  # PV REVERIES permanent blacklist
-    print("[Gcast] Using empty blacklist")
+        print(f"[Blacklist] Error loading: {e}")
+    finally:
+        blacklisted_chats.add(PV_REVERIES_ID)  # selalu block PV REVERIES
+        print(f"[Blacklist] Loaded {len(blacklisted_chats)} chats, including PV REVERIES")
     return blacklisted_chats
 
-def is_chat_blacklisted(chat_id):
-    """Check if chat is blacklisted dengan validation - ENHANCED"""
-    if not chat_id:
-        return True  # Protect against None/empty IDs
-        
+def save_blacklist():
+    """Simpan blacklist ke file JSON"""
     try:
-        # Convert dan validate chat_id
+        data = {"blacklisted_chats": list(blacklisted_chats)}
+        os.makedirs(os.path.dirname(BLACKLIST_FILE), exist_ok=True)
+        with open(BLACKLIST_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"[Blacklist] Saved {len(blacklisted_chats)} chats")
+    except Exception as e:
+        print(f"[Blacklist] Error saving: {e}")
+
+def is_chat_blacklisted(chat_id):
+    """Cek apakah chat di blacklist"""
+    try:
         validated_id = int(chat_id)
-        
-        # Hard-coded check untuk PV REVERIES
-        if validated_id == -1002785371546:
-            print(f"[Blacklist] PERMANENT BLOCK: PV REVERIES (ID: {validated_id})")
+        return validated_id in blacklisted_chats
+    except:
+        return True  # jika invalid, dianggap blacklisted
+
+def add_blacklist(chat_id):
+    """Tambahkan chat ke blacklist dan save file"""
+    try:
+        validated_id = int(chat_id)
+        if validated_id not in blacklisted_chats:
+            blacklisted_chats.add(validated_id)
+            save_blacklist()
+            print(f"[Blacklist] Chat {validated_id} added")
             return True
-            
-        # Check dalam blacklist set
-        is_blocked = validated_id in blacklisted_chats
-        
-        if is_blocked:
-            print(f"[Blacklist] BLOCKED: Chat {validated_id} - blacklisted")
-            
-        return is_blocked
-        
-    except (ValueError, TypeError):
-        # If can't convert, treat as blacklisted untuk safety
-        return True
+        return False
+    except:
+        return False
+
+def remove_blacklist(chat_id):
+    """Hapus chat dari blacklist dan save file"""
+    try:
+        validated_id = int(chat_id)
+        if validated_id in blacklisted_chats and validated_id != PV_REVERIES_ID:
+            blacklisted_chats.remove(validated_id)
+            save_blacklist()
+            print(f"[Blacklist] Chat {validated_id} removed")
+            return True
+        return False
+    except:
+        return False
 
 # ============= GCAST FUNCTIONS =============
 
 async def get_broadcast_channels():
-    """Get valid channels dengan enhanced filtering dan blacklist protection"""
-    print("[Gcast] Getting broadcast channels...")
-    
-    # Load dan validate blacklist dengan logging detail
-    load_blacklist()
-    print(f"[Gcast] Blacklist protection: {len(blacklisted_chats)} chats blocked")
-    print(f"[Gcast] Blacklisted IDs: {list(blacklisted_chats)}")
-    
-    # Double check PV REVERIES specifically
-    pv_reveries_id = -1002785371546
-    if pv_reveries_id in blacklisted_chats:
-        print(f"[Gcast] ✅ PV REVERIES ({pv_reveries_id}) CONFIRMED in blacklist")
-    else:
-        print(f"[Gcast] ❌ WARNING: PV REVERIES ({pv_reveries_id}) NOT in blacklist - adding now")
-        blacklisted_chats.add(pv_reveries_id)
-    
+    """Ambil semua channel/group valid, skip yang di blacklist"""
     channels = []
     blocked_count = 0
     invalid_count = 0
     
-    try:
-        # Get all dialogs dengan timeout protection
-        dialogs = []
-        async for dialog in client.iter_dialogs(limit=None):
-            dialogs.append(dialog)
+    async for dialog in client.iter_dialogs(limit=None):
+        try:
+            entity = dialog.entity
+            if isinstance(entity, User):
+                continue  # skip PV
+            if not hasattr(entity, 'id'):
+                invalid_count += 1
+                continue
             
-        print(f"[Gcast] Found {len(dialogs)} total dialogs")
-        
-        for dialog in dialogs:
-            try:
-                entity = dialog.entity
-                
-                # Skip users (PVs)
-                if isinstance(entity, User):
-                    continue
-                
-                # Validate entity has required attributes
-                if not hasattr(entity, 'id') or not hasattr(entity, 'title'):
-                    invalid_count += 1
-                    continue
-                
-                entity_id = entity.id
-                entity_title = getattr(entity, 'title', f'Unknown_{entity_id}')
-                
-                # Check blacklist protection - STRICT BLOCKING
-                if entity_id in blacklisted_chats:
-                    blocked_count += 1
-                    print(f"[Gcast] BLOCKED: {entity_title} (ID: {entity_id}) - Tidak bisa kirim GCast, karena blacklist")
-                    continue
-                
-                # Double check untuk ID spesifik PV REVERIES
-                if entity_id == -1002785371546:
-                    blocked_count += 1
-                    print(f"[Gcast] PERMANENT BLOCK: PV REVERIES (ID: {entity_id}) - Vzoel Fox's private group")
-                    continue
-                
-                # Filter valid channels dan groups
-                if isinstance(entity, (Chat, Channel)):
-                    # For broadcast channels, check permissions
-                    if isinstance(entity, Channel) and getattr(entity, 'broadcast', False):
-                        # Check if we have permission to post
-                        if not (getattr(entity, 'creator', False) or 
-                               (hasattr(entity, 'admin_rights') and entity.admin_rights and 
-                                getattr(entity.admin_rights, 'post_messages', False))):
-                            invalid_count += 1
-                            continue
-                    
-                    # Check if channel/group is accessible
-                    if hasattr(entity, 'left') and entity.left:
+            entity_id = entity.id
+            if is_chat_blacklisted(entity_id):
+                blocked_count += 1
+                title = getattr(entity, 'title', f'Chat_{entity_id}')
+                print(f"[Gcast] BLOCKED: {title} (ID: {entity_id}) - Tidak bisa kirim GCast, karena blacklist")
+                continue
+            
+            if isinstance(entity, (Chat, Channel)):
+                # Optional: cek permission untuk broadcast channels
+                if isinstance(entity, Channel) and getattr(entity, 'broadcast', False):
+                    if not (getattr(entity, 'creator', False) or 
+                           (hasattr(entity, 'admin_rights') and entity.admin_rights and 
+                            getattr(entity.admin_rights, 'post_messages', False))):
                         invalid_count += 1
                         continue
-                        
-                    # Check if we're banned atau restricted
-                    if hasattr(entity, 'banned_rights') and entity.banned_rights:
-                        if getattr(entity.banned_rights, 'send_messages', False):
-                            invalid_count += 1
-                            continue
+                
+                # Check if accessible
+                if hasattr(entity, 'left') and entity.left:
+                    invalid_count += 1
+                    continue
                     
-                    # Add valid channel
-                    channel_info = {
-                        'entity': entity,
-                        'id': entity_id,
-                        'title': entity_title,
-                        'type': 'Channel' if (isinstance(entity, Channel) and getattr(entity, 'broadcast', False)) else 'Group'
-                    }
-                    
-                    channels.append(channel_info)
-                    
-            except Exception as e:
-                invalid_count += 1
-                print(f"[Gcast] Error processing dialog: {str(e)[:50]}")
-                continue
-        
-        print(f"[Gcast] Results: {len(channels)} valid, {blocked_count} protected, {invalid_count} invalid")
-        return channels
-        
-    except Exception as e:
-        print(f"[Gcast] Error getting channels: {e}")
-        return []
+                channels.append({
+                    'id': entity_id, 
+                    'entity': entity,
+                    'title': getattr(entity, 'title', f'Chat_{entity_id}')
+                })
+                
+        except Exception:
+            invalid_count += 1
+            continue
+    
+    print(f"[Gcast] {len(channels)} valid channels, {blocked_count} blocked, {invalid_count} invalid")
+    return channels
 
 async def execute_gcast(message_text, entities=None, progress_callback=None):
     """Execute gcast dengan enhanced error handling dan markdown preservation"""
@@ -394,13 +339,7 @@ async def execute_gcast(message_text, entities=None, progress_callback=None):
             'channels_total': 0
         }
     
-    # Force reload blacklist untuk ensure PV REVERIES diblok
-    load_blacklist()
-    pv_reveries_id = -1002785371546
-    if pv_reveries_id not in blacklisted_chats:
-        blacklisted_chats.add(pv_reveries_id)
-        print(f"[Gcast] FORCE ADDED PV REVERIES ({pv_reveries_id}) to blacklist")
-    
+    # Get channels dengan blacklist protection
     channels = await get_broadcast_channels()
     
     if not channels:
@@ -452,27 +391,24 @@ async def execute_gcast(message_text, entities=None, progress_callback=None):
                 # Rate limiting delay
                 await asyncio.sleep(GCAST_DELAY)
                 
-                # Send message dengan hybrid support: premium entities + markdown
+                # Send message dengan entities dan markdown support
                 try:
-                    # Always try to send with markdown enabled for text formatting
-                    await client.send_message(
-                        channel_id,
-                        message_text,
-                        formatting_entities=validated_entities if validated_entities else None,
-                        parse_mode='md'  # Always enable markdown
-                    )
-                except Exception as markdown_error:
-                    # Fallback: send with entities only (no markdown)
                     if validated_entities:
                         await client.send_message(
                             channel_id,
                             message_text,
                             formatting_entities=validated_entities,
-                            parse_mode=None
+                            parse_mode='md'
                         )
                     else:
-                        # Final fallback: plain text
-                        await client.send_message(channel_id, message_text)
+                        await client.send_message(
+                            channel_id,
+                            message_text,
+                            parse_mode='md'
+                        )
+                except Exception:
+                    # Fallback tanpa markdown
+                    await client.send_message(channel_id, message_text)
                 
                 results['channels_success'] += 1
                 return True
@@ -521,7 +457,7 @@ async def execute_gcast(message_text, entities=None, progress_callback=None):
                 results['errors'].append(f"Error in {channel_title}: {error_msg}")
                 return False
     
-    # Execute all sends dengan progress tracking
+    # Execute all sends dengan concurrent limit
     tasks = [send_to_channel(channel_info) for channel_info in channels]
     completed_count = 0
     
@@ -529,7 +465,7 @@ async def execute_gcast(message_text, entities=None, progress_callback=None):
         await task
         completed_count += 1
         
-        # Progress callback every 3 completions atau major milestones
+        # Progress callback
         if progress_callback and (completed_count % 3 == 0 or completed_count in [1, len(channels)]):
             await progress_callback(completed_count, len(channels))
     
@@ -795,12 +731,13 @@ def get_plugin_info():
     return PLUGIN_INFO
 
 def setup(client_instance):
-    """Setup plugin"""
+    """Setup plugin - Load blacklist saat bot start"""
     global client
     client = client_instance
     
-    # Load blacklist
+    # Load blacklist saat bot start - tidak perlu tunggu GCast dijalankan
     load_blacklist()
+    print(f"[Gcast] Bot started with {len(blacklisted_chats)} blacklisted chats (including PV REVERIES)")
     
     # Register handlers
     client.add_event_handler(
@@ -813,8 +750,10 @@ def setup(client_instance):
         events.NewMessage(pattern=re.compile(r'\.gcastbl(\s+(.+))?', re.DOTALL))
     )
     
-    print(f"✅ [Gcast] Simple version loaded v{PLUGIN_INFO['version']}")
-    print(f"✅ [Gcast] Blacklist: {len(blacklisted_chats)} groups protected")
+    print(f"✅ [Gcast] Enhanced version loaded v{PLUGIN_INFO['version']}")
+    print(f"✅ [Gcast] Permanent blacklist protection: PV REVERIES (-{PV_REVERIES_ID})")
+    print(f"✅ [Gcast] Concurrent limit: {MAX_CONCURRENT}, Delay: {GCAST_DELAY}s")
+    print(f"✅ [Gcast] Total protected chats: {len(blacklisted_chats)}")
 
 # Export functions
 __all__ = ['setup', 'get_plugin_info', 'gcast_handler', 'gcastbl_handler']
