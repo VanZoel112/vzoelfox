@@ -34,7 +34,7 @@ PREMIUM_EMOJIS = {
     'adder6': {'id': '5794323465452394551', 'char': '🎚', 'length': 2},
     # NEW mapping untuk ping animations dengan emoji yang benar
     'adder8': {'id': '5260687265121712272', 'char': '🎅', 'length': 2},  # LOW latency
-    'adder9': {'id': '5260637271702389570', 'char': '🤩', 'length': 2},  # MEDIUM latency (sama dengan main untuk sementara)
+    'adder9': {'id': '5262927296725007707', 'char': '🤪', 'length': 2},  # MEDIUM latency - NEW EMOJI
     'adder10': {'id': '5260471374295613818', 'char': '🥳', 'length': 2}  # HIGH latency
 }
 
@@ -157,22 +157,22 @@ def get_uptime():
 # ============= ANIMATION SEQUENCES =============
 
 def get_animation_frames():
-    """Get ping animation frames"""
+    """Get ping animation frames dengan variasi semua emoji premium"""
     return [
         f"{get_emoji('main')} {convert_font('bentar otw cek ping', 'italic')}",
         f"{get_emoji('adder8')} {convert_font('nyala bang tenang aja', 'italic')}",
         f"{get_emoji('adder9')} {convert_font('gacor masa ga nyala', 'italic')}",
         f"nihh {get_emoji('adder10')}",
-        get_emoji('adder8'),
-        f"{get_emoji('adder8')} {get_emoji('adder8')}",
-        f"{get_emoji('adder8')} {get_emoji('adder8')} {get_emoji('adder9')}",
-        f"{get_emoji('adder8')} {get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder9')}",
-        f"{get_emoji('adder8')} {get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder9')} {get_emoji('adder10')}",
-        f"{get_emoji('adder8')} {get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder9')} {get_emoji('adder10')} {get_emoji('adder10')}",
-        f"{get_emoji('adder8')} {get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')}",
-        f"{get_emoji('adder8')} {get_emoji('adder8')} {get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')}",
-        f"{get_emoji('adder8')} {get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')}",
-        f"{get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')} {get_emoji('adder10')}"
+        f"{get_emoji('adder1')} {get_emoji('adder2')} {get_emoji('adder3')}",
+        f"{get_emoji('main')} {get_emoji('adder4')} {get_emoji('adder5')} {get_emoji('adder6')}",
+        f"{get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder10')} {get_emoji('main')}",
+        f"{get_emoji('adder1')} {get_emoji('adder2')} {get_emoji('adder3')} {get_emoji('adder4')} {get_emoji('adder5')}",
+        f"{get_emoji('main')} {get_emoji('adder6')} {get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder10')}",
+        f"{get_emoji('adder1')} {get_emoji('main')} {get_emoji('adder2')} {get_emoji('adder3')} {get_emoji('adder4')} {get_emoji('adder5')}",
+        f"{get_emoji('adder6')} {get_emoji('adder8')} {get_emoji('main')} {get_emoji('adder9')} {get_emoji('adder10')} {get_emoji('adder1')}",
+        f"{get_emoji('adder2')} {get_emoji('adder3')} {get_emoji('adder4')} {get_emoji('main')} {get_emoji('adder5')} {get_emoji('adder6')}",
+        f"{get_emoji('adder8')} {get_emoji('adder9')} {get_emoji('adder10')} {get_emoji('main')} {get_emoji('adder1')} {get_emoji('adder2')}",
+        f"{get_emoji('main')} {get_emoji('adder3')} {get_emoji('adder4')} {get_emoji('adder5')} {get_emoji('adder6')} {get_emoji('adder8')}"
     ]
 
 async def animate_ping(message, ping_time):
