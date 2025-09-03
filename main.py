@@ -730,9 +730,8 @@ async def alive_handler(event):
             f"{get_emoji('main')} {convert_font('Finalizing status report...', 'bold')}",
         ]
         
-        final_message = f"""
-    {title}
-        {get_emoji('main')} {convert_font('V Z O E L  A S S I S T A N T', 'mono')} {get_emoji('main')}
+        final_message = f"""{title}
+{get_emoji('main')} {convert_font('V Z O E L  A S S I S T A N T', 'mono')} {get_emoji('main')}
 {get_emoji('main')} {convert_font('Founder Userbot:', 'bold')} Vzoel 
 {get_emoji('check')} {convert_font('Name:', 'bold')} {me.first_name or 'Vzoel Assistant'}
 {get_emoji('check')} {convert_font('ID:', 'bold')} {convert_font(str(me.id), 'mono')}
@@ -756,8 +755,7 @@ async def alive_handler(event):
 {get_emoji('check')} Database Integration
 {get_emoji('check')} Enhanced Rate Limiting
 
-{get_emoji('check')} {convert_font('Hak milik Vzoel Fox\'s ©2025 ~ LTPN', 'bold')} {get_emoji('check')}
-        """.strip()
+{get_emoji('check')} {convert_font('Hak milik Vzoel Fox\'s ©2025 ~ LTPN', 'bold')} {get_emoji('check')}"""
         
         alive_animations = base_animations + [final_message]
         
