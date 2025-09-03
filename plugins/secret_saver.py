@@ -128,7 +128,7 @@ def get_vzoel_signature():
     return f"""
 {get_emoji('main')} {convert_font('VzoelFox Secret Saver', 'bold')}
 {get_emoji('adder3')} {convert_font('Extreme Media Bypass System', 'mono')}
-{get_emoji('adder6')} {convert_font('© 2025 Vzoel Fox\'s (LTPN) - Secret Technology', 'mono')}
+{get_emoji('adder6')} {convert_font('- 2025 Vzoel Fox\'s (LTPN) - Secret Technology', 'mono')}
     """.strip()
 
 def save_state():

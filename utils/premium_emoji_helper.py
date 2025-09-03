@@ -119,7 +119,7 @@ def get_vzoel_signature():
     return f"""
 {get_emoji('main')} VzoelFox Premium System
 {get_emoji('adder3')} Powered by Vzoel Fox's Technology
-{get_emoji('adder6')} © 2025 Vzoel Fox's (LTPN) - Premium Userbot
+{get_emoji('adder6')} - 2025 Vzoel Fox's (LTPN) - Premium Userbot
     """.strip()
 
 def inject_premium_emoji_support(plugin_module):

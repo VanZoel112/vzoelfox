@@ -314,7 +314,7 @@ async def setup(client):
 🔥 **External Plugins Working**
 ✨ **Created by Vzoel Fox\\'s**
 
-⚡ **Hak milik Vzoel Fox\\'s ©2025**"""
+⚡ **Hak milik Vzoel Fox\\'s -2025**"""
         ]
         
         msg = await event.edit(animations[0])

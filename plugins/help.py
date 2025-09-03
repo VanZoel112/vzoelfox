@@ -203,7 +203,7 @@ def get_help_page(page=0):
     help_text += f"{get_emoji('adder3')} {convert_font('.help <plugin>', 'mono')} - Plugin details\n"
     help_text += f"\n{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}\n"
     help_text += f"{get_emoji('adder5')} Powered by Vzoel Fox's Technology\n"
-    help_text += f"{get_emoji('adder6')} © 2025 Vzoel Fox's (LTPN)"
+    help_text += f"{get_emoji('adder6')} - 2025 Vzoel Fox's (LTPN)"
     
     return help_text
 
@@ -240,7 +240,7 @@ def get_plugin_details(plugin_name):
     help_text += f"\n{get_emoji('adder1')} {convert_font('.help', 'mono')} - Back to main help\n"
     help_text += f"\n{get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}\n"
     help_text += f"{get_emoji('adder5')} Powered by Vzoel Fox's Technology\n"
-    help_text += f"{get_emoji('adder6')} © 2025 Vzoel Fox's (LTPN)"
+    help_text += f"{get_emoji('adder6')} - 2025 Vzoel Fox's (LTPN)"
     
     return help_text
 
@@ -297,7 +297,7 @@ async def help_handler(event):
         error_text = f"""{get_emoji('adder5')} {convert_font('Help error:', 'bold')} {str(e)}
 
 {get_emoji('main')} {convert_font('VzoelFox Premium System', 'bold')}
-{get_emoji('adder6')} © 2025 Vzoel Fox's (LTPN)"""
+{get_emoji('adder6')} - 2025 Vzoel Fox's (LTPN)"""
         await safe_send_premium(event, error_text)
 
 async def next_handler(event):

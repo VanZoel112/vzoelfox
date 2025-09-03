@@ -1111,7 +1111,7 @@ async def send_startup_message():
 {get_emoji('check')} `{COMMAND_PREFIX}help` untuk semua commands
 
 {get_emoji('main')} {convert_font('Ready for production use!', 'bold')}
-{convert_font('userbot v0.1.0.75 ~ by Vzoel Fox\'s (Enhanced by Morgan)', 'bold')} {get_emoji('check')}
+{convert_font('userbot v0.1.0.75 - by Vzoel Fox (Enhanced by Morgan)', 'bold')} {get_emoji('check')}
         """.strip()
         
         await client.send_message('me', startup_msg)

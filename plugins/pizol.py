@@ -221,7 +221,7 @@ Userbot ini dibuat dengan repo murni oleh Vzoel Fox's..
 Bukan hasil fork maupun beli dari seller manapun!!!
 Hak cipta sepenuhnya milik Vzoel..
 
-{get_emoji('adder3')} ©2025 ~ Vzoel Fox's (LTPN).
+{get_emoji('adder3')} -2025 ~ Vzoel Fox's (LTPN).
         """.strip()
 
         # Send final message dengan premium emoji entities

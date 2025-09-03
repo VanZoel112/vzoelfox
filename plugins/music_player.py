@@ -610,7 +610,7 @@ async def musicstatus_handler(event):
 
 {get_emoji('main')} **VzoelFox Music System v3.0**
 {get_emoji('adder5')} Vzoel Fox's Premium Technology
-{get_emoji('adder6')} © 2025 Vzoel Fox's (LTPN)"""
+{get_emoji('adder6')} - 2025 Vzoel Fox's (LTPN)"""
         
         await safe_send_premium(event, status_text)
     
