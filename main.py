@@ -730,6 +730,7 @@ async def alive_handler(event):
             f"{get_emoji('main')} {convert_font('Finalizing status report...', 'bold')}",
         ]
         
+        copyright_text = convert_font('Hak milik Vzoel Fox - 2025 LTPN', 'bold')
         final_message = f"""{title}
 {get_emoji('main')} {convert_font('V Z O E L  A S S I S T A N T', 'mono')} {get_emoji('main')}
 {get_emoji('main')} {convert_font('Founder Userbot:', 'bold')} Vzoel 
@@ -755,7 +756,7 @@ async def alive_handler(event):
 {get_emoji('check')} Database Integration
 {get_emoji('check')} Enhanced Rate Limiting
 
-{get_emoji('check')} {convert_font('Hak milik Vzoel Fox - 2025 LTPN', 'bold')} {get_emoji('check')}"""
+{get_emoji('check')} {copyright_text} {get_emoji('check')}"""
         
         alive_animations = base_animations + [final_message]
         
@@ -883,13 +884,14 @@ async def setemoji_handler(event):
                 if len(updated_configs) > 5:
                     result_text += f"{get_emoji('check')} ... dan {len(updated_configs) - 5} mapping lainnya\n"
                 
+                copyright_text = convert_font('Hak milik Vzoel Fox - 2025 LTPN', 'bold')
                 result_text += f"""
 {get_emoji('adder5')} {convert_font('Configuration Status:', 'bold')}
 {get_emoji('check')} Saved to: emoji_config.json
 {get_emoji('check')} Database: Updated
 {get_emoji('main')} Restart recommended untuk optimal performance
 
-{get_emoji('check')} {convert_font('Hak milik Vzoel Fox\'s ©2025 ~ LTPN', 'bold')}
+{get_emoji('check')} {copyright_text}
                 """.strip()
                 
                 await safe_edit_message(loading_msg, result_text)
