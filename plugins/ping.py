@@ -32,9 +32,9 @@ PREMIUM_EMOJIS = {
     'adder4': {'id': '5793973133559993740', 'char': '✈️', 'length': 2},
     'adder5': {'id': '5357404860566235955', 'char': '😈', 'length': 2},
     'adder6': {'id': '5794323465452394551', 'char': '🎚', 'length': 2},
-    # New mappings for ping animations
+    # NEW mapping untuk ping animations dengan emoji yang benar
     'adder8': {'id': '5260687265121712272', 'char': '🎅', 'length': 2},  # LOW latency
-    'adder9': {'id': '5260637271702389570', 'char': '🤩', 'length': 2},  # MEDIUM latency
+    'adder9': {'id': '5260637271702389570', 'char': '🤩', 'length': 2},  # MEDIUM latency (sama dengan main untuk sementara)
     'adder10': {'id': '5260471374295613818', 'char': '🥳', 'length': 2}  # HIGH latency
 }
 
@@ -191,7 +191,7 @@ async def animate_ping(message, ping_time):
     final_message = f"""{get_emoji('main')} {convert_font('VZOEL ASSISTANT', 'bold')}
 
 {get_emoji('adder1')} {convert_font('PONG !!!!!!', 'bold')}
-{get_emoji('check')} LATENCY: {latency_level}
+{get_emoji('check')} LATENCY: {latency_level} {latency_emoji}
 {get_emoji('check')} uptime: {uptime}"""
     
     await safe_edit_premium(message, final_message)
