@@ -216,13 +216,18 @@ def save_blacklist(blacklist):
         
         # Force reload blacklist in gcast plugin if available
         try:
-            from gcast import force_reload_blacklist
-            force_reload_blacklist()
-            print(f"[Blacklist] FORCE RELOADED gcast blacklist - {len(blacklist)} chats")
-        except ImportError:
-            print("[Blacklist] gcast plugin not available for reload")
+            import sys
+            if 'plugin_gcast' in sys.modules:
+                gcast_module = sys.modules['plugin_gcast']
+                if hasattr(gcast_module, 'load_blacklist'):
+                    gcast_module.load_blacklist()
+                    print(f"[Blacklist] Successfully reloaded gcast blacklist - {len(blacklist)} chats")
+                else:
+                    print("[Blacklist] gcast plugin loaded but no load_blacklist function found")
+            else:
+                print("[Blacklist] gcast plugin not loaded for reload")
         except Exception as e:
-            print(f"[Blacklist] Error force reloading gcast blacklist: {e}")
+            print(f"[Blacklist] Error reloading gcast blacklist: {e}")
             
         return True
     except Exception as e:
