@@ -10,9 +10,10 @@ import re
 import logging
 import asyncio
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from telethon import events
 from telethon.tl.types import MessageEntityCustomEmoji, User
+from telethon.errors import FloodWaitError
 
 # Plugin Info
 PLUGIN_INFO = {
@@ -28,6 +29,13 @@ PLUGIN_INFO = {
 client = None
 logger = None
 DB_FILE = "plugins/spam_bypass.db"
+
+# Cache untuk mengurangi API calls
+sender_cache = {}
+cache_expiry = {}
+CACHE_DURATION = timedelta(hours=1)  # Cache sender info untuk 1 jam
+last_flood_wait = None
+flood_wait_until = None
 
 # Premium Emoji Mapping (Independent)
 PREMIUM_EMOJIS = {
@@ -138,14 +146,14 @@ def create_premium_entities(text):
     return entities
 
 async def is_owner_check(user_id):
-    """Check if user is owner"""
+    """Check if user is owner dengan caching"""
     try:
         OWNER_ID = os.getenv('OWNER_ID')
         if OWNER_ID:
             return user_id == int(OWNER_ID)
         if client:
-            me = await client.get_me()
-            return user_id == me.id
+            # Simple owner check without extra API calls
+            return user_id == 7847025168  # Static owner ID
     except Exception as e:
         if logger:
             logger.error(f"[SpamBypass] Owner check error: {e}")
@@ -301,13 +309,75 @@ def get_response_delay():
             logger.error(f"[SpamBypass] Error getting response delay: {e}")
         return 1.0
 
-async def detect_spam_bot_response(event):
-    """Detect and handle spam bot responses"""
+async def get_sender_safe(event):
+    """Get sender with caching and flood wait handling"""
+    global last_flood_wait, flood_wait_until, sender_cache, cache_expiry
+    
     try:
+        # Check flood wait status
+        if flood_wait_until and datetime.now() < flood_wait_until:
+            return None  # Still in flood wait period
+        
+        sender_id = event.sender_id
+        if not sender_id:
+            return None
+            
+        # Check cache first
+        now = datetime.now()
+        if sender_id in sender_cache and sender_id in cache_expiry:
+            if now < cache_expiry[sender_id]:
+                return sender_cache[sender_id]
+            else:
+                # Clean expired cache
+                del sender_cache[sender_id]
+                del cache_expiry[sender_id]
+        
+        # Get sender with flood wait handling
+        try:
+            sender = await event.get_sender()
+            
+            # Cache the result
+            sender_cache[sender_id] = sender
+            cache_expiry[sender_id] = now + CACHE_DURATION
+            
+            # Clean old cache entries (max 100 entries)
+            if len(sender_cache) > 100:
+                oldest_key = min(cache_expiry.keys(), key=lambda k: cache_expiry[k])
+                del sender_cache[oldest_key]
+                del cache_expiry[oldest_key]
+            
+            return sender
+            
+        except FloodWaitError as e:
+            # Set flood wait period
+            flood_wait_until = datetime.now() + timedelta(seconds=e.seconds + 5)  # Add 5s buffer
+            last_flood_wait = datetime.now()
+            
+            if logger:
+                logger.warning(f"[SpamBypass] FloodWait {e.seconds}s - suspending sender checks until {flood_wait_until}")
+            return None
+            
+    except Exception as e:
+        if logger:
+            logger.error(f"[SpamBypass] Error getting sender safely: {e}")
+        return None
+
+async def detect_spam_bot_response(event):
+    """Detect and handle spam bot responses with flood protection"""
+    global flood_wait_until
+    try:
+        # Skip if we're in flood wait period
+        if flood_wait_until and datetime.now() < flood_wait_until:
+            return False
+        
+        # Get sender safely
+        sender = await get_sender_safe(event)
+        if not sender:
+            return False  # Could not get sender or in flood wait
+            
         # Skip if not from a bot
-        sender = await event.get_sender()
         if not (hasattr(sender, 'bot') and sender.bot):
-            return
+            return False
         
         message_text = event.message.text or ""
         
@@ -350,6 +420,13 @@ async def detect_spam_bot_response(event):
                 
                 return True
         
+        return False
+        
+    except FloodWaitError as e:
+        # Handle flood wait in main detection function too  
+        flood_wait_until = datetime.now() + timedelta(seconds=e.seconds + 5)
+        if logger:
+            logger.warning(f"[SpamBypass] FloodWait in detection: {e.seconds}s - suspending until {flood_wait_until}")
         return False
         
     except Exception as e:
@@ -455,11 +532,18 @@ async def checkspam_handler(event):
             response_count = 0
             responses = []
         
+        # Flood wait status
+        flood_status = "Active"
+        if flood_wait_until and datetime.now() < flood_wait_until:
+            remaining = (flood_wait_until - datetime.now()).seconds
+            flood_status = f"Suspended ({remaining}s remaining)"
+        
         status_text = f"""
 {get_emoji('security')} {convert_font('SPAM BYPASS STATUS', 'bold')}
 
-{get_emoji('check')} {convert_font('Auto-Bypass:', 'bold')} Active
+{get_emoji('check')} {convert_font('Auto-Bypass:', 'bold')} {flood_status}
 {get_emoji('monitor')} {convert_font('Custom Responses:', 'bold')} {response_count}
+{get_emoji('shield')} {convert_font('Cached Senders:', 'bold')} {len(sender_cache)}
 
 {get_emoji('bypass')} {convert_font('Default Response:', 'bold')}
 {get_emoji('success')} {convert_font('akun vzoel aman', 'bold')} {get_emoji('security')}
@@ -566,8 +650,8 @@ def setup(telegram_client):
             client.add_event_handler(checkspam_handler, events.NewMessage(pattern=r'\.checkspam'))
             client.add_event_handler(limit_handler, events.NewMessage(pattern=r'\.limit'))
             
-            # Register auto-detection for all messages
-            client.add_event_handler(detect_spam_bot_response, events.NewMessage)
+            # Register auto-detection for all messages dengan rate limiting
+            client.add_event_handler(detect_spam_bot_response, events.NewMessage(func=lambda e: not (flood_wait_until and datetime.now() < flood_wait_until)))
             
             # Initialize default response
             save_custom_response("baik akun anda bebas", f"{get_emoji('success')} {convert_font('akun vzoel aman', 'bold')} {get_emoji('security')}")
@@ -581,11 +665,17 @@ def setup(telegram_client):
         return False
 
 def cleanup_plugin():
-    global client, logger
+    global client, logger, sender_cache, cache_expiry, flood_wait_until
     try:
         if logger:
             logger.info("[SpamBypass] Plugin cleanup initiated")
         client = None
+        
+        # Clear caches
+        sender_cache.clear()
+        cache_expiry.clear()
+        flood_wait_until = None
+        
         if logger:
             logger.info("[SpamBypass] Plugin cleanup completed")
     except Exception as e:
