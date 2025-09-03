@@ -1,8 +1,17 @@
 {
-  "blacklisted_chats": [],
+  "-1002785371546": {
+    "title": "PV REVERIES",
+    "type": "Supergroup",
+    "added_date": "2025-09-03T15:30:23",
+    "added_by": "permanent_protection",
+    "permanent": true,
+    "reason": "Vzoel Fox's private group - permanent protection"
+  },
+  "blacklisted_chats": [-1002785371546],
   "metadata": {
-    "last_updated": "2025-09-02T00:00:00",
-    "total_blacklisted": 0,
-    "version": "2.0.0"
+    "last_updated": "2025-09-03T15:30:23",
+    "total_blacklisted": 1,
+    "version": "2.0.0",
+    "permanent_entries": 1
   }
 }

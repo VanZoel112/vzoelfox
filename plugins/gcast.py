@@ -236,7 +236,7 @@ def load_blacklist():
                         
                         blacklisted_chats = valid_ids
                         print(f"[Gcast] Loaded {len(blacklisted_chats)} blacklisted chats")
-                        return
+                        return blacklisted_chats
                         
                     else:
                         print("[Gcast] Invalid blacklist format, using empty blacklist")
@@ -254,6 +254,7 @@ def load_blacklist():
     # Fallback ke empty set
     blacklisted_chats = set()
     print("[Gcast] Using empty blacklist")
+    return blacklisted_chats
 
 def is_chat_blacklisted(chat_id):
     """Check if chat is blacklisted dengan validation"""
@@ -416,20 +417,27 @@ async def execute_gcast(message_text, entities=None, progress_callback=None):
                 # Rate limiting delay
                 await asyncio.sleep(GCAST_DELAY)
                 
-                # Send message dengan entities jika ada
-                if validated_entities:
+                # Send message dengan hybrid support: premium entities + markdown
+                try:
+                    # Always try to send with markdown enabled for text formatting
                     await client.send_message(
                         channel_id,
                         message_text,
-                        formatting_entities=validated_entities,
-                        parse_mode=None  # Disable parse_mode untuk avoid markdown conflicts
+                        formatting_entities=validated_entities if validated_entities else None,
+                        parse_mode='md'  # Always enable markdown
                     )
-                else:
-                    await client.send_message(
-                        channel_id,
-                        message_text,
-                        parse_mode='md'  # Enable markdown untuk plain text
-                    )
+                except Exception as markdown_error:
+                    # Fallback: send with entities only (no markdown)
+                    if validated_entities:
+                        await client.send_message(
+                            channel_id,
+                            message_text,
+                            formatting_entities=validated_entities,
+                            parse_mode=None
+                        )
+                    else:
+                        # Final fallback: plain text
+                        await client.send_message(channel_id, message_text)
                 
                 results['channels_success'] += 1
                 return True
@@ -440,20 +448,25 @@ async def execute_gcast(message_text, entities=None, progress_callback=None):
                 await asyncio.sleep(wait_time)
                 
                 try:
-                    # Retry send
-                    if validated_entities:
+                    # Retry send with hybrid support
+                    try:
                         await client.send_message(
                             channel_id,
                             message_text,
-                            formatting_entities=validated_entities,
-                            parse_mode=None
-                        )
-                    else:
-                        await client.send_message(
-                            channel_id,
-                            message_text,
+                            formatting_entities=validated_entities if validated_entities else None,
                             parse_mode='md'
                         )
+                    except Exception:
+                        # Final retry without markdown
+                        if validated_entities:
+                            await client.send_message(
+                                channel_id,
+                                message_text,
+                                formatting_entities=validated_entities,
+                                parse_mode=None
+                            )
+                        else:
+                            await client.send_message(channel_id, message_text)
                     results['channels_success'] += 1
                     return True
                     
