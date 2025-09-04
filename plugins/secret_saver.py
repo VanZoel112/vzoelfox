@@ -471,7 +471,7 @@ async def secretmode_handler(event):
         save_state()
     
     except Exception as e:
-        await event.reply(f"❌ Error: {str(e)}")
+        await event.reply(f"{get_emoji('adder5')} Error: {str(e)}")
 
 async def secrethelp_handler(event):
     """Show secret saver help"""
@@ -518,7 +518,7 @@ async def secrethelp_handler(event):
         await event.reply(help_text)
     
     except Exception as e:
-        await event.reply(f"❌ Error: {str(e)}")
+        await event.reply(f"{get_emoji('adder5')} Error: {str(e)}")
 
 async def gallerysave_handler(event):
     """Manual save current replied media to gallery"""

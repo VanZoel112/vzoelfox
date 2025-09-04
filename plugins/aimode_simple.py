@@ -264,7 +264,7 @@ async def aimode_command_handler(event):
             await aimode_help(event)
             
     except Exception as e:
-        await event.reply(f"❌ AI Mode error: {str(e)}")
+        await event.reply(f"{get_emoji('adder5')} AI Mode error: {str(e)}")
 
 async def enable_aimode(event):
     """Enable AI mode"""
