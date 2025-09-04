@@ -33,6 +33,7 @@ from telethon.tl.functions.channels import GetFullChannelRequest
 from dotenv import load_dotenv
 from plugin_loader import setup_plugins, PluginLoader
 from database import DatabaseManager
+from voice_manager import initialize_voice_manager, cleanup_voice_manager
 
 
 
@@ -1085,6 +1086,10 @@ async def startup():
         await client.start()
         await check_premium_status()
         
+        # Initialize voice chat manager
+        voice_success = await initialize_voice_manager(client)
+        logger.info(f"🎵 Voice chat manager: {'initialized' if voice_success else 'failed'}")
+        
         me = await client.get_me()
         
         logger.info(f"✅ VZOEL ASSISTANT v0.1.0.75 Enhanced started successfully!")
@@ -1168,6 +1173,14 @@ async def main():
             logger.info("🔥 Shutting down gracefully...")
             save_blacklist()
             save_emoji_config()
+            
+            # Cleanup voice manager
+            try:
+                await cleanup_voice_manager()
+                logger.info("🎵 Voice chat manager cleaned up")
+            except Exception as e:
+                logger.error(f"Voice cleanup error: {e}")
+            
             try:
                 await client.disconnect()
             except Exception as e:
