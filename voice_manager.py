@@ -7,10 +7,28 @@ Compatible with premium emoji mapping and markdown
 import asyncio
 import logging
 from typing import Optional, Dict, Any
-from pytgcalls import PyTgCalls
-from pytgcalls.types import AudioPiped, VideoPiped
-from pytgcalls.exceptions import NoActiveGroupCall, GroupCallNotFound
 from telethon import TelegramClient
+
+# Safe PyTgCalls import dengan fallback
+try:
+    from pytgcalls import PyTgCalls
+    try:
+        # Try new API first
+        from pytgcalls.types.input_stream import AudioPiped, VideoPiped
+    except ImportError:
+        try:
+            # Try old API
+            from pytgcalls.types import AudioPiped, VideoPiped
+        except ImportError:
+            # Fallback for newer versions
+            from pytgcalls.types.input_stream.audio_piped import AudioPiped
+            from pytgcalls.types.input_stream.video_piped import VideoPiped
+    
+    from pytgcalls.exceptions import NoActiveGroupCall, GroupCallNotFound
+    PYTGCALLS_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"PyTgCalls not available: {e}")
+    PYTGCALLS_AVAILABLE = False
 
 # Import VzoelFox emoji mappings
 try:
@@ -26,13 +44,27 @@ class VoiceChatManager:
     
     def __init__(self, client: TelegramClient):
         self.client = client
-        self.app = PyTgCalls(client)
+        self.app = None
         self.active_calls: Dict[int, Dict[str, Any]] = {}
         self.music_queue: Dict[int, list] = {}
         self.logger = logging.getLogger(__name__)
         
+        # Initialize PyTgCalls jika available
+        if PYTGCALLS_AVAILABLE:
+            try:
+                self.app = PyTgCalls(client)
+            except Exception as e:
+                self.logger.error(f"Failed to initialize PyTgCalls: {e}")
+                self.app = None
+        else:
+            self.logger.warning("PyTgCalls not available - voice chat disabled")
+        
     async def start(self):
         """Start voice chat manager"""
+        if not self.app or not PYTGCALLS_AVAILABLE:
+            self.logger.warning("PyTgCalls not available - voice chat disabled")
+            return False
+            
         try:
             await self.app.start()
             self.logger.info(f"{get_emoji('success')} Voice chat manager started")
@@ -220,6 +252,9 @@ async def initialize_voice_manager(client: TelegramClient) -> bool:
     global voice_manager
     try:
         voice_manager = VoiceChatManager(client)
+        if not PYTGCALLS_AVAILABLE:
+            logging.info("Voice chat disabled - PyTgCalls not available")
+            return False
         return await voice_manager.start()
     except Exception as e:
         logging.error(f"Failed to initialize voice manager: {e}")
